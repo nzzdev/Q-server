@@ -15,5 +15,14 @@
   "bugs": {
     "url": "https://github.com/nzzdev/Q-service/issues"
   },
-  "homepage": "https://github.com/nzzdev/Q-service#readme"
+  "homepage": "https://github.com/nzzdev/Q-service#readme",
+  "dependencies": {
+    "fetch": "^1.1.0",
+    "hapi": "^16.0.2",
+    "hapi-swagger": "^7.5.0",
+    "inert": "^4.0.3",
+    "joi": "^10.0.6",
+    "node-fetch": "^1.6.3",
+    "vision": "^4.1.1"
+  }
 }
