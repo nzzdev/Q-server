@@ -1,5 +1,5 @@
 # Use latest version of Node as the base image
-FROM node:latest
+FROM node:7.3.0
 
 # Copy everything in the current directory to our image, in the 'app' folder
 COPY . /app
@@ -12,4 +12,4 @@ npm install --production
 EXPOSE 3000
 
 # Run node
-CMD ["node", "/app/src/server.js"]
+CMD ["node", "/app/index.js"]
