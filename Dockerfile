@@ -9,7 +9,7 @@ RUN cd /app; \
 npm install --production
 
 # Expose server port
-EXPOSE 3000
+EXPOSE 3001
 
 # Run node
 CMD ["node", "/app/index.js"]
