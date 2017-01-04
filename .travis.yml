@@ -13,7 +13,7 @@ script:
   - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH . 
 after_success:
   - if [ "$TRAVIS_BRANCH" == "dev" ]; then
-      docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-      docker tag $DOCKER_IMAGE_NAME nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
       docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
     fi
