@@ -1,9 +1,13 @@
 const Fetch = require('node-fetch');
-//TODO: at the moment environment is fixed, has to be variable too
-// const staging = require('../config/environments/staging');
-const environment = require('../config/environments/staging');
+
+var environment;
+if (process.env.APP_ENV === "dev") {
+	environment = require('../config/environments/dev');
+} else {
+	environment = require('../config/environments/local');
+}
+
 const itemProperties = require('../helper/q-item-properties');
-const baseUrl = environment.baseUrl;
 
 const getItem = function(itemId) {
 	const database = environment.database;
@@ -12,14 +16,12 @@ const getItem = function(itemId) {
 			return response.json();
 		}).then(json => {
 			let tool = json.tool;
-			// TODO: let tool decide from which base url data should be fetched -> via config file
-			let body = {};
 			for (var i = 0; i < itemProperties.length; i++) {
 				delete json[itemProperties[i]];
 			}
-			console.log(JSON.stringify(json));			
+			let body = {};
 			body.item = json;
-			return Fetch('https://q-' + tool + '.' + baseUrl + '/static', {
+			return Fetch(environment.toolUrls[tool] + '/static', {
 				method: 'POST',
 				body: JSON.stringify(body),
 				headers: { 

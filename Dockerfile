@@ -1,15 +1,22 @@
 # Use latest version of Node as the base image
 FROM node:7.3.0
 
-# Copy everything in the current directory to our image, in the 'app' folder
-COPY . /app
+# Set work directory for run/cmd 
+WORKDIR /app
 
-# Install dependencies
-RUN cd /app; \
-npm install --production
+# Copy package.json into work directory and install dependencies
+COPY package.json /app/package.json
+RUN npm install
+
+# Build variable for setting app environment
+ARG APP_ENV
+ENV APP_ENV ${APP_ENV}
+
+# Copy everything else to work directory
+COPY ./ /app
 
 # Expose server port
 EXPOSE 3001
 
-# Run node
-CMD ["node", "/app/index.js"]
+# Run node app with env variable
+CMD npm run start:${APP_ENV}
