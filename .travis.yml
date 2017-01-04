@@ -6,9 +6,12 @@ services:
 branches:
   only:
     - dev
-before_install:
-  - DOCKER_TAG="dev"
+before_script:
   - DOCKER_IMAGE_NAME="q-service"
+  - DOCKER_TAG="dev"
+  - if [ -n "TRAVIS_TAG"]; then 
+      DOCKER_TAG=$TRAVIS_TAG;
+    fi
 script:
   - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH . 
 after_success:
