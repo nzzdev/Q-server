@@ -10,7 +10,7 @@ before_install:
   - if [ -n $TRAVIS_TAG ]; then
       DOCKER_TAG=$TRAVIS_TAG;
     else
-      DOCKER_TAG="dev"
+      DOCKER_TAG="dev";
     fi
   - DOCKER_IMAGE_NAME="q-service"
 script:
