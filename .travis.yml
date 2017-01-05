@@ -7,7 +7,6 @@ branches:
   only:
     - dev
     - /^v(\.[0-9]*)*$/
-    - /^travis-.*$/
 before_script:
   - DOCKER_IMAGE_NAME="q-service"
   - DOCKER_TAG="dev"
@@ -22,4 +21,8 @@ after_success:
       docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
       docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
       docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_DEV --auto_complete --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true;
+    else if [ -n "TRAVIS_TAG" ]
+      docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
+      docker tag $DOCKER_IMAGE_NAME:$TRAVIS_TAG nzzonline/$DOCKER_IMAGE_NAME:$TRAVIS_TAG;
+      docker push nzzonline/$DOCKER_IMAGE_NAME:$TRAVIS_TAG;
     fi
