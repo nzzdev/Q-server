@@ -21,4 +21,3 @@ after_success:
       docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
       docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID --auto_complete --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true;
     fi
-  - 
