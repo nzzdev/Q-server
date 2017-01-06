@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "./node_modules/mocha/bin/mocha",
     "start:dev": "APP_ENV=dev node index.js",
     "start:local": "APP_ENV=local node index.js"
   },
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/nzzdev/Q-service#readme",
   "dependencies": {
+    "chai": "^3.5.0",
     "fetch": "^1.1.0",
     "hapi": "^16.0.2",
     "hapi-swagger": "^7.5.0",

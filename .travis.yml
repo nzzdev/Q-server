@@ -6,7 +6,7 @@ services:
 branches:
   only:
     - dev
-    - /^v(\.[0-9]*)*$/
+    - /^v[0-9]+(\.[0-9]){0,2}$/
 before_script:
   - DOCKER_IMAGE_NAME="q-service"
   - DOCKER_TAG=$TRAVIS_BRANCH
