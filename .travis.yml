@@ -2,7 +2,9 @@ dist: trusty
 sudo: true
 services:
   - docker
-
+language: node_js
+node_js:
+  - "7.0.3" 
 branches:
   only:
     - dev
@@ -12,8 +14,8 @@ install:
 before_script:
   - DOCKER_IMAGE_NAME="q-service"
   - DOCKER_TAG=$TRAVIS_BRANCH
-  - npm test
 script:
+  - npm test
   - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH . 
 after_success:
   - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
