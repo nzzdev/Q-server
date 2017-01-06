@@ -10,6 +10,8 @@ branches:
 before_script:
   - DOCKER_IMAGE_NAME="q-service"
   - DOCKER_TAG=$TRAVIS_BRANCH
+  - npm install -g mocha
+  - npm test
 script:
   - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH . 
 after_success:
