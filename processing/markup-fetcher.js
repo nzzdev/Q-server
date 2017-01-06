@@ -1,20 +1,12 @@
 const Fetch = require('node-fetch');
-
-var environment;
-if (process.env.APP_ENV === "dev") {
-	environment = require('../config/environments/dev');
-} else {
-	environment = require('../config/environments/local');
-}
-
+const environment = require('../helper/environment');
+const repository = require('./repository');
 const itemProperties = require('../helper/q-item-properties');
 
 const getItem = function(itemId) {
 	const database = environment.database;
- 	return Fetch('https://nzz-storytelling.cloudant.com/' + database + '/' + itemId)
-		.then(response => {
-			return response.json();
-		}).then(json => {
+	return repository.fetchQItem(itemId)
+		.then(json => {
 			let tool = json.tool;
 			for (var i = 0; i < itemProperties.length; i++) {
 				delete json[itemProperties[i]];
@@ -31,13 +23,11 @@ const getItem = function(itemId) {
 			.then(response => {
 				return response.json();
 			})
-			.then(json => {
-				return json;
-			})
 			.catch(err => {
 				console.log(err);
 			})
 		})
+	
 }
 
 module.exports = getItem;
