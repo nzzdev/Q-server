@@ -8,7 +8,7 @@ node_js:
 branches:
   only:
   - dev
-  - "/^v[0-9]+(\\.[0-9]){0,2}$/"
+  - /^v[0-9]+(\.[0-9]){0,2}$/
 install:
 - npm install mocha
 - npm install
@@ -31,4 +31,4 @@ cache:
   - node_modules
 notifications:
   slack:
-    secure: sBbvV+dGncYbXPQUuIYPU/acR9D4jFzd8vFw0MnszYwwbAn+8oUiJ3aXI5i69JmRUXSAJj+p0XykXAUDNk/CChmrNUYhn/tQdI8wXxbYq2LEP3UDNDB26X7IwQkGQFcqkfzrd3oX60BNTr3Y7c4ZF9pLtWCwCKNN3TgKWf7y92uFBWD32cYMbA6qSseDdyLEZ6wwBY8yHcHLekELmXSUWFS6qqrC184tGrYFgwRSfTRIot7Faj2oTlkprmAwAnSw8V9sR6gRzB7otnxlvQF+HSAiOYJ46dPm5u3YNycDhI4USnV4jguHoLpYKGGoJCBRD6UwYMPFdewn2Dk1deqOP5O/6uiT0KpXXz3wgth0qeJM44pObnaOv+2uBrYd6EgUr7eIkIVFadiRV9g7ctXdkli2NzWN6ZnOHhAqYOHaI5d2PKB2KeFBZor63vUzJTlMcxZ1AkmD7b93BNxTKGkx7CvjIEAB9Xa6GcvvNqMr15txcwe+golrfeR9xqDqkLI1kzGprvMuPGuQDg3vPotMDZZD+fX6ZuPwaXL7hONGc08GZt/tsslPpwCTto04dUnpnpQnszYbvF+/o0WB9rTBYemH4HqhRTFv4pIRDgL8fsWhsXEySF7oSrE38Yh0raJMcJcVQyEcx4atUmpNJw+RnNH7Cp9TvRvMCe/aXtEx2PY=
+    secure: U+Idd1gSD2Su7CboA3uChRo83hQvwncepMDF0kRViq7/ubDTnb7bLURT0lnnCy82KBe3T9ntLqVomEb2PTnc+Ksjur7EuC31FblAL0FpbDtHnBmyjrM3ya200hiiT0MCsshrV9ek1ZtfZdpSj6/f0tDSjbMJMMgat0rfazb1yWrUb1NNB3dEfILjgPOXpjZFUKE9zvBKSvoJQmd6RLZnIIffT2/Y5yAER+xVDPyPfO6nWONF/qxyMbeCWBuag9CBsAF06qzMhWlvY4S5qwIF68X2eKT2N9ax8zyOmN1BjzAOhZdiOZBPOUAStnekKQNHHo5QRtG3rLnGl+0osh8Rifge/XZv/4Ak/V6RNDWBuXUKrHyZW+MNpTTgl4f+ljwYfEqbyysUVHtGuit2c5ZJqsMx/wg31owcRwyBu/0TVMLU4EyHCnpGEEsVhmU0m0s63wJecR5P03dgv6DYuOrByM316SP03wKdhXpyNFmNIeAGSr41+UZiBLzNHxEFBp7ifJHoaGPkZuyuewchMOWWvl0HUDq0Jr3Yyje4is2DZg6bcIxMK7HVf2qrwa5iMBFvH0lzpWPs6mnmOT4Db4LRpCBbwocb8m9nwZpLA0vs7p4jMflu+CAj9xzRqfEpenfVHSB6EocO0+iQnJ6+KLFKgO8XruaQhJ/R3bRHw1rSDYg=
