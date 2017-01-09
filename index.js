@@ -7,7 +7,7 @@ const routes = require('./routes/routes');
 
 const options = {
     info: {
-            'title': 'Q service API Documentation',
+            'title': 'Q server API Documentation',
             'version': Pack.version,
         }
     };

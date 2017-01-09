@@ -1,5 +1,5 @@
 {
-  "name": "q-service",
+  "name": "q-server",
   "version": "0.1.0",
   "description": "",
   "main": "index.js",
@@ -10,14 +10,14 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nzzdev/Q-service.git"
+    "url": "git+https://github.com/nzzdev/Q-server.git"
   },
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nzzdev/Q-service/issues"
+    "url": "https://github.com/nzzdev/Q-server/issues"
   },
-  "homepage": "https://github.com/nzzdev/Q-service#readme",
+  "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
     "chai": "^3.5.0",
     "fetch": "^1.1.0",

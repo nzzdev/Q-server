@@ -13,7 +13,7 @@ install:
   - npm install mocha
   - npm install
 before_script:
-  - DOCKER_IMAGE_NAME="q-service"
+  - DOCKER_IMAGE_NAME="q-server"
   - DOCKER_TAG=$TRAVIS_BRANCH
 script:
   - npm test
