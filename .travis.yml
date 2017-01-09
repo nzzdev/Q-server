@@ -1,27 +1,34 @@
 dist: trusty
 sudo: true
 services:
-  - docker
+- docker
 language: node_js
 node_js:
-  - "stable" 
+- stable
 branches:
   only:
-    - dev
-    - /^v[0-9]+(\.[0-9]){0,2}$/
+  - dev
+  - "/^v[0-9]+(\\.[0-9]){0,2}$/"
 install:
-  - npm install mocha
-  - npm install
+- npm install mocha
+- npm install
 before_script:
-  - DOCKER_IMAGE_NAME="q-server"
-  - DOCKER_TAG=$TRAVIS_BRANCH
+- DOCKER_IMAGE_NAME="q-server"
+- DOCKER_TAG=$TRAVIS_BRANCH
 script:
-  - npm test
-  - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH . 
+- npm test
+- docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH
+  .
 after_success:
-  - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD";
-    docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
-    docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
-  - if [ "$TRAVIS_BRANCH" == "dev" ]; then
-      docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_DEV --auto_complete --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true;
-    fi
+- docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG
+  nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG; docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
+- if [ "$TRAVIS_BRANCH" == "dev" ]; then docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY
+  -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_DEV --auto_complete
+  --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true;
+  fi
+cache:
+  directories:
+  - node_modules
+notifications:
+  slack:
+    secure: sBbvV+dGncYbXPQUuIYPU/acR9D4jFzd8vFw0MnszYwwbAn+8oUiJ3aXI5i69JmRUXSAJj+p0XykXAUDNk/CChmrNUYhn/tQdI8wXxbYq2LEP3UDNDB26X7IwQkGQFcqkfzrd3oX60BNTr3Y7c4ZF9pLtWCwCKNN3TgKWf7y92uFBWD32cYMbA6qSseDdyLEZ6wwBY8yHcHLekELmXSUWFS6qqrC184tGrYFgwRSfTRIot7Faj2oTlkprmAwAnSw8V9sR6gRzB7otnxlvQF+HSAiOYJ46dPm5u3YNycDhI4USnV4jguHoLpYKGGoJCBRD6UwYMPFdewn2Dk1deqOP5O/6uiT0KpXXz3wgth0qeJM44pObnaOv+2uBrYd6EgUr7eIkIVFadiRV9g7ctXdkli2NzWN6ZnOHhAqYOHaI5d2PKB2KeFBZor63vUzJTlMcxZ1AkmD7b93BNxTKGkx7CvjIEAB9Xa6GcvvNqMr15txcwe+golrfeR9xqDqkLI1kzGprvMuPGuQDg3vPotMDZZD+fX6ZuPwaXL7hONGc08GZt/tsslPpwCTto04dUnpnpQnszYbvF+/o0WB9rTBYemH4HqhRTFv4pIRDgL8fsWhsXEySF7oSrE38Yh0raJMcJcVQyEcx4atUmpNJw+RnNH7Cp9TvRvMCe/aXtEx2PY=
