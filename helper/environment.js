@@ -1,6 +1,6 @@
 var environment;
-if (process.env.APP_ENV === "dev") {
-    environment = require('../config/environments/dev');
+if (process.env.APP_ENV === "staging") {
+    environment = require('../config/environments/staging');
 } else {
     environment = require('../config/environments/local');
 }

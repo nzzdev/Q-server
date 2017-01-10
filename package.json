@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
-    "start:dev": "APP_ENV=dev node index.js",
+    "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
   },
   "repository": {
@@ -19,6 +19,7 @@
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
+    "boom": "^4.2.0",
     "chai": "^3.5.0",
     "fetch": "^1.1.0",
     "hapi": "^16.0.2",
