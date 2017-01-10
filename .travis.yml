@@ -7,7 +7,7 @@ node_js:
 - '7.3'
 branches:
   only:
-  - dev
+  - staging
   - /^v[0-9]+(\.[0-9]){0,2}$/
 install:
 - npm install
@@ -20,8 +20,8 @@ script:
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG
   nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG; docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
-- if [ "$TRAVIS_BRANCH" == "dev" ]; then docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY
-  -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_DEV --auto_complete
+- if [ "$TRAVIS_BRANCH" == "staging" ]; then docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY
+  -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_STAGING --auto_complete
   --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true;
   fi
 cache:
