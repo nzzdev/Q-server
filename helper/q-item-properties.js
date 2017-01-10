@@ -11,7 +11,7 @@ const itemProperties = [
 		'updatedDate',
 		'active',
 		'activateDate',
-		'deactivateDate',
+		'deactivateDate'
 	];
 
 module.exports = itemProperties;

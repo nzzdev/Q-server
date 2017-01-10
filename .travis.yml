@@ -4,21 +4,19 @@ services:
 - docker
 language: node_js
 node_js:
-- stable
+- '7.3'
 branches:
   only:
   - dev
   - /^v[0-9]+(\.[0-9]){0,2}$/
 install:
-- npm install mocha
 - npm install
 before_script:
 - DOCKER_IMAGE_NAME="q-server"
 - DOCKER_TAG=$TRAVIS_BRANCH
 script:
 - npm test
-- docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH
-  .
+- docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG --build-arg APP_ENV=$TRAVIS_BRANCH .
 after_success:
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG
   nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG; docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
