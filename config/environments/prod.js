@@ -4,7 +4,7 @@ module.exports = {
 			tools: {
 				'party-slogans': {
 					baseUrl: 'https://q-party-slogans.st-prod.nzz.ch',
-					endpoint: '/static',
+					endpoint: '/rendering-info/html-static',
 					stylesheets: [
 						{
 							url: 'https://service.sophie.nzz.ch/bundle/sophie-q@~0.1.1,sophie-font@^0.1.0,sophie-color@~1.0.0,sophie-viz-color@^1.0.0[diverging-6].css',

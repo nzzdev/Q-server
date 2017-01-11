@@ -6,7 +6,7 @@ const parameter = require('../config/parameter');
 
 var getScript = function(target, tool, name, next) {
 	let toolProperties = environment.targets[target].tools[tool];
-	fetch(toolProperties.baseUrl + '/scripts/' + name)
+	fetch(toolProperties.baseUrl + '/script/' + name)
 		.then(response => {
 			return response.text();
 		})
@@ -29,7 +29,7 @@ server.method('getScript', getScript, {
 
 var scriptRoute = {
 	method: 'GET',
-	path: '/Q/{target}/script/{tool}/{name}',
+	path: '/{target}/{tool}/script/{name}',
 	handler: function(request, reply) {
 		server.methods.getScript(request.params.target, request.params.tool, request.params.name, (err, result) => {
 			if (err) {
@@ -43,7 +43,7 @@ var scriptRoute = {
 			expiresIn: parameter.cacheControl * 1000, 
 			privacy: 'public'
 		},
-		description: 'Get script from Q tool',
+		description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',
 		tags: ['api']
 	}
 } 

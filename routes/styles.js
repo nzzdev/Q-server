@@ -5,7 +5,7 @@ const Boom = require('boom');
 
 var getStylesheet = function(target, tool, name, next) {
 	let toolProperties = environment.targets[target].tools[tool];
-	fetch(toolProperties.baseUrl + '/styles/' + name)
+	fetch(toolProperties.baseUrl + '/stylesheet/' + name)
 		.then(response => {
 			return response.text();
 		})
@@ -28,7 +28,7 @@ server.method('getStylesheet', getStylesheet, {
 
 var styleRoute = {
 	method: 'GET',
-	path: '/Q/{target}/style/{tool}/{name}',
+	path: '/{target}/{tool}/stylesheet/{name}',
 	handler: function(request, reply) {
 		server.methods.getStylesheet(request.params.target, request.params.tool, request.params.name, (err, result) => {
 			if (err) {
@@ -42,7 +42,7 @@ var styleRoute = {
 			expiresIn: 60 * 1000, 
 			privacy: 'public'
 		},
-		description: 'Get stylesheet from Q tool',
+		description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',
 		tags: ['api']
 	}
 } 
