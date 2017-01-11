@@ -3,7 +3,7 @@ module.exports = {
 		'nzz-ch': {
 			tools: {
 				'party-slogans': {
-					baseUrl: 'https://q-party-slogans.st-staging.nzz.ch',
+					baseUrl: 'http://q-party-slogans:3000',
 					endpoint: '/rendering-info/html-static',
 					stylesheets: [
 						{
