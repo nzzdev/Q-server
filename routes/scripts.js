@@ -2,12 +2,16 @@ const fetch = require('node-fetch');
 const environment = require('../helper/environment');
 const server = require('../server');
 const Boom = require('boom');
+const parameter = require('../config/parameter');
 
 var getScript = function(target, tool, name, next) {
 	let toolProperties = environment.targets[target].tools[tool];
 	fetch(toolProperties.baseUrl + '/scripts/' + name)
 		.then(response => {
-			next(null, response.buffer());
+			return response.text();
+		})
+		.then(script => {
+			next(null, script);
 		})
 		.catch(err => {
 			const error = Boom.badRequest();
@@ -18,7 +22,7 @@ var getScript = function(target, tool, name, next) {
 server.method('getScript', getScript, {
   cache: {
     cache: 'memoryCache',
-    expiresIn: 30 * 60 * 1000,
+    expiresIn: parameter.serverCache * 1000,
     generateTimeout: 3000
   }
 });
@@ -35,6 +39,10 @@ var scriptRoute = {
 		})
 	},
 	config: {
+		cache: {
+			expiresIn: parameter.cacheControl * 1000, 
+			privacy: 'public'
+		},
 		description: 'Get script from Q tool',
 		tags: ['api']
 	}

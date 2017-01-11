@@ -7,7 +7,10 @@ var getStylesheet = function(target, tool, name, next) {
 	let toolProperties = environment.targets[target].tools[tool];
 	fetch(toolProperties.baseUrl + '/styles/' + name)
 		.then(response => {
-			next(null, response.buffer());
+			return response.text();
+		})
+		.then(stylesheet => {
+			next(null, stylesheet);
 		})
 		.catch(err => {
 			const error = Boom.badRequest();
@@ -18,7 +21,7 @@ var getStylesheet = function(target, tool, name, next) {
 server.method('getStylesheet', getStylesheet, {
   cache: {
     cache: 'memoryCache',
-    expiresIn: 30 * 60 * 1000,
+    expiresIn: 60 * 1000,
     generateTimeout: 3000
   }
 });
@@ -35,6 +38,10 @@ var styleRoute = {
 		})
 	},
 	config: {
+		cache: {
+			expiresIn: 60 * 1000, 
+			privacy: 'public'
+		},
 		description: 'Get stylesheet from Q tool',
 		tags: ['api']
 	}
