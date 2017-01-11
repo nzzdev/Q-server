@@ -6,7 +6,13 @@ var getRouteToQTool = function(id, target, next) {
 	return next(null, itemRenderingDetails);
 }
 
-server.method('getRouteToQTool', getRouteToQTool, {});
+server.method('getRouteToQTool', getRouteToQTool, {
+  cache: {
+    cache: 'memoryCache',
+    expiresIn: 30 * 60 * 1000,
+    generateTimeout: 3000
+  }
+});
 
 var markupRoute = {
   method: 'GET',

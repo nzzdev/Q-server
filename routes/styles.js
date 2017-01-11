@@ -15,7 +15,13 @@ var getStylesheet = function(target, tool, name, next) {
 		})
 }
 
-server.method('getStylesheet', getStylesheet, {});
+server.method('getStylesheet', getStylesheet, {
+  cache: {
+    cache: 'memoryCache',
+    expiresIn: 30 * 60 * 1000,
+    generateTimeout: 3000
+  }
+});
 
 var styleRoute = {
 	method: 'GET',

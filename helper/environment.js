@@ -1,8 +1,16 @@
 var environment;
-if (process.env.APP_ENV === "staging") {
-    environment = require('../config/environments/staging');
-} else {
-    environment = require('../config/environments/local');
+switch (process.env.APP_ENV) {
+    case "prod": 
+        environment = require('../config/environments/prod');
+        break;
+    case "staging":
+        environment = require('../config/environments/staging');
+        break;
+    case "local":
+        environment = require('../config/environments/local');
+        break;
+    default: 
+        environment = require('../config/environments/staging');
 }
 
 module.exports = environment;

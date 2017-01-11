@@ -15,7 +15,13 @@ var getScript = function(target, tool, name, next) {
 		})
 }
 
-server.method('getScript', getScript, {});
+server.method('getScript', getScript, {
+  cache: {
+    cache: 'memoryCache',
+    expiresIn: 30 * 60 * 1000,
+    generateTimeout: 3000
+  }
+});
 
 var scriptRoute = {
 	method: 'GET',
