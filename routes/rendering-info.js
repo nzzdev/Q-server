@@ -33,7 +33,7 @@ var markupRoute = {
       expiresIn: parameter.cacheControl * 1000, 
       privacy: 'public'
     },
-    description: 'Returns rendering information for the given graphic id.',
+    description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',
     notes: 'dev',
     tags: ['api']
   }

@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
-    "prod": "APP_ENV=prod node index.js",
+    "start:prod": "APP_ENV=prod node index.js",
     "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
   },
@@ -25,6 +25,7 @@
     "chai": "^3.5.0",
     "fetch": "^1.1.0",
     "hapi": "^16.0.2",
+    "hapi-etags": "^0.1.0",
     "hapi-swagger": "^7.5.0",
     "inert": "^4.0.3",
     "joi": "^10.0.6",
