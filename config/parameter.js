@@ -1,4 +1,4 @@
 module.exports = {
-	serverCache: 60,
-	cacheControl: 60
+  serverCache: 60,
+  cacheControl: 60
 }

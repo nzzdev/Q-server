@@ -4,8 +4,8 @@ const stylesRoute = require('./styles');
 const versionRoute = require('./version');
 
 module.exports = [
-	renderingInfoRoute,
-	scriptsRoute,
-	stylesRoute,
-	versionRoute
+  renderingInfoRoute,
+  scriptsRoute,
+  stylesRoute,
+  versionRoute
 ]

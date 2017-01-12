@@ -14,7 +14,7 @@ var hapiOptions = {
 
 const server = new Hapi.Server(hapiOptions);
 server.connection({
-      port: 3001
-  });
+  port: 3001
+});
 
 module.exports = server;

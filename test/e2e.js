@@ -7,7 +7,7 @@ var etag;
 
 
 server.register(plugins, (err) => {
-	Hoek.assert(!err, err);
+  Hoek.assert(!err, err);
 
   server.route(routes);
 
@@ -39,5 +39,5 @@ describe('Q server API etags', () => {
     });
   })
 })
-  
+
 
