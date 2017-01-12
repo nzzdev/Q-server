@@ -1,7 +1,5 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
-const environment = require('../helper/environment');
-const database = environment.database;
 const repository = require('./repository');
 const metaProperties = require('../helper/meta-properties');
 
@@ -10,7 +8,7 @@ const getRenderingInfo = function(itemId, target) {
   return repository.fetchQItem(itemId)
     .then(json => {
       toolName = json.tool;
-      let tool = environment.targets[target].tools[toolName];
+      let tool = target.tools[toolName];
       for (var i = 0; i < metaProperties.length; i++) {
         delete json[metaProperties[i]];
       }

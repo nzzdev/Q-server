@@ -14,4 +14,3 @@ var fetchQItem = function(itemId) {
 }
 
 module.exports.fetchQItem = fetchQItem;
-

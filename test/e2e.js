@@ -1,10 +1,25 @@
 const Hoek = require('hoek');
 const expect = require('chai').expect;
-const server = require('../server.js');
 const routes = require('../routes/routes.js');
 const plugins = require('../server-plugins');
-var etag;
+const Hapi = require('hapi');
 
+const hapiOptions = {
+  cache: [
+    {
+      name: 'memoryCache',
+      engine: require('catbox-memory'),
+      options: {
+        maxByteSize: 150000000
+      }
+    }
+  ]
+};
+
+const server = new Hapi.Server(hapiOptions);
+server.connection({
+  port: 3001
+});
 
 server.register(plugins, (err) => {
   Hoek.assert(!err, err);
@@ -16,6 +31,7 @@ server.register(plugins, (err) => {
   })
 });
 
+var etag;
 describe('Q server API etags', () => {
   it('should return 200 for first call of /version', function(done) {
     server.inject('/version', (res) => {

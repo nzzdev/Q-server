@@ -1,15 +1,48 @@
-const server = require('./server.js');
-const routes = require('./routes/routes');
-const plugins = require('./server-plugins');
+const Hoek = require('hoek');
+const Hapi = require('hapi');
+const setServer = require('./server.js').setServer;
 
-server.register(plugins, function(err) {
-  if (err) {
-    console.error('Failed to load plugins:', err);
-  }
+const defaultOptions = {
+  cache: [
+    {
+      name: 'memoryCache',
+      engine: require('catbox-memory'),
+      options: {
+        maxByteSize: 150000000
+      }
+    }
+  ]
+}
 
-  server.route(routes);
+module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
+  let hapiOptions = Object.assign(
+    defaultOptions,
+    options.hapi, 
+    {
+      app: options.config
+    }
+  );
+  
+  let server = new Hapi.Server(hapiOptions);
+  setServer(server);
 
-  server.start(function() {
-    console.log('Server running at: ', server.info.uri)
+  server.connection({
+    port: options.port || 3000
+  });
+
+  const plugins = require('./server-plugins');
+  const routes = require('./routes/routes');
+
+  server.register(plugins, err => {
+    Hoek.assert(!err, err);
+
+    server.route(routes);
+
+    server.start(() => {
+      console.log('server running: ', server.info.uri);
+      if (callback) {
+        callback(server.info);
+      }
+    })
   })
-});
+}

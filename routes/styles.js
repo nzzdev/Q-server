@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const environment = require('../helper/environment');
-const server = require('../server');
+const getServer = require('../server').getServer;
+const server = getServer();
 const Boom = require('boom');
 const parameter = require('../config/parameter');
 
@@ -28,7 +29,6 @@ var getStylesheet = function(target, tool, name, next) {
 
 server.method('getStylesheet', getStylesheet, {
   cache: {
-    cache: 'memoryCache',
     expiresIn: parameter.serverCache * 1000,
     generateTimeout: 3000
   }
@@ -38,7 +38,7 @@ var styleRoute = {
   method: 'GET',
   path: '/{target}/{tool}/stylesheet/{name}',
   handler: function(request, reply) {
-    server.methods.getStylesheet(request.params.target, request.params.tool, request.params.name, (err, result) => {
+    request.server.methods.getStylesheet(request.params.target, request.params.tool, request.params.name, (err, result) => {
       if (err) {
         return reply(err);
       }

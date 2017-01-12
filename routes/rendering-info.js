@@ -1,9 +1,10 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
-const server = require('../server');
 const parameter = require('../config/parameter');
 const Boom = require('boom');
+const getServer = require('../server').getServer;
+const server = getServer();
 
-var getRenderingInfo = function(id, target, next) {
+const getRenderingInfo = function(id, target, next) {
   renderingInfoFetcher.getRenderingInfo(id, target)
     .then(renderingInfo => {
       next(null, renderingInfo);
@@ -20,9 +21,11 @@ var getRenderingInfo = function(id, target, next) {
 
 server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
-    cache: 'memoryCache',
     expiresIn: parameter.serverCache * 1000,
     generateTimeout: 3000
+  },
+  generateKey: function(id, target) {
+    return `${id}:${JSON.stringify(target)}`
   }
 });
 
@@ -30,7 +33,9 @@ var renderingInfoRoute = {
   method: 'GET',
   path: '/{target}/{id}',
   handler: function(request, reply) {
-    server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
+    
+    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
+    request.server.methods.getRenderingInfo(request.params.id, target, (err, result) => {
       if (err) {
         return reply(err);
       }
