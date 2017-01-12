@@ -1,1 +1,1 @@
-# Q service readme
+# Q server readme
