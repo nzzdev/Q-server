@@ -1,11 +1,20 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
 const server = require('../server');
 const parameter = require('../config/parameter');
+const Boom = require('boom');
 
 var getRenderingInfo = function(id, target, next) {
   renderingInfoFetcher.getRenderingInfo(id, target)
-    .then(markup => {
-      next(null, markup);
+    .then(renderingInfo => {
+      next(null, renderingInfo);
+    })
+    .catch(err => {
+      if (err.isBoom) {
+        next(err, null);
+      } else {
+        const error = Boom.badRequest();
+        next(error, null);
+      }
     })
 }
 
@@ -17,7 +26,7 @@ server.method('getRenderingInfo', getRenderingInfo, {
   }
 });
 
-var markupRoute = {
+var renderingInfoRoute = {
   method: 'GET',
   path: '/{target}/{id}',
   handler: function(request, reply) {
@@ -39,4 +48,4 @@ var markupRoute = {
   }
 }
 
-module.exports = markupRoute;
+module.exports = renderingInfoRoute;

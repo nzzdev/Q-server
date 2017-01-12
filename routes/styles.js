@@ -8,14 +8,21 @@ var getStylesheet = function(target, tool, name, next) {
   let toolProperties = environment.targets[target].tools[tool];
   fetch(toolProperties.baseUrl + '/stylesheet/' + name)
     .then(response => {
+      if (!response.ok) {
+        throw Boom.create(response.status, response.statusText);
+      }
       return response.text();
     })
     .then(stylesheet => {
       next(null, stylesheet);
     })
     .catch(err => {
-      const error = Boom.badRequest();
-      next(error, null)
+      if (err.isBoom) {
+        next(err, null);
+      } else {
+        const error = Boom.badRequest();
+        next(error, null);
+      }
     })
 }
 

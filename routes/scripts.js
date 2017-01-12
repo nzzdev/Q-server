@@ -8,14 +8,21 @@ var getScript = function(target, tool, name, next) {
   let toolProperties = environment.targets[target].tools[tool];
   fetch(toolProperties.baseUrl + '/script/' + name)
     .then(response => {
+      if (!response.ok) {
+        throw Boom.create(response.status, response.statusText);
+      }
       return response.text();
     })
     .then(script => {
       next(null, script);
     })
     .catch(err => {
-      const error = Boom.badRequest();
-      next(error, null);
+      if (err.isBoom) {
+        next(err, null);
+      } else {
+        const error = Boom.badRequest();
+        next(error, null);
+      }
     })
 }
 
