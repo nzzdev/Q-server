@@ -1,7 +1,6 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
 const Boom = require('boom');
-const getServer = require('../server').getServer;
-const server = getServer();
+const server = require('../server').getServer();
 
 const getRenderingInfo = function(id, target, next) {
   renderingInfoFetcher.getRenderingInfo(id, target)
