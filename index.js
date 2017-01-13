@@ -25,11 +25,19 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
   );
   
   let server = new Hapi.Server(hapiOptions);
+
   setServer(server);
 
   server.connection({
     port: options.config.misc.get('/port')
   });
+
+  server.ext('onPreHandler', function (request, reply) {
+    if (request.params && request.params.target) {
+      request.params.target = request.params.target.replace(new RegExp('-', 'g'), '_')
+    }
+    reply.continue();
+  })
 
   const plugins = require('./server-plugins');
   const routes = require('./routes/routes');

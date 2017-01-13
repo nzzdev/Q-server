@@ -1,13 +1,13 @@
 const Hapi = require('hapi');
 const Hoek = require('hoek');
 
-const targets = require('./config/targets.js');
+const tools = require('./config/tools.js');
 const misc = require('./config/misc.js');
 
 let hapiOptions = Object.assign(
   {
     app: {
-      targets: targets,
+      tools: tools,
       misc: misc
     }
   }

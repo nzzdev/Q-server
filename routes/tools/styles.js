@@ -1,10 +1,10 @@
 const fetch = require('node-fetch');
-const getServer = require('../server').getServer;
-const server = getServer();
+const server = require('../../server').getServer();
 const Boom = require('boom');
 
-var getStylesheet = function(target, tool, name, next) {
-  fetch(`${target.tools[tool].baseUrl}/stylesheet/${name}`)
+var getStylesheet = function(tool, stylesheetName, next) {
+  const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
+  fetch(`${baseUrl}/stylesheet/${stylesheetName}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -28,18 +28,14 @@ server.method('getStylesheet', getStylesheet, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
-  },
-  generateKey: function(target, tool, stylesheetName) {
-    return `${tool}:${stylesheetName}:${JSON.stringify(target)}`
   }
 });
 
 var styleRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/stylesheet/{stylesheetName}',
+  path: '/tools/{tool}/stylesheet/{stylesheetName}',
   handler: function(request, reply) {
-    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
-    request.server.methods.getStylesheet(target, request.params.tool, request.params.stylesheetName, (err, result) => {
+    request.server.methods.getStylesheet(request.params.tool, request.params.stylesheetName, (err, result) => {
       if (err) {
         return reply(err);
       }

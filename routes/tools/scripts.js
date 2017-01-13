@@ -1,10 +1,10 @@
 const fetch = require('node-fetch');
-const getServer = require('../server').getServer;
-const server = getServer();
+const server = require('../../server').getServer();
 const Boom = require('boom');
 
-var getScript = function(target, tool, name, next) {
-  fetch(`${target.tools[tool].baseUrl}/script/${name}`)
+var getScript = function(tool, scriptName, next) {
+  const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
+  fetch(`${baseUrl}/script/${scriptName}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -28,18 +28,14 @@ server.method('getScript', getScript, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
-  },
-  generateKey: function(target, tool, scriptName) {
-    return `${tool}:${scriptName}:${JSON.stringify(target)}`
   }
 });
 
 var scriptRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/script/{scriptName}',
+  path: '/tools/{tool}/script/{scriptName}',
   handler: function(request, reply) {
-    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
-    request.server.methods.getScript(target, request.params.tool, request.params.scriptName, (err, result) => {
+    request.server.methods.getScript(request.params.tool, request.params.scriptName, (err, result) => {
       if (err) {
         return reply(err);
       }

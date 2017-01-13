@@ -3,8 +3,8 @@ const Boom = require('boom');
 const getServer = require('../server').getServer;
 const server = getServer();
 
-const getRenderingInfo = function(target, id, itemDbBaseUrl, next) {
-  renderingInfoFetcher.getRenderingInfo(target, id, itemDbBaseUrl)
+const getRenderingInfo = function(id, target, next) {
+  renderingInfoFetcher.getRenderingInfo(id, target)
     .then(renderingInfo => {
       next(null, renderingInfo);
     })
@@ -22,20 +22,14 @@ server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
-  },
-  generateKey: function(target, id, itemDbBaseUrl) {
-    return `${id}:${itemDbBaseUrl}:${JSON.stringify(target)}`
   }
 });
 
 var renderingInfoRoute = {
   method: 'GET',
-  path: '/{target}/{id}',
+  path: '/rendering-info/{id}/{target}',
   handler: function(request, reply) {
-    
-    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
-    const itemDbBaseUrl = request.server.settings.app.misc.get('/itemDbBaseUrl');
-    request.server.methods.getRenderingInfo(target, request.params.id, itemDbBaseUrl, (err, result) => {
+    request.server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -48,7 +42,6 @@ var renderingInfoRoute = {
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',
-    notes: 'dev',
     tags: ['api']
   }
 }

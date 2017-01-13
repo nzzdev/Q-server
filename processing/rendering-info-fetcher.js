@@ -1,20 +1,36 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
+// const getServer = require('../server').getServer;
+const server = require('../server').getServer();
 const repository = require('./repository');
-const metaProperties = require('../helper/meta-properties');
+const deleteMetaProperties = require('../helper/meta-properties').deleteMetaProperties;
 
-const getRenderingInfo = function(target, itemId, itemDbBaseUrl) {
+function isToolConfiguredForTarget(toolName, target, tools) {
+  let endpointConfig = tools.get(`/${toolName}/endpoint`, { target: target })
+  if (endpointConfig) {
+    return true;
+  }
+  return false;
+}
+
+const getRenderingInfo = function(itemId, target) {
   let toolName;
+
+  const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
   return repository.fetchQItem(itemId, itemDbBaseUrl)
     .then(json => {
-      toolName = json.tool;
-      let tool = target.tools[toolName];
-      for (var i = 0; i < metaProperties.length; i++) {
-        delete json[metaProperties[i]];
+      toolName = json.tool.replace(new RegExp('-', 'g'), '_');
+      
+      if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
+        throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
       }
+
+      const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
+      const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
+
       let body = {};
-      body.item = json;
-      return fetch(tool.baseUrl + tool.endpoint, {
+      body.item = deleteMetaProperties(json);
+      return fetch(baseUrl + endpoint.path, {
           method: 'POST',
           body: JSON.stringify(body),
           headers: {

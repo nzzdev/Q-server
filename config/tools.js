@@ -1,17 +1,11 @@
 const Confidence = require('confidence');
 
-const misc = {
-  port: 3001,
-  cache: {
-    serverCacheTime: 1000,
-    cacheControl: {
-      maxAge: 60
-    }
-  }
-}
+const tools = {
+  
+};
 
 const env = process.env.APP_ENV || 'local';
-const store = new Confidence.Store(misc);
+const store = new Confidence.Store(tools);
 
 module.exports.get = (key, criteria = {}) => {
   criteria = Object.assign({ env: env }, criteria)

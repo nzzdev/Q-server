@@ -1,4 +1,4 @@
-const itemProperties = [
+const metaProperties = [
   '_id',
   '_rev',
   'tool',
@@ -14,4 +14,13 @@ const itemProperties = [
   'deactivateDate'
 ];
 
-module.exports = itemProperties;
+const deleteMetaProperties = function(item) {
+  for (var i = 0; i < metaProperties.length; i++) {
+    delete item[metaProperties[i]];
+  }
+  return item;
+}
+
+module.exports = {
+  deleteMetaProperties: deleteMetaProperties
+};
