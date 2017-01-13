@@ -1,5 +1,4 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
-const defaults = require('../config/defaults');
 const Boom = require('boom');
 const getServer = require('../server').getServer;
 const server = getServer();
@@ -19,13 +18,9 @@ const getRenderingInfo = function(target, id, itemDbBaseUrl, next) {
     })
 }
 
-let expiresIn = defaults.serverCache;
-if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
-  expiresIn = server.settings.app.misc.get('/cache/serverCacheTime');
-}
 server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
-    expiresIn: expiresIn,
+    expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   },
   generateKey: function(target, id, itemDbBaseUrl) {
@@ -33,10 +28,6 @@ server.method('getRenderingInfo', getRenderingInfo, {
   }
 });
 
-let cacheControlMaxAge = defaults.cacheControl.maxAge;
-if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
-  cacheControlMaxAge = server.settings.app.misc.get('/cache/cacheControl/maxAge');
-}
 var renderingInfoRoute = {
   method: 'GET',
   path: '/{target}/{id}',
@@ -53,7 +44,7 @@ var renderingInfoRoute = {
   },
   config: {
     cache: {
-      expiresIn: cacheControlMaxAge * 1000,
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',

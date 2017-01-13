@@ -23,6 +23,7 @@
     "boom": "^4.2.0",
     "catbox-memory": "^2.0.4",
     "chai": "^3.5.0",
+    "confidence": "^3.0.2",
     "fetch": "^1.1.0",
     "hapi": "^16.0.2",
     "hapi-etags": "^0.1.0",
