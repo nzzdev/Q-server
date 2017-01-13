@@ -1,13 +1,11 @@
 const fetch = require('node-fetch');
-const environment = require('../helper/environment');
 const getServer = require('../server').getServer;
 const server = getServer();
 const Boom = require('boom');
-const parameter = require('../config/parameter');
+const defaults = require('../config/defaults');
 
 var getStylesheet = function(target, tool, name, next) {
-  let toolProperties = environment.targets[target].tools[tool];
-  fetch(toolProperties.baseUrl + '/stylesheet/' + name)
+  fetch(`${target.tools[tool].baseUrl}/stylesheet/${name}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -29,16 +27,20 @@ var getStylesheet = function(target, tool, name, next) {
 
 server.method('getStylesheet', getStylesheet, {
   cache: {
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: (server.settings.app.misc.get('/cache/serverCacheTime') !== undefined ? server.settings.app.misc.get('/cache/serverCacheTime') : defaults.serverCache),
+    generateTimeout: 10000
+  },
+  generateKey: function(target, tool, stylesheetName) {
+    return `${tool}:${stylesheetName}:${JSON.stringify(target)}`
   }
 });
 
 var styleRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/stylesheet/{name}',
+  path: '/{target}/{tool}/stylesheet/{stylesheetName}',
   handler: function(request, reply) {
-    request.server.methods.getStylesheet(request.params.target, request.params.tool, request.params.name, (err, result) => {
+    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
+    request.server.methods.getStylesheet(target, request.params.tool, request.params.stylesheetName, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -47,7 +49,7 @@ var styleRoute = {
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: (server.settings.app.misc.get('/cache/cacheControl/maxAge') || defaults.cacheControl.maxAge) * 1000,
       privacy: 'public'
     },
     description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',

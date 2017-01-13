@@ -1,5 +1,6 @@
 const Hoek = require('hoek');
 const Hapi = require('hapi');
+const getServer = require('./server.js').getServer;
 const setServer = require('./server.js').setServer;
 
 const defaultOptions = {
@@ -27,7 +28,7 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
   setServer(server);
 
   server.connection({
-    port: options.port || 3000
+    port: options.config.misc.get('/port')
   });
 
   const plugins = require('./server-plugins');
@@ -38,11 +39,16 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
 
     server.route(routes);
 
-    server.start(() => {
-      console.log('server running: ', server.info.uri);
-      if (callback) {
-        callback(server.info);
-      }
-    })
+    callback(server)
+  })
+}
+
+module.exports.start = function(callback) {
+  let server = getServer();
+  server.start(() => {
+    console.log('server running: ', server.info.uri);
+    if (callback) {
+      callback(server.info);
+    }
   })
 }

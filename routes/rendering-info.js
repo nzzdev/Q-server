@@ -1,11 +1,11 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
-const parameter = require('../config/parameter');
+const defaults = require('../config/defaults');
 const Boom = require('boom');
 const getServer = require('../server').getServer;
 const server = getServer();
 
-const getRenderingInfo = function(id, target, next) {
-  renderingInfoFetcher.getRenderingInfo(id, target)
+const getRenderingInfo = function(target, id, itemDbBaseUrl, next) {
+  renderingInfoFetcher.getRenderingInfo(target, id, itemDbBaseUrl)
     .then(renderingInfo => {
       next(null, renderingInfo);
     })
@@ -21,11 +21,11 @@ const getRenderingInfo = function(id, target, next) {
 
 server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: (server.settings.app.misc.get('/cache/serverCacheTime') !== undefined ? server.settings.app.misc.get('/cache/serverCacheTime') : defaults.serverCache),
+    generateTimeout: 10000
   },
-  generateKey: function(id, target) {
-    return `${id}:${JSON.stringify(target)}`
+  generateKey: function(target, id, itemDbBaseUrl) {
+    return `${id}:${itemDbBaseUrl}:${JSON.stringify(target)}`
   }
 });
 
@@ -35,7 +35,8 @@ var renderingInfoRoute = {
   handler: function(request, reply) {
     
     const target = request.server.settings.app.targets.get(`/${request.params.target}`)
-    request.server.methods.getRenderingInfo(request.params.id, target, (err, result) => {
+    const itemDbBaseUrl = request.server.settings.app.misc.get('/itemDbBaseUrl');
+    request.server.methods.getRenderingInfo(target, request.params.id, itemDbBaseUrl, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -44,7 +45,7 @@ var renderingInfoRoute = {
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: (server.settings.app.misc.get('/cache/cacheControl/maxAge') || defaults.cacheControl.maxAge) * 1000,
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',

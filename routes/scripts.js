@@ -1,13 +1,11 @@
 const fetch = require('node-fetch');
-const environment = require('../helper/environment');
 const getServer = require('../server').getServer;
 const server = getServer();
 const Boom = require('boom');
-const parameter = require('../config/parameter');
+const defaults = require('../config/defaults');
 
 var getScript = function(target, tool, name, next) {
-  let toolProperties = environment.targets[target].tools[tool];
-  fetch(toolProperties.baseUrl + '/script/' + name)
+  fetch(`${target.tools[tool].baseUrl}/script/${name}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -29,16 +27,20 @@ var getScript = function(target, tool, name, next) {
 
 server.method('getScript', getScript, {
   cache: {
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: (server.settings.app.misc.get('/cache/serverCacheTime') !== undefined ? server.settings.app.misc.get('/cache/serverCacheTime') : defaults.serverCache),
+    generateTimeout: 10000
+  },
+  generateKey: function(target, tool, scriptName) {
+    return `${tool}:${scriptName}:${JSON.stringify(target)}`
   }
 });
 
 var scriptRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/script/{name}',
+  path: '/{target}/{tool}/script/{scriptName}',
   handler: function(request, reply) {
-    request.server.methods.getScript(request.params.target, request.params.tool, request.params.name, (err, result) => {
+    const target = request.server.settings.app.targets.get(`/${request.params.target}`)
+    request.server.methods.getScript(target, request.params.tool, request.params.scriptName, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -47,7 +49,7 @@ var scriptRoute = {
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: (server.settings.app.misc.get('/cache/cacheControl/maxAge') || defaults.cacheControl.maxAge) * 1000,
       privacy: 'public'
     },
     description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',

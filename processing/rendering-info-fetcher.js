@@ -3,9 +3,9 @@ const Boom = require('boom');
 const repository = require('./repository');
 const metaProperties = require('../helper/meta-properties');
 
-const getRenderingInfo = function(itemId, target) {
+const getRenderingInfo = function(target, itemId, itemDbBaseUrl) {
   let toolName;
-  return repository.fetchQItem(itemId)
+  return repository.fetchQItem(itemId, itemDbBaseUrl)
     .then(json => {
       toolName = json.tool;
       let tool = target.tools[toolName];
