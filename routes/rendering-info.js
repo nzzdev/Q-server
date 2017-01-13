@@ -19,9 +19,13 @@ const getRenderingInfo = function(target, id, itemDbBaseUrl, next) {
     })
 }
 
+let expiresIn = defaults.serverCache;
+if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
+  expiresIn = server.settings.app.misc.get('/cache/serverCacheTime');
+}
 server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
-    expiresIn: (server.settings.app.misc.get('/cache/serverCacheTime') !== undefined ? server.settings.app.misc.get('/cache/serverCacheTime') : defaults.serverCache),
+    expiresIn: expiresIn,
     generateTimeout: 10000
   },
   generateKey: function(target, id, itemDbBaseUrl) {
@@ -29,6 +33,10 @@ server.method('getRenderingInfo', getRenderingInfo, {
   }
 });
 
+let cacheControlMaxAge = defaults.cacheControl.maxAge;
+if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
+  cacheControlMaxAge = server.settings.app.misc.get('/cache/cacheControl/maxAge');
+}
 var renderingInfoRoute = {
   method: 'GET',
   path: '/{target}/{id}',
@@ -45,7 +53,7 @@ var renderingInfoRoute = {
   },
   config: {
     cache: {
-      expiresIn: (server.settings.app.misc.get('/cache/cacheControl/maxAge') || defaults.cacheControl.maxAge) * 1000,
+      expiresIn: cacheControlMaxAge * 1000,
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',

@@ -25,9 +25,13 @@ var getScript = function(target, tool, name, next) {
     })
 }
 
+let expiresIn = defaults.serverCache;
+if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
+  expiresIn = server.settings.app.misc.get('/cache/serverCacheTime');
+}
 server.method('getScript', getScript, {
   cache: {
-    expiresIn: (server.settings.app.misc.get('/cache/serverCacheTime') !== undefined ? server.settings.app.misc.get('/cache/serverCacheTime') : defaults.serverCache),
+    expiresIn: expiresIn,
     generateTimeout: 10000
   },
   generateKey: function(target, tool, scriptName) {
@@ -35,6 +39,10 @@ server.method('getScript', getScript, {
   }
 });
 
+let cacheControlMaxAge = defaults.cacheControl.maxAge;
+if (server.settings.app && server.settings.app.hasOwnProperty('misc')) {
+  cacheControlMaxAge = server.settings.app.misc.get('/cache/cacheControl/maxAge');
+}
 var scriptRoute = {
   method: 'GET',
   path: '/{target}/{tool}/script/{scriptName}',
@@ -49,7 +57,7 @@ var scriptRoute = {
   },
   config: {
     cache: {
-      expiresIn: (server.settings.app.misc.get('/cache/cacheControl/maxAge') || defaults.cacheControl.maxAge) * 1000,
+      expiresIn: cacheControlMaxAge * 1000,
       privacy: 'public'
     },
     description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',
