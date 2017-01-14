@@ -4,8 +4,10 @@ const stylesheetRoute = require('./tools/stylesheet');
 const versionRoute = require('./version');
 
 module.exports = [
+  versionRoute,
   renderingInfoRoute,
   scriptRoute,
   stylesheetRoute,
-  versionRoute
+  require('./tools/schema.js'),
+  require('./editor/tools')
 ]
