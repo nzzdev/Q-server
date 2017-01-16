@@ -1,6 +1,5 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
-// const getServer = require('../server').getServer;
 const server = require('../server').getServer();
 const repository = require('./repository');
 const deleteMetaProperties = require('../helper/meta-properties').deleteMetaProperties;
