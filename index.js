@@ -29,7 +29,12 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
   setServer(server);
 
   server.connection({
-    port: options.config.misc.get('/port')
+    port: options.config.misc.get('/port'),
+    routes: {
+      cors: {
+        headers: ["Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"]
+      }
+    }
   });
 
   server.ext('onPreHandler', function (request, reply) {
