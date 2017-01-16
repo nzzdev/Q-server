@@ -17,5 +17,9 @@ module.exports = {
       })
 
     reply(editorToolConfigs);
+  },
+  config: {
+    description: 'Returns all available Q tool names',
+    tags: ['api']
   }
 }

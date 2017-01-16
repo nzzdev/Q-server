@@ -40,7 +40,7 @@ var renderingInfoRoute = {
       expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
-    description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',
+    description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
     tags: ['api']
   }
 }
