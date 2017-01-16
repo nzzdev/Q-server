@@ -1,12 +1,10 @@
 const fetch = require('node-fetch');
-const environment = require('../helper/environment');
-const server = require('../server');
+const server = require('../../server').getServer();
 const Boom = require('boom');
-const parameter = require('../config/parameter');
 
-var getStylesheet = function(target, tool, name, next) {
-  let toolProperties = environment.targets[target].tools[tool];
-  fetch(toolProperties.baseUrl + '/stylesheet/' + name)
+var getStylesheet = function(tool, stylesheetName, next) {
+  const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
+  fetch(`${baseUrl}/stylesheet/${stylesheetName}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -28,17 +26,16 @@ var getStylesheet = function(target, tool, name, next) {
 
 server.method('getStylesheet', getStylesheet, {
   cache: {
-    cache: 'memoryCache',
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
+    generateTimeout: 10000
   }
 });
 
 var styleRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/stylesheet/{name}',
+  path: '/tools/{tool}/stylesheet/{stylesheetName}',
   handler: function(request, reply) {
-    server.methods.getStylesheet(request.params.target, request.params.tool, request.params.name, (err, result) => {
+    request.server.methods.getStylesheet(request.params.tool, request.params.stylesheetName, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -47,7 +44,7 @@ var styleRoute = {
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
     description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',

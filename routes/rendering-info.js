@@ -1,9 +1,8 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
-const server = require('../server');
-const parameter = require('../config/parameter');
 const Boom = require('boom');
+const server = require('../server').getServer();
 
-var getRenderingInfo = function(id, target, next) {
+const getRenderingInfo = function(id, target, next) {
   renderingInfoFetcher.getRenderingInfo(id, target)
     .then(renderingInfo => {
       next(null, renderingInfo);
@@ -20,17 +19,16 @@ var getRenderingInfo = function(id, target, next) {
 
 server.method('getRenderingInfo', getRenderingInfo, {
   cache: {
-    cache: 'memoryCache',
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
+    generateTimeout: 10000
   }
 });
 
 var renderingInfoRoute = {
   method: 'GET',
-  path: '/{target}/{id}',
+  path: '/rendering-info/{id}/{target}',
   handler: function(request, reply) {
-    server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
+    request.server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -39,11 +37,10 @@ var renderingInfoRoute = {
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment). Also dependant on the tool, which is derived from the graphic database entry.',
-    notes: 'dev',
     tags: ['api']
   }
 }

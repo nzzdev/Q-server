@@ -1,20 +1,24 @@
 const Hapi = require('hapi');
+const Hoek = require('hoek');
 
-var hapiOptions = {
-  cache: [
-    {
-      name: 'memoryCache',
-      engine: require('catbox-memory'),
-      options: {
-        maxByteSize: 150000000
-      }
+const tools = require('./config/tools.js');
+const misc = require('./config/misc.js');
+
+let hapiOptions = Object.assign(
+  {
+    app: {
+      tools: tools,
+      misc: misc
     }
-  ]
+  }
+);
+
+var server = new Hapi.Server(hapiOptions);
+
+module.exports.getServer = function() {
+  return server;
 };
 
-const server = new Hapi.Server(hapiOptions);
-server.connection({
-  port: 3001
-});
-
-module.exports = server;
+module.exports.setServer = function(newServer) {
+  server = newServer;
+};
