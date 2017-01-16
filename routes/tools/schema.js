@@ -18,6 +18,10 @@ module.exports = {
       .then(res => {
         reply(res)
       })
-    
+
+  },
+  config: {
+    description: 'Returns the schema by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api']
   }
 }
