@@ -44,6 +44,9 @@ const getRenderingInfo = function(itemId, target) {
       return response.json();
     })
     .then(json => {
+      const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
+
+      // add the path to the stylesheets returned from rendering service
       if (json.stylesheets !== undefined && json.stylesheets.length > 0) {
         for (var i = 0; i < json.stylesheets.length; i++) {
           let stylesheet = json.stylesheets[i];
@@ -52,6 +55,13 @@ const getRenderingInfo = function(itemId, target) {
           }
         }
       }
+
+      // add stylesheets configured in tool config
+      if (endpoint.stylesheets && endpoint.stylesheets.length) {
+        json.stylesheets = json.stylesheets.concat(endpoint.stylesheets)
+      }
+
+      // add the path to the scripts returned from rendering service
       if (json.scripts !== undefined && json.scripts.length > 0) {
         for (var i = 0; i < json.scripts.length; i++) {
           let script = json.scripts[i];
@@ -60,6 +70,12 @@ const getRenderingInfo = function(itemId, target) {
           }
         }
       }
+
+      // add stylesheets configured in tool config
+      if (endpoint.scripts && endpoint.scripts.length) {
+        json.scripts = json.scripts.concat(endpoint.scripts)
+      }
+
       return json;
     })
 }
