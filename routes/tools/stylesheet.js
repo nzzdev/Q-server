@@ -39,7 +39,7 @@ var styleRoute = {
       if (err) {
         return reply(err);
       }
-      reply(result)
+      return reply(result).type('text/css')
     })
   },
   config: {

@@ -16,7 +16,7 @@ module.exports = {
         }
       })
       .then(res => {
-        reply(res)
+        reply(res).type('application/json')
       })
 
   },

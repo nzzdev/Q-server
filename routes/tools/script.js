@@ -39,7 +39,7 @@ var scriptRoute = {
       if (err) {
         return reply(err);
       }
-      reply(result);
+      return reply(result).type('text/javascript');
     })
   },
   config: {
