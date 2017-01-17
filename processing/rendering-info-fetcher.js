@@ -48,7 +48,7 @@ const getRenderingInfo = function(itemId, target) {
         for (var i = 0; i < json.stylesheets.length; i++) {
           let stylesheet = json.stylesheets[i];
           if (stylesheet.name !== undefined) {
-            stylesheet.name = toolName + '/' + stylesheet.name;
+            stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
           }
         }
       }
@@ -56,7 +56,7 @@ const getRenderingInfo = function(itemId, target) {
         for (var i = 0; i < json.scripts.length; i++) {
           let script = json.scripts[i];
           if (script.name !== undefined) {
-            script.name = toolName + '/' + script.name;
+            script.path = `/tools/${toolName}/script/${stylesheet.name}`;
           }
         }
       }
