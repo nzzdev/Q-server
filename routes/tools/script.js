@@ -1,12 +1,10 @@
 const fetch = require('node-fetch');
-const environment = require('../helper/environment');
-const server = require('../server');
+const server = require('../../server').getServer();
 const Boom = require('boom');
-const parameter = require('../config/parameter');
 
-var getScript = function(target, tool, name, next) {
-  let toolProperties = environment.targets[target].tools[tool];
-  fetch(toolProperties.baseUrl + '/script/' + name)
+var getScript = function(tool, scriptName, next) {
+  const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
+  fetch(`${baseUrl}/script/${scriptName}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -28,26 +26,25 @@ var getScript = function(target, tool, name, next) {
 
 server.method('getScript', getScript, {
   cache: {
-    cache: 'memoryCache',
-    expiresIn: parameter.serverCache * 1000,
-    generateTimeout: 3000
+    expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
+    generateTimeout: 10000
   }
 });
 
 var scriptRoute = {
   method: 'GET',
-  path: '/{target}/{tool}/script/{name}',
+  path: '/tools/{tool}/script/{scriptName}',
   handler: function(request, reply) {
-    server.methods.getScript(request.params.target, request.params.tool, request.params.name, (err, result) => {
+    request.server.methods.getScript(request.params.tool, request.params.scriptName, (err, result) => {
       if (err) {
         return reply(err);
       }
-      reply(result);
+      return reply(result).type('text/javascript');
     })
   },
   config: {
     cache: {
-      expiresIn: parameter.cacheControl * 1000,
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
     description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',

@@ -1,10 +1,8 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
-const environment = require('../helper/environment');
-const database = environment.database;
 
-var fetchQItem = function(itemId) {
-  return fetch('https://nzz-storytelling.cloudant.com/' + database + '/' + itemId)
+var fetchQItem = function(itemId, itemDbBaseUrl) {
+  return fetch(`${itemDbBaseUrl}/${itemId}`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
@@ -14,4 +12,3 @@ var fetchQItem = function(itemId) {
 }
 
 module.exports.fetchQItem = fetchQItem;
-

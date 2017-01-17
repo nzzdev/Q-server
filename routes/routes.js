@@ -1,11 +1,8 @@
-const renderingInfoRoute = require('./rendering-info');
-const scriptsRoute = require('./scripts');
-const stylesRoute = require('./styles');
-const versionRoute = require('./version');
-
 module.exports = [
-  renderingInfoRoute,
-  scriptsRoute,
-  stylesRoute,
-  versionRoute
+  require('./version'),
+  require('./rendering-info'),
+  require('./tools/script'),
+  require('./tools/stylesheet'),
+  require('./tools/schema.js'),
+  require('./editor/tools')
 ]
