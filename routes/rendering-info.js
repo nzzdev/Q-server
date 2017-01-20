@@ -1,9 +1,10 @@
 const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
 const Boom = require('boom');
+const Joi = require('joi');
 const server = require('../server').getServer();
 
-const getRenderingInfo = function(id, target, next) {
-  renderingInfoFetcher.getRenderingInfo(id, target)
+const getRenderingInfoForId = function(id, target, next) {
+  renderingInfoFetcher.getRenderingInfoForId(id, target)
     .then(renderingInfo => {
       next(null, renderingInfo);
     })
@@ -11,24 +12,24 @@ const getRenderingInfo = function(id, target, next) {
       if (err.isBoom) {
         next(err, null);
       } else {
-        const error = Boom.badRequest();
+        const error = Boom.badRequest(err.message);
         next(error, null);
       }
     })
 }
 
-server.method('getRenderingInfo', getRenderingInfo, {
+server.method('getRenderingInfoForId', getRenderingInfoForId, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   }
 });
 
-var renderingInfoRoute = {
+const getRenderingInfoRoute = {
   method: 'GET',
   path: '/rendering-info/{id}/{target}',
   handler: function(request, reply) {
-    request.server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
+    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -36,6 +37,12 @@ var renderingInfoRoute = {
     })
   },
   config: {
+    validate: {
+      params: {
+        id: Joi.string().required(),
+        target: Joi.string().required()
+      }
+    },
     cache: {
       expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
@@ -45,4 +52,41 @@ var renderingInfoRoute = {
   }
 }
 
-module.exports = renderingInfoRoute;
+const postRenderingInfoRoute = {
+  method: 'POST',
+  path: '/rendering-info/{target}',
+  handler: function(request, reply) {
+    renderingInfoFetcher.getRenderingInfoForData(request.payload.item, request.params.target)
+      .then(renderingInfo => {
+        reply(renderingInfo)
+      })
+      .catch(error => {
+        if (error.isBoom) {
+          reply(error)
+        } else {
+          reply(Boom.badRequest(error.message))
+        }
+      })
+  },
+  config: {
+    validate: {
+      params: {
+        target: Joi.string().required()
+      },
+      payload: {
+        item: Joi.object().required()
+      }
+    },
+    cache: {
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
+      privacy: 'public'
+    },
+    description: 'Returns rendering information for the given data and target (as configured in the environment).',
+    tags: ['api']
+  }
+}
+
+module.exports = {
+  getRenderingInfoRoute: getRenderingInfoRoute,
+  postRenderingInfoRoute: postRenderingInfoRoute
+};
