@@ -77,10 +77,6 @@ const postRenderingInfoRoute = {
         item: Joi.object().required()
       }
     },
-    cache: {
-      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
-      privacy: 'public'
-    },
     description: 'Returns rendering information for the given data and target (as configured in the environment).',
     tags: ['api']
   }
