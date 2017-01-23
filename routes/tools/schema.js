@@ -16,6 +16,9 @@ module.exports = {
         }
       })
       .then(res => {
+        if (res.isBoom) {
+          return reply(res)
+        }
         reply(res).type('application/json')
       })
 
