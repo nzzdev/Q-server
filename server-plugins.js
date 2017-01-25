@@ -1,6 +1,7 @@
 module.exports = [
   require('inert'),
   require('vision'),
+  require('h2o2'),
   {
     register: require('hapi-swagger'),
     options: {
