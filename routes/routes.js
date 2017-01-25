@@ -5,5 +5,6 @@ module.exports = [
   require('./tools/script'),
   require('./tools/stylesheet'),
   require('./tools/schema.js'),
+  require('./tools/default.js'),
   require('./editor/tools')
 ]
