@@ -55,7 +55,7 @@ function getRenderingInfo(data, target) {
         for (var i = 0; i < renderingInfo.scripts.length; i++) {
           let script = renderingInfo.scripts[i];
           if (script.name !== undefined) {
-            script.path = `/tools/${toolName}/script/${stylesheet.name}`;
+            script.path = `/tools/${toolName}/script/${script.name}`;
           }
         }
       }
