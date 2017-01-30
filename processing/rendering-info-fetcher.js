@@ -12,15 +12,15 @@ function isToolConfiguredForTarget(toolName, target, tools) {
   return false;
 }
 
-function getRenderingInfo(data, target) {
+function getRenderingInfo(data, target, toolRuntimeConfig) {
   const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
   const body = {
-    item: deleteMetaProperties(data)
+    item: deleteMetaProperties(data),
+    toolRuntimeConfig: toolRuntimeConfig
   }
-
   return fetch(baseUrl + endpoint.path, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -30,9 +30,13 @@ function getRenderingInfo(data, target) {
     })
     .then(response => {
       if (!response.ok) {
-        throw Boom.create(response.status, response.statusText);
+        return response.json()
+          .then(data => {
+            throw Boom.create(response.status, data.message);
+          })
+      } else {
+        return response.json();
       }
-      return response.json();
     })
     .then(renderingInfo => {
       // add the path to the stylesheets returned from rendering service
@@ -69,7 +73,7 @@ function getRenderingInfo(data, target) {
     })
 }
 
-const getRenderingInfoForId = function(itemId, target) {
+const getRenderingInfoForId = function(itemId, target, toolRuntimeConfig) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
 
   return repository.fetchQItem(itemId, itemDbBaseUrl)
@@ -80,18 +84,18 @@ const getRenderingInfoForId = function(itemId, target) {
         throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
       }
 
-      return getRenderingInfo(data, target);
+      return getRenderingInfo(data, target, toolRuntimeConfig);
     })
 }
 
-const getRenderingInfoForData = function(data, target) {
+const getRenderingInfoForData = function(data, target, toolRuntimeConfig) {
   const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
 
   if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
     throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
   }
 
-  return getRenderingInfo(data, target);
+  return getRenderingInfo(data, target, toolRuntimeConfig);
 }
 
 module.exports = {

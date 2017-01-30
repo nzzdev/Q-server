@@ -3,7 +3,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const server = require('../server').getServer();
 
-const getRenderingInfoForId = function(id, target, next) {
+const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
   renderingInfoFetcher.getRenderingInfoForId(id, target)
     .then(renderingInfo => {
       next(null, renderingInfo);
@@ -29,7 +29,11 @@ const getRenderingInfoRoute = {
   method: 'GET',
   path: '/rendering-info/{id}/{target}',
   handler: function(request, reply) {
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, (err, result) => {
+
+    // construct the runtime config for the tool service
+    let toolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
+
+    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, toolRuntimeConfig, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -56,7 +60,10 @@ const postRenderingInfoRoute = {
   method: 'POST',
   path: '/rendering-info/{target}',
   handler: function(request, reply) {
-    renderingInfoFetcher.getRenderingInfoForData(request.payload.item, request.params.target)
+    // construct the runtime config for the tool service
+    let toolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
+
+    renderingInfoFetcher.getRenderingInfoForData(request.payload.item, request.params.target, toolRuntimeConfig)
       .then(renderingInfo => {
         reply(renderingInfo)
       })
