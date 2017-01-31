@@ -1,6 +1,7 @@
 const fetch = require('node-fetch');
 const server = require('../../server').getServer();
 const Boom = require('boom');
+const querystring = require('querystring');
 
 var getScript = function(tool, scriptName, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
@@ -35,7 +36,12 @@ var scriptRoute = {
   method: 'GET',
   path: '/tools/{tool}/script/{scriptName}',
   handler: function(request, reply) {
-    request.server.methods.getScript(request.params.tool, request.params.scriptName, (err, result) => {
+
+    let scriptName = request.params.scriptName;
+    if (request.query) {
+      scriptName += '?' + querystring.stringify(request.query);
+    }
+    request.server.methods.getScript(request.params.tool, scriptName, (err, result) => {
       if (err) {
         return reply(err);
       }

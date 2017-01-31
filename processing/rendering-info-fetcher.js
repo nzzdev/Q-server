@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
 const server = require('../server').getServer();
-const repository = require('./repository');
 const deleteMetaProperties = require('../helper/meta-properties').deleteMetaProperties;
 
 function isToolConfiguredForTarget(toolName, target, tools) {
@@ -13,9 +12,13 @@ function isToolConfiguredForTarget(toolName, target, tools) {
 }
 
 function getRenderingInfo(data, target, toolRuntimeConfig) {
-  const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
-  const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
-  const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
+
+  if (!isToolConfiguredForTarget(data.tool, target, server.settings.app.tools)) {
+    throw Boom.notImplemented(`no endpoint for tool ${data.tool} and target ${target}`);
+  }
+
+  const baseUrl = server.settings.app.tools.get(`/${data.tool}/baseUrl`, { target: target })
+  const endpoint = server.settings.app.tools.get(`/${data.tool}/endpoint`, { target: target })
 
   const body = {
     item: deleteMetaProperties(data),
@@ -44,14 +47,18 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         for (var i = 0; i < renderingInfo.stylesheets.length; i++) {
           let stylesheet = renderingInfo.stylesheets[i];
           if (stylesheet.name !== undefined) {
-            stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
+            stylesheet.path = `/tools/${data.tool}/stylesheet/${stylesheet.name}`;
           }
         }
       }
 
       // add stylesheets configured in tool config
       if (endpoint.stylesheets && endpoint.stylesheets.length) {
-        renderingInfo.stylesheets = renderingInfo.stylesheets.concat(endpoint.stylesheets)
+        if (Array.isArray(renderingInfo.stylesheets)) {
+          renderingInfo.stylesheets = renderingInfo.stylesheets.concat(endpoint.stylesheets);
+        } else {
+          renderingInfo.stylesheets = endpoint.stylesheets;
+        }
       }
 
       // add the path to the scripts returned from rendering service
@@ -59,7 +66,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         for (var i = 0; i < renderingInfo.scripts.length; i++) {
           let script = renderingInfo.scripts[i];
           if (script.name !== undefined) {
-            script.path = `/tools/${toolName}/script/${script.name}`;
+            script.path = `/tools/${data.tool}/script/${script.name}`;
           }
         }
       }
@@ -73,32 +80,6 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
     })
 }
 
-const getRenderingInfoForId = function(itemId, target, toolRuntimeConfig) {
-  const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
-
-  return repository.fetchQItem(itemId, itemDbBaseUrl)
-    .then(data => {
-      const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
-
-      if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-        throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
-      }
-
-      return getRenderingInfo(data, target, toolRuntimeConfig);
-    })
-}
-
-const getRenderingInfoForData = function(data, target, toolRuntimeConfig) {
-  const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
-
-  if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
-  }
-
-  return getRenderingInfo(data, target, toolRuntimeConfig);
-}
-
 module.exports = {
-  getRenderingInfoForId: getRenderingInfoForId,
-  getRenderingInfoForData: getRenderingInfoForData
+  getRenderingInfo: getRenderingInfo
 }
