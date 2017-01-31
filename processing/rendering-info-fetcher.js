@@ -12,13 +12,14 @@ function isToolConfiguredForTarget(toolName, target, tools) {
 }
 
 function getRenderingInfo(data, target, toolRuntimeConfig) {
+  const toolName = data.tool;
 
-  if (!isToolConfiguredForTarget(data.tool, target, server.settings.app.tools)) {
-    throw Boom.notImplemented(`no endpoint for tool ${data.tool} and target ${target}`);
+  if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
+    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
   }
 
-  const baseUrl = server.settings.app.tools.get(`/${data.tool}/baseUrl`, { target: target })
-  const endpoint = server.settings.app.tools.get(`/${data.tool}/endpoint`, { target: target })
+  const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
+  const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
   const body = {
     item: deleteMetaProperties(data),
@@ -47,7 +48,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         for (var i = 0; i < renderingInfo.stylesheets.length; i++) {
           let stylesheet = renderingInfo.stylesheets[i];
           if (stylesheet.name !== undefined) {
-            stylesheet.path = `/tools/${data.tool}/stylesheet/${stylesheet.name}`;
+            stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
           }
         }
       }
@@ -66,7 +67,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         for (var i = 0; i < renderingInfo.scripts.length; i++) {
           let script = renderingInfo.scripts[i];
           if (script.name !== undefined) {
-            script.path = `/tools/${data.tool}/script/${script.name}`;
+            script.path = `/tools/${toolName}/script/${script.name}`;
           }
         }
       }
