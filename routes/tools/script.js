@@ -36,11 +36,7 @@ var scriptRoute = {
   method: 'GET',
   path: '/tools/{tool}/script/{scriptName}',
   handler: function(request, reply) {
-
-    let scriptName = request.params.scriptName;
-    if (request.query) {
-      scriptName += '?' + querystring.stringify(request.query);
-    }
+    let scriptName = request.params.scriptName;    
     request.server.methods.getScript(request.params.tool, scriptName, (err, result) => {
       if (err) {
         return reply(err);
