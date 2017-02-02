@@ -21,10 +21,12 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
+  // strip the meta properties before sending the data to the tool service
   const body = {
     item: deleteMetaProperties(data),
     toolRuntimeConfig: toolRuntimeConfig
   }
+
   return fetch(baseUrl + endpoint.path, {
       method: 'POST',
       body: JSON.stringify(body),
@@ -72,7 +74,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         }
       }
 
-      // add stylesheets configured in tool config
+      // add scripts configured in tool config
       if (endpoint.scripts && endpoint.scripts.length) {
         renderingInfo.scripts = renderingInfo.scripts.concat(endpoint.scripts)
       }

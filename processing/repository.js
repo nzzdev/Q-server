@@ -11,6 +11,8 @@ var fetchQItem = function(itemId, itemDbBaseUrl) {
     })
     .then(data => {
       // transform legacy tool name with dashes to underscore
+      // we need to do this as the configuration framework 'confidence' we use
+      // has some problems with key names containing dashes
       data.tool = data.tool.replace(new RegExp('-', 'g'), '_');
       return data;
     })

@@ -11,6 +11,8 @@ function getToolRuntimeConfig(item) {
   return toolRuntimeConfig;
 }
 
+// wrap getRenderingInfo as a server method to cache the response within Q-server
+// as we do not want to load the tool services with caching logic.
 const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
 
