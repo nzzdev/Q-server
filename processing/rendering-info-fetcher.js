@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const Boom = require('boom');
 const server = require('../server').getServer();
-const repository = require('./repository');
 const deleteMetaProperties = require('../helper/meta-properties').deleteMetaProperties;
 
 function isToolConfiguredForTarget(toolName, target, tools) {
@@ -12,13 +11,20 @@ function isToolConfiguredForTarget(toolName, target, tools) {
   return false;
 }
 
-function getRenderingInfo(data, target) {
-  const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
+function getRenderingInfo(data, target, toolRuntimeConfig) {
+  const toolName = data.tool;
+
+  if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
+    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
+  }
+
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
+  // strip the meta properties before sending the data to the tool service
   const body = {
-    item: deleteMetaProperties(data)
+    item: deleteMetaProperties(data),
+    toolRuntimeConfig: toolRuntimeConfig
   }
 
   return fetch(baseUrl + endpoint.path, {
@@ -30,9 +36,13 @@ function getRenderingInfo(data, target) {
     })
     .then(response => {
       if (!response.ok) {
-        throw Boom.create(response.status, response.statusText);
+        return response.json()
+          .then(data => {
+            throw Boom.create(response.status, data.message);
+          })
+      } else {
+        return response.json();
       }
-      return response.json();
     })
     .then(renderingInfo => {
       // add the path to the stylesheets returned from rendering service
@@ -47,7 +57,11 @@ function getRenderingInfo(data, target) {
 
       // add stylesheets configured in tool config
       if (endpoint.stylesheets && endpoint.stylesheets.length) {
-        renderingInfo.stylesheets = renderingInfo.stylesheets.concat(endpoint.stylesheets)
+        if (Array.isArray(renderingInfo.stylesheets)) {
+          renderingInfo.stylesheets = renderingInfo.stylesheets.concat(endpoint.stylesheets);
+        } else {
+          renderingInfo.stylesheets = endpoint.stylesheets;
+        }
       }
 
       // add the path to the scripts returned from rendering service
@@ -60,7 +74,7 @@ function getRenderingInfo(data, target) {
         }
       }
 
-      // add stylesheets configured in tool config
+      // add scripts configured in tool config
       if (endpoint.scripts && endpoint.scripts.length) {
         renderingInfo.scripts = renderingInfo.scripts.concat(endpoint.scripts)
       }
@@ -69,32 +83,6 @@ function getRenderingInfo(data, target) {
     })
 }
 
-const getRenderingInfoForId = function(itemId, target) {
-  const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
-
-  return repository.fetchQItem(itemId, itemDbBaseUrl)
-    .then(data => {
-      const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
-
-      if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-        throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
-      }
-
-      return getRenderingInfo(data, target);
-    })
-}
-
-const getRenderingInfoForData = function(data, target) {
-  const toolName = data.tool.replace(new RegExp('-', 'g'), '_');
-
-  if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
-  }
-
-  return getRenderingInfo(data, target);
-}
-
 module.exports = {
-  getRenderingInfoForId: getRenderingInfoForId,
-  getRenderingInfoForData: getRenderingInfoForData
+  getRenderingInfo: getRenderingInfo
 }
