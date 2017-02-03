@@ -2,6 +2,7 @@ const Hoek = require('hoek');
 const Hapi = require('hapi');
 const getServer = require('./server.js').getServer;
 const setServer = require('./server.js').setServer;
+const connectDb = require('./db.js').connect;
 
 const defaultOptions = {
   cache: [
@@ -49,8 +50,13 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
   })
 }
 
+
+
 module.exports.start = function(callback) {
   let server = getServer();
+
+  connectDb(server.settings.app.misc.get('/db'));
+
   server.start(() => {
     console.log('server running: ', server.info.uri);
     if (callback) {
