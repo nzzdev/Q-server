@@ -1,3 +1,4 @@
+const querystring = require('querystring');
 const fetch = require('node-fetch');
 const Boom = require('boom');
 const server = require('../server').getServer();
@@ -11,28 +12,40 @@ function isToolConfiguredForTarget(toolName, target, tools) {
   return false;
 }
 
-function getRenderingInfo(data, target, toolRuntimeConfig) {
-  const toolName = data.tool;
+const getRenderingInfo = function(itemId, target) {
+  let toolName;
 
-  if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
-  }
-
-  const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
-  const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
-
-  // strip the meta properties before sending the data to the tool service
-  const body = {
-    item: deleteMetaProperties(data),
-    toolRuntimeConfig: toolRuntimeConfig
-  }
-
-  return fetch(baseUrl + endpoint.path, {
-      method: 'POST',
-      body: JSON.stringify(body),
-      headers: {
-        'Content-Type': 'application/json'
+  const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
+  return repository.fetchQItem(itemId, itemDbBaseUrl)
+    .then(item => {
+      toolName = item.tool.replace(new RegExp('-', 'g'), '_');
+      
+      if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
+        throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
       }
+
+      const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target });
+      const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target });
+
+      // add _id, createdDate and updatedDate as query params to rendering info request
+      let queryParams = ['_id', 'createdDate', 'updatedDate'];
+      let query = {};
+      for (let queryParam of queryParams) {
+        if (item.hasOwnProperty(queryParam) && item[queryParam]) {
+          query[queryParam] = item[queryParam];
+        }
+      }
+      let queryString = querystring.stringify(query);
+
+      let body = {};
+      body.item = deleteMetaProperties(item);
+      return fetch(`${baseUrl}${endpoint.path}?${queryString}`, {
+          method: 'POST',
+          body: JSON.stringify(body),
+          headers: {
+            'Content-Type': 'application/json'
+          }
+        })
     })
     .then(response => {
       if (!response.ok) {
