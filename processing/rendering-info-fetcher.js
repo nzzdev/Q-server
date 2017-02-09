@@ -28,8 +28,10 @@ const getRenderingInfo = function(itemId, target) {
       const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
       let body = {};
+      // add _id, createdDate and updatedDate as query params to rendering info request
+      let queryParams = `?id=${json._id}&createdDate=${json.createdDate}&updatedDate=${json.updatedDate}`;
       body.item = deleteMetaProperties(json);
-      return fetch(baseUrl + endpoint.path, {
+      return fetch(baseUrl + endpoint.path + queryParams, {
           method: 'POST',
           body: JSON.stringify(body),
           headers: {
