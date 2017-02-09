@@ -7,6 +7,7 @@ const metaProperties = [
   'createdDate',
   'createdBy',
   'department',
+  'annotations',
   'editedBy',
   'updatedDate',
   'active',
