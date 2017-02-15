@@ -1,3 +1,4 @@
+const querystring = require('querystring');
 const fetch = require('node-fetch');
 const Boom = require('boom');
 const server = require('../server').getServer();
@@ -21,13 +22,23 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
 
+  // add _id, createdDate and updatedDate as query params to rendering info request
+  let queryParams = ['_id', 'createdDate', 'updatedDate'];
+  let query = {};
+  for (let queryParam of queryParams) {
+    if (data.hasOwnProperty(queryParam) && data[queryParam]) {
+      query[queryParam] = data[queryParam];
+    }
+  }
+  let queryString = querystring.stringify(query);
+
   // strip the meta properties before sending the data to the tool service
   const body = {
     item: deleteMetaProperties(data),
     toolRuntimeConfig: toolRuntimeConfig
   }
 
-  return fetch(baseUrl + endpoint.path, {
+  return fetch(`${baseUrl}${endpoint.path}?${queryString}`, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {
