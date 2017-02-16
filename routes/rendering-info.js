@@ -26,7 +26,7 @@ server.method('getRenderingInfo', getRenderingInfo, {
 
 var renderingInfoRoute = {
   method: 'GET',
-  path: '/rendering-info/{id}/{target}',
+  path: '/rendering-info/{id}/{target}/{width?}',
   handler: function(request, reply) {
     request.server.methods.getRenderingInfo(request.params.id, request.params.target, (err, result) => {
       if (err) {
