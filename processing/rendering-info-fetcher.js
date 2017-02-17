@@ -12,7 +12,7 @@ function isToolConfiguredForTarget(toolName, target, tools) {
   return false;
 }
 
-function getRenderingInfo(data, target, toolRuntimeConfig) {
+function getRenderingInfo(data, target, width, toolRuntimeConfig) {
   const toolName = data.tool;
 
   if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
@@ -21,6 +21,12 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
 
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
+
+  // if width is defined add it to path
+  if (width) {
+    endpoint.path += `/${width}`;
+  }
+
 
   // add _id, createdDate and updatedDate as query params to rendering info request
   let queryParams = ['_id', 'createdDate', 'updatedDate'];

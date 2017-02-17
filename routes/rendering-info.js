@@ -13,13 +13,13 @@ function getToolRuntimeConfig(item) {
 
 // wrap getRenderingInfo as a server method to cache the response within Q-server
 // as we do not want to load the tool services with caching logic.
-const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
+const getRenderingInfoForId = function(id, target, width, toolRuntimeConfig, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
 
   return repository.fetchQItem(id, itemDbBaseUrl)
     .then(data => {
       toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(data));
-      return renderingInfoFetcher.getRenderingInfo(data, target, toolRuntimeConfig);
+      return renderingInfoFetcher.getRenderingInfo(data, target, width, toolRuntimeConfig);
     })
     .then(renderingInfo => {
       next(null, renderingInfo);
@@ -39,7 +39,7 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   },
-  generateKey: (id, target, toolRuntimeConfig) => {
+  generateKey: (id, target, width, toolRuntimeConfig) => {
     let toolRuntimeConfigKey = JSON
       .stringify(toolRuntimeConfig)
       .replace(new RegExp('{', 'g'), '')
@@ -53,7 +53,7 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
 
 const getRenderingInfoRoute = {
   method: 'GET',
-  path: '/rendering-info/{id}/{target}',
+  path: '/rendering-info/{id}/{target}/{width?}',
   handler: function(request, reply) {
     
     let toolRuntimeConfig = {};
@@ -61,7 +61,7 @@ const getRenderingInfoRoute = {
       toolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, toolRuntimeConfig, (err, result) => {
+    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, request.params.width, toolRuntimeConfig, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -72,7 +72,8 @@ const getRenderingInfoRoute = {
     validate: {
       params: {
         id: Joi.string().required(),
-        target: Joi.string().required()
+        target: Joi.string().required(),
+        width: Joi.number().optional()
       },
       query: {
         toolRuntimeConfig: Joi.object()
@@ -89,7 +90,7 @@ const getRenderingInfoRoute = {
 
 const postRenderingInfoRoute = {
   method: 'POST',
-  path: '/rendering-info/{target}',
+  path: '/rendering-info/{target}/{width?}',
   handler: function(request, reply) {
     let toolRuntimeConfig = {};
     if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
@@ -97,7 +98,7 @@ const postRenderingInfoRoute = {
     }
     toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(request.payload.item));
 
-    renderingInfoFetcher.getRenderingInfo(request.payload.item, request.params.target, toolRuntimeConfig)
+    renderingInfoFetcher.getRenderingInfo(request.payload.item, request.params.target, request.params.width, toolRuntimeConfig)
       .then(renderingInfo => {
         reply(renderingInfo)
       })
@@ -112,7 +113,8 @@ const postRenderingInfoRoute = {
   config: {
     validate: {
       params: {
-        target: Joi.string().required()
+        target: Joi.string().required(),
+        width: Joi.number().optional()
       },
       payload: {
         item: Joi.object().required(),
