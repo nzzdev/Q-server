@@ -4,7 +4,8 @@ module.exports = [
   require('./rendering-info').postRenderingInfoRoute,
   require('./tools/script'),
   require('./tools/stylesheet'),
-  require('./tools/schema.js'),
-  require('./tools/default.js'),
+  require('./tools/schema'),
+  require('./tools/default'),
+  require('./editor/targets'),
   require('./editor/tools')
 ]
