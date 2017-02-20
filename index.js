@@ -16,7 +16,7 @@ const defaultOptions = {
   ]
 }
 
-module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
+module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
   let hapiOptions = Object.assign(
     defaultOptions,
     options.hapi, 
@@ -38,16 +38,25 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
     }
   });
 
+
   const plugins = require('./server-plugins');
   const routes = require('./routes/routes');
 
-  server.register(plugins, err => {
+  server.register(plugins, async (err) => {
     Hoek.assert(!err, err);
+
+    if (typeof callbacks === 'object' && callbacks['onBeforeRoutes']) {
+      await callbacks['onBeforeRoutes'](server)
+    }
 
     server.route(routes);
 
-    callback(server)
-  })
+    if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
+      await callbacks['onAfterRoutes'](server)
+    } else if (typeof callback === 'function') {
+      callback(server);
+    }
+  });
 }
 
 

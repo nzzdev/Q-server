@@ -22,17 +22,18 @@ module.exports = [
     config: {
       validate: {
         // TODO: validate item against schema-new.json
-        payload: {
-          item: Joi.object().required(),
-          token: Joi.string().required()
-        }
+        payload: Joi.object().required()
+      },
+      auth: 'q-auth',
+      cors: {
+        credentials: true
       }
     },
     handler: (request, reply) => {
-      // TODO: validate the token
       let db = getDb();
       db.insert(request.payload, (err, doc) => {
         if (err) {
+          console.log(err);
           return reply(Boom.create(err.statusCode, err.description))
         }
         return reply(doc).type('application/json')
@@ -45,16 +46,16 @@ module.exports = [
     config: {
       validate: {
         // TODO: validate item against schema-existing.json
-        payload: {
-          item: Joi.object().required(),
-          token: Joi.string().required()
-        }
+        payload: Joi.object().required()
+      },
+      auth: 'q-auth',
+      cors: {
+        credentials: true
       }
     },
     handler: (request, reply) => {
       let db = getDb();
       // TODO: set the updated date
-      // TODO: validate the token
       db.insert(request.payload, (err, doc) => {
         if (err) {
           return reply(Boom.create(err.statusCode, err.description))
