@@ -1,34 +1,60 @@
-const Inert = require('inert');
-const Vision = require('vision');
-const HapiSwagger = require('hapi-swagger');
-const Pack = require('./package');
-const server = require('./server.js');
-const routes = require('./routes/routes');
+const Hoek = require('hoek');
+const Hapi = require('hapi');
+const getServer = require('./server.js').getServer;
+const setServer = require('./server.js').setServer;
 
-const options = {
-    info: {
-            'title': 'Q server API Documentation',
-            'version': Pack.version,
-        }
-    };
-
-var plugins = [
-    Inert,
-    Vision,
+const defaultOptions = {
+  cache: [
     {
-        'register': HapiSwagger,
-        'options': options
+      name: 'memoryCache',
+      engine: require('catbox-memory'),
+      options: {
+        maxByteSize: 150000000
+      }
     }
-]
+  ]
+}
 
-server.register(plugins, function(err) {
-    if (err) {
-        console.error('Failed to load plugins:', err);
+module.exports.init = function(options = {hapi: {}, config: {}}, callback) {
+  let hapiOptions = Object.assign(
+    defaultOptions,
+    options.hapi, 
+    {
+      app: options.config
     }
+  );
+  
+  let server = new Hapi.Server(hapiOptions);
+
+  setServer(server);
+
+  server.connection({
+    port: options.config.misc.get('/port'),
+    routes: {
+      cors: {
+        headers: ["Accept", "Authorization", "Content-Type", "If-None-Match", "Accept-language"]
+      }
+    }
+  });
+
+  const plugins = require('./server-plugins');
+  const routes = require('./routes/routes');
+
+  server.register(plugins, err => {
+    Hoek.assert(!err, err);
 
     server.route(routes);
 
-    server.start(function() {
-        console.log('Server running at: ', server.info.uri)
-    })
-});
+    callback(server)
+  })
+}
+
+module.exports.start = function(callback) {
+  let server = getServer();
+  server.start(() => {
+    console.log('server running: ', server.info.uri);
+    if (callback) {
+      callback(server.info);
+    }
+  })
+}

@@ -1,11 +1,12 @@
 {
-  "name": "q-server",
-  "version": "0.1.0",
+  "name": "@nzz/q-server",
+  "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
-    "start:dev": "APP_ENV=dev node index.js",
+    "start:prod": "APP_ENV=prod node index.js",
+    "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
   },
   "repository": {
@@ -13,16 +14,22 @@
     "url": "git+https://github.com/nzzdev/Q-server.git"
   },
   "author": "",
-  "license": "ISC",
+  "license": "",
   "bugs": {
     "url": "https://github.com/nzzdev/Q-server/issues"
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
+    "boom": "^4.2.0",
+    "catbox-memory": "^2.0.4",
     "chai": "^3.5.0",
+    "confidence": "^3.0.2",
     "fetch": "^1.1.0",
+    "h2o2": "^5.4.0",
     "hapi": "^16.0.2",
+    "hapi-etags": "^0.1.0",
     "hapi-swagger": "^7.5.0",
+    "hoek": "^4.1.0",
     "inert": "^4.0.3",
     "joi": "^10.0.6",
     "mocha": "^3.2.0",
