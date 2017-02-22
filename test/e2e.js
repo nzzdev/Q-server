@@ -24,6 +24,16 @@ server.connection({
 server.register(plugins, (err) => {
   Hoek.assert(!err, err);
 
+  // mock the auth strategy
+  server.auth.scheme('mock', function(server, options) {
+    return {
+      authenticate: function(request, reply) {
+        reply({credentials: options});
+      }
+    };
+  });
+  server.auth.strategy('q-auth', 'mock');
+
   server.route(routes);
 
   server.start(err => {
