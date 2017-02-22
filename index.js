@@ -39,8 +39,14 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
   });
 
 
-  const plugins = require('./server-plugins');
-  const routes = require('./routes/routes');
+  let plugins = require('./server-plugins');
+  let routes = require('./routes/routes');
+
+  // if couchdb-cookie-auth-strategy is enabled, we load the required plugin
+  const couchdbCookieStrategy = options.config.misc.get('/authStrategy/couchdb_cookie');
+  if (couchdbCookieStrategy) {
+    plugins = plugins.concat(require('./auth/couchdb-cookie/plugins'));
+  }
 
   server.register(plugins, async (err) => {
     Hoek.assert(!err, err);
@@ -49,7 +55,14 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
       await callbacks['onBeforeRoutes'](server)
     }
 
-    server.route(routes);
+    // register the auth strategy if any
+    if (couchdbCookieStrategy) {
+      require('./auth/couchdb-cookie/strategy');
+      require('./auth/couchdb-cookie/state');
+      server.route(require('./auth/couchdb-cookie/routes'));
+    }
+
+    server.route(routes);    
 
     if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
       await callbacks['onAfterRoutes'](server)

@@ -1,3 +1,4 @@
+const Boom = require('boom');
 const getDb = require('../../db.js').getDb;
 const Joi = require('joi');
 
