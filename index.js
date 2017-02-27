@@ -66,8 +66,6 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
 
     if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
       await callbacks['onAfterRoutes'](server)
-    } else if (typeof callback === 'function') {
-      callback(server);
     }
   });
 }
