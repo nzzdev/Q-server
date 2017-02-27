@@ -28,7 +28,7 @@ server.register(plugins, (err) => {
   server.auth.scheme('mock', function(server, options) {
     return {
       authenticate: function(request, reply) {
-        reply({credentials: options});
+        return reply({credentials: 'user'});
       }
     };
   });
@@ -64,6 +64,40 @@ describe('Q server API etags', () => {
       done();
     });
   })
+})
+
+describe('Q server /item', () => {
+  it('should fail to save existing item using POST', function(done) {
+    const request = {
+      method: 'POST',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: {
+        '_id': 'someid',
+        '_rev': 'somerev',
+        'title': 'title'
+      }
+    }
+    server.inject(request, (res) => {
+      expect(res.statusCode).to.be.equal(400);
+      done();
+    });
+  });
+
+  it('should fail to save new item using PUT', function(done) {
+    const request = {
+      method: 'PUT',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: {
+        'title': 'title'
+      }
+    }
+    server.inject(request, (res) => {
+      expect(res.statusCode).to.be.equal(400);
+      done();
+    });
+  });
 })
 
 

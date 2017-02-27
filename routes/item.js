@@ -21,8 +21,14 @@ module.exports = [
     method: 'POST',
     config: {
       validate: {
-        // TODO: validate item against schema-new.json
-        payload: Joi.object().required()
+        payload: {
+          _id: Joi.forbidden(),
+          _rev: Joi.forbidden(),
+          title: Joi.string().required()
+        },
+        options: {
+          allowUnknown: true
+        }
       },
       auth: 'q-auth',
       cors: {
@@ -63,8 +69,14 @@ module.exports = [
     method: 'PUT',
     config: {
       validate: {
-        // TODO: validate item against schema-existing.json
-        payload: Joi.object().required()
+        payload: {
+          _id: Joi.string().required(),
+          _rev: Joi.string().required(),
+          title: Joi.string().required()
+        },
+        options: {
+          allowUnknown: true
+        }
       },
       auth: 'q-auth',
       cors: {
