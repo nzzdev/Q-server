@@ -98,6 +98,28 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
 const getRenderingInfoRoute = {
   method: 'GET',
   path: '/rendering-info/{id}/{target}',
+  config: {
+    validate: {
+      params: {
+        id: Joi.string().required(),
+        target: Joi.string().required()
+      },
+      query: {
+        toolRuntimeConfig: Joi.object({
+          size: Joi.object(sizeValidationObject).optional() 
+        })
+      },
+      options: {
+        allowUnknown: true
+      }
+    },
+    cache: {
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
+      privacy: 'public'
+    },
+    description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
+    tags: ['api']
+  },
   handler: function(request, reply) {
     
     let toolRuntimeConfig = {};
@@ -126,31 +148,30 @@ const getRenderingInfoRoute = {
       }
       reply(result);
     })
-  },
-  config: {
-    validate: {
-      params: {
-        id: Joi.string().required(),
-        target: Joi.string().required()
-      },
-      query: {
-        toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
-        })
-      }
-    },
-    cache: {
-      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
-      privacy: 'public'
-    },
-    description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
-    tags: ['api']
   }
 }
 
 const postRenderingInfoRoute = {
   method: 'POST',
   path: '/rendering-info/{target}',
+  config: {
+    validate: {
+      params: {
+        target: Joi.string().required()
+      },
+      payload: {
+        item: Joi.object().required(),
+        toolRuntimeConfig: Joi.object({
+          size: Joi.object(sizeValidationObject).optional() 
+        })
+      },
+      options: {
+        allowUnknown: true
+      }
+    },
+    description: 'Returns rendering information for the given data and target (as configured in the environment).',
+    tags: ['api']
+  },
   handler: function(request, reply) {
     let toolRuntimeConfig = {};
     if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
@@ -185,21 +206,6 @@ const postRenderingInfoRoute = {
           reply(Boom.badRequest(error.message))
         }
       })
-  },
-  config: {
-    validate: {
-      params: {
-        target: Joi.string().required()
-      },
-      payload: {
-        item: Joi.object().required(),
-        toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
-        })
-      }
-    },
-    description: 'Returns rendering information for the given data and target (as configured in the environment).',
-    tags: ['api']
   }
 }
 
