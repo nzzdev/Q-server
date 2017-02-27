@@ -8,11 +8,11 @@
   "data": "data attribute for test purposes, should not be stripped",
   "sources": [],
   "annotations": "",
-  "createdDate": "2016-08-23T14:57:38.153Z",
-  "createdBy": "david.bauer@nzz.ch",
+  "createdDate": "2016-01-18T14:50:00.001Z",
+  "createdBy": "username",
   "department": "Storytelling",
-  "editedBy": "david.bauer@nzz.ch",
-  "updatedDate": "2016-08-23T15:01:45.198Z",
+  "editedBy": "username",
+  "updatedDate": "2016-01-19T14:50:00.001Z",
   "active": true,
-  "activateDate": "2016-08-23T15:01:45.198Z"
+  "activateDate": "2016-01-18T14:51:00.001Z"
 }
