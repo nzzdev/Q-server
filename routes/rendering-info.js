@@ -53,7 +53,7 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
 
 const getRenderingInfoRoute = {
   method: 'GET',
-  path: '/rendering-info/{id}/{target}',
+  path: '/rendering-info/{id}/{target}/{width?}',
   handler: function(request, reply) {
     
     let toolRuntimeConfig = {};
