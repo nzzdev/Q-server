@@ -1,7 +1,9 @@
-const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
-const repository = require('../processing/repository');
 const Boom = require('boom');
 const Joi = require('joi');
+
+const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
+const getDb = require('../db.js').getDb;
+
 const server = require('../server').getServer();
 
 function getToolRuntimeConfig(item) {
@@ -15,23 +17,31 @@ function getToolRuntimeConfig(item) {
 // as we do not want to load the tool services with caching logic.
 const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
+  let db = getDb();
+  db.get(id, (err, item) => {
+    if (err) {
+      return next(Boom.create(err.statusCode, err.description))
+    }
 
-  return repository.fetchQItem(id, itemDbBaseUrl)
-    .then(data => {
-      toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(data));
-      return renderingInfoFetcher.getRenderingInfo(data, target, toolRuntimeConfig);
-    })
-    .then(renderingInfo => {
-      next(null, renderingInfo);
-    })
-    .catch(err => {
-      if (err.isBoom) {
-        next(err, null);
-      } else {
-        const error = Boom.badRequest(err.message);
-        next(error, null);
-      }
-    })
+    // transform legacy tool name with dashes to underscore
+    // we need to do this as the configuration framework 'confidence' we use
+    // has some problems with key names containing dashes
+    item.tool = item.tool.replace(new RegExp('-', 'g'), '_');
+
+    toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(item));
+    renderingInfoFetcher.getRenderingInfo(item, target, toolRuntimeConfig)
+      .then(renderingInfo => {
+        next(null, renderingInfo);
+      })
+      .catch(err => {
+        if (err.isBoom) {
+          next(err, null);
+        } else {
+          const error = Boom.badRequest(err.message);
+          next(error, null);
+        }
+      })
+  })    
 }
 
 server.method('getRenderingInfoForId', getRenderingInfoForId, {
