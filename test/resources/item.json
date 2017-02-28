@@ -1,68 +1,18 @@
 {
   "_id": "7fd854181327b2aecbd1b51bdc6d6d0e",
   "_rev": "8-aa68b15381dd78982abd01d57568cc0a",
-  "title": "Parolenspiegel zur Asylgesetzrevision",
-  "tool": "party-slogans",
+  "title": "Q test item",
+  "tool": "some_example_tool",
   "editorVersion": "0.2.0",
   "rendererVersion": "0.2.0",
-  "data": {
-    "yes": {
-      "parties": [
-        "SP",
-        "CVP",
-        "FDP",
-        "GPS",
-        "BDP",
-        "GLP",
-        "EVP",
-        "EDU",
-        "Piratenpartei",
-        ""
-      ],
-      "organisations": [
-        "Economiesuisse",
-        "Konferenz für Sozialhilfe",
-        "Flüchtlingshilfe",
-        "Caritas Schweiz",
-        "HEKS",
-        "Arbeiterhilfswerk",
-        "Amnesty International Schweiz",
-        "Eidgenössische Migrationskommission",
-        "Verband Jüdischer Fürsorgen",
-        "Heilsarmee",
-        "Evangelischer Kirchenbund",
-        "Operation Libero",
-        "Travail.Suisse",
-        ""
-      ]
-    },
-    "no": {
-      "parties": [
-        "SVP",
-        "BDP: FR",
-        ""
-      ],
-      "organisations": [
-        "Hauseigentümerverband",
-        ""
-      ]
-    },
-    "undecided": {
-      "parties": [
-        ""
-      ],
-      "organisations": [
-        ""
-      ]
-    }
-  },
+  "data": "data attribute for test purposes, should not be stripped",
   "sources": [],
   "annotations": "",
-  "createdDate": "2016-08-23T14:57:38.153Z",
-  "createdBy": "david.bauer@nzz.ch",
+  "createdDate": "2016-01-18T14:50:00.001Z",
+  "createdBy": "username",
   "department": "Storytelling",
-  "editedBy": "david.bauer@nzz.ch",
-  "updatedDate": "2016-08-23T15:01:45.198Z",
+  "editedBy": "username",
+  "updatedDate": "2016-01-19T14:50:00.001Z",
   "active": true,
-  "activateDate": "2016-08-23T15:01:45.198Z"
+  "activateDate": "2016-01-18T14:51:00.001Z"
 }
