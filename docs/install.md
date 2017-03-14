@@ -47,7 +47,7 @@ Q server will run as a node service. At NZZ we use Docker to deploy it, but ther
 2. We use (https://github.com/hapijs/confidence) for configuration of different environments. Have a look at some examples to get yourself familiar with the format.
 3. edit _config/misc.js_ and set the information about your setup, _qServerBaseUrl_ and _db_ will be different for sure.
 4. edit _config/targets.js_ to your needs. If you just want to serve visual elements to your website, you need only one target. [Learn more about targets](about-targets.html)
-5. edit _config/tools.js_ to your configure your tools as well as the endpoint used per target.
+5. edit _config/tools.js_ to configure your tools as well as the endpoint used per target.
 6. edit _config/editorConfig.js_ to set some configuration used by the Q editor connecting to your Q server.
 
 
