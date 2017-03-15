@@ -5,3 +5,5 @@ main:
     url: about-targets.html
   - title: "Developing Tools"
     url: developing-tools.html
+  - title: "Rendering Info?"
+    url: rendering-info.html

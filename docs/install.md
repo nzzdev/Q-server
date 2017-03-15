@@ -1,5 +1,4 @@
 ---
-name: b
 title: Installation
 ---
 
