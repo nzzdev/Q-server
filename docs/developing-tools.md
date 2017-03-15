@@ -5,12 +5,11 @@ title: Developing Tools
 ## API Endpoints
 A __Q tool__ is a HTTP service providing an API to get rendering information for a given dataset. Two endpoints have to be specified:
 
-- __POST__ _/rendering-info/..._: The dotted part is variable and dependent on the specific target-tool combination. The following endpoints are feasable:
-  - _/rendering-info/html-static_: returns markup and optional stylesheets
-  - _/rendering-info/html-js_: returns markup, optional styleheets and scripts which have to be loaded on client side
-  - _/rendering-info/image_: returns an image, use for those targets which cannot render markup
-  
-   Of course you can also define other endpoints which better fit your needs. The exact endpoint is configured in _config/tools.js_ of your Q server config (i.e. Q server demo in our example) for each tool and target individually.
+- __POST__ e.g. _/rendering-info/html-static_: Get rendering information for the POSTed data. The exact endpoint path is variable and specified in _config/tools.js_ of your Q server implementation for each tool and target individually. The path may be meaningful in the sense of what will be returned. Hence, we consider the following endpoint paths as feasable for our environment:
+  - _/rendering-info/html-static_: returns static rendering information, like markup and optional stylesheets
+  - _/rendering-info/html-js_: returns rendering information that contains client side scripts among markup and optional styleheets
+
+   For targets which cannot render any markup, we will add _/rendering-info/image_ in the near future to return an image instead.
 
    Example for a basic html-static route:
    ```javascript
@@ -37,8 +36,7 @@ A __Q tool__ is a HTTP service providing an API to get rendering information for
             {
               // name of stylesheet will be used to call the correct stylesheet endpoint to load css
               // one can also specify a url instead which will result in loading css directly from that url
-              name: 'default',
-              type: 'critical'
+              name: 'default'
             }
           ], 
           // pass the data object to svelte render function to get markup
@@ -93,7 +91,7 @@ If a tool requires stylesheets or scripts to load, you'll need additional endpoi
 
 ## Rendering
 
-We use [Svelte](https://svelte.technology/) to get the tool specific markup. All markup related files can be found in the _views_ folder of each tool. Typically we have a base markup file like _views/html-static.html_ and some components for rendering e.g. the header or the footer. A basic example can be found in our [Q renderer skeleton](https://github.com/nzzdev/Q-renderer-skeleton/tree/master/views). The renderer method of svelte is called in the handler method of the rendering-info endpoint and gets the Q item as parameter:
+We use [Svelte](https://svelte.technology/) to get the tool specific markup. All markup related files can be found in the _views_ folder of each tool. Typically we have a base markup file like _views/html-static.html_ and some components for rendering e.g. header or footer. A basic example can be found in our [Q renderer skeleton](https://github.com/nzzdev/Q-renderer-skeleton/tree/master/views). The renderer method of svelte is called in the handler method of the rendering-info endpoint and gets the Q item as parameter:
 ```javascript
   //...
   require('svelte/ssr/register');
@@ -105,8 +103,7 @@ We use [Svelte](https://svelte.technology/) to get the tool specific markup. All
       let data = {
         stylesheets: [
           {
-            name: 'default',
-            type: 'critical'
+            name: 'default'
           }
         ],
         markup: staticTemplate.render(request.payload.item)
@@ -118,4 +115,58 @@ We use [Svelte](https://svelte.technology/) to get the tool specific markup. All
 
 ## Docker
 
+We deploy each tool as a Docker container in our environment. See [Docker documentation](https://docs.docker.com/) to get familiar with Docker. Our Dockerfiles do have a simple structure which is the same for each tool:
+
+```sh
+# Use following version of Node as the base image
+FROM node:7.6
+
+# Set work directory for run/cmd
+WORKDIR /app
+
+# Copy package.json into work directory and install dependencies
+COPY package.json /app/package.json
+RUN npm install
+
+# Copy everthing else in work directory
+COPY . /app
+
+# Expose server port
+EXPOSE 3000
+
+# Run node
+CMD ["node", "/app/index.js"]
+```
+
+All docker containers including Q editor and Q server implementation are hosted on our Rancher platform. See [Rancher Website](https://rancher.com/) or [Rancher documentation](https://docs.rancher.com) for more information. You can setup your whole environment differently and without Docker of course. 
+
 ## Travis
+
+[Travis](https://travis-ci.com/) is our continious integration service of choice. If you want to learn how to set it up, consult the [Travis documentation](https://docs.travis-ci.com/). The build includes execution of tests, creation and push of the docker container to docker hub as well as, if the current branch is staging, the automatic upgrade of the docker container in Rancher. 
+
+```yml
+dist: trusty
+sudo: true
+services:
+- docker
+language: node_js
+node_js:
+- '7.6'
+install:
+- npm install
+before_script:
+- DOCKER_IMAGE_NAME="q-renderer-skeleton"
+- DOCKER_TAG=$TRAVIS_BRANCH
+script:
+- npm test
+- docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG .
+- docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG
+  nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG; docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
+- if [ "$TRAVIS_BRANCH" == "staging" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY 
+  -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_STAGING --auto_complete 
+  --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true; 
+  fi
+cache:
+  directories:
+  - node_modules
+```
