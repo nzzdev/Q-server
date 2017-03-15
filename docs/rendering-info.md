@@ -34,7 +34,7 @@ In the example above you have seen the property `name` used in `scripts` and `st
 stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
 ```
 
-This is because the tool service itself does not know about its name as the mapping of a tool name to a tool service is configured in _config/tools.js_ in your Q server implementation. See https://github.com/nzzdev/Q-server-demo/blob/master/config/tools.js as an example for this configuration.
+This is because the tool service itself does not know about its name as the mapping of a tool name to a tool service is configured in _config/tools.js_ in your Q server implementation. See [https://github.com/nzzdev/Q-server-demo/blob/master/config/tools.js](https://github.com/nzzdev/Q-server-demo/blob/master/config/tools.js) as an example for this configuration.
 
 So if your tool service provides an endpoint _/stylesheet/{name*}_ you can use `name` property in the rendering info returned from your tool service and Q server will translate it to a path. The loader knows where the Q server is running and can build a full URL using this information to request the file.
 

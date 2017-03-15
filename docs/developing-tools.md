@@ -3,13 +3,14 @@ title: Developing Tools
 ---
 
 ## API Endpoints
-A __Q tool__ is a HTTP service providing an API to get rendering information for a given dataset. Two endpoints have to be specified:
+A __Q tool__ is a HTTP service providing an API to get rendering information for a given dataset. One endpoint to return the tool specific JSON schema is mandatory as it's used by Q editor for rendering and validation of the respective form:
 
-- __POST__ e.g. _/rendering-info/html-static_: Get rendering information for the POSTed data. The exact endpoint path is variable and specified in _config/tools.js_ of your Q server implementation for each tool and target individually. The path may be meaningful in the sense of what will be returned. Hence, we consider the following endpoint paths as feasable for our environment:
-  - _/rendering-info/html-static_: returns static rendering information, like markup and optional stylesheets
-  - _/rendering-info/html-js_: returns rendering information that contains client side scripts among markup and optional styleheets
+- __GET__ _/schema.json_
 
-   For targets which cannot render any markup, we will add _/rendering-info/image_ in the near future to return an image instead.
+Additionally you can specify an endpoint to get rendering information for a given Q item. See [Rendering Info?](rendering-info.html) for detailed information about what we mean with that term. The exact endpoint path is variable and specified in _config/tools.js_ of your Q server implementation for each tool and target individually. The path may be meaningful in the sense of what will be returned. So far, we make use of the following two endpoints:
+
+- __POST__ _/rendering-info/html-static_: returns static rendering information, like markup and optional stylesheets
+- __POST__ _/rendering-info/html-js_: returns rendering information that contains client side scripts among markup and optional styleheets
 
    Example for a basic html-static route:
    ```javascript
@@ -46,9 +47,8 @@ A __Q tool__ is a HTTP service providing an API to get rendering information for
       }
     }
    ```
-- __GET__ _/schema.json_: Get the tool specific schema. Used by Q editor for rendering and validation of the respective form.
 
-If a tool requires stylesheets or scripts to load, you'll need additional endpoints:
+As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'll need additional endpoints if a tool requires stylesheets or scripts to load:
 - __GET__ _/stylesheet/{name*}_: returns the stylesheet according to the given name. In our examples we use Sass for styling and return rendered css. Typically the handler method is the same for each stylesheet name, hence we just need one endpoint with the name as path parameter, like specified in our [Q renderer skeleton](https://github.com/nzzdev/Q-renderer-skeleton/blob/master/routes/stylesheet.js):
 <!-- what to do with postcss?? Leave it in skeleton, add it here? -->
 ```javascript
