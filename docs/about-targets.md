@@ -3,12 +3,15 @@ title: About Targets
 ---
 With Q we want to provide the possibility to render graphical elements for diverse targets, i.e. differently styled websites, different devices (desktop, info screens, mobile) and different applications (browser, native apps).
 
-For that purpose you have the following options to configure target specifics:
--  __Target definition__: define targets in _config/targets.js_
--  __Target tool correlation__: configure additional stylesheets and endpoints in _config/tools.js_
+So, in a nutshell we have to deal with two groups of target specifics. 
+-  __Styling related specifics__: e.g. your targets are two different websites with a different set of styles and fonts 
+-  __Technology related specifics__: your targets are different applications which can interpret markup or not
 
-# Target definition
-This configuration is used to display a target specific preview of a Q item and to provide the target specific embed code in Q editor.
+# Styling related specifics
+_Ausformulieren:_
+- stylesheets in targets.js mainly used for preview (these style will be on the target side anyway but in order to get the right preview, we need them here)
+- stylesheets in tools.js either as links to stylesheet files or inline -> will be merged all together in the end
+
 ```javascript
 const targets = [
   {
@@ -37,10 +40,6 @@ const targets = [
   }
 ]
 ```
-
-# Target tool correlation
-
-Depending on the target each tool can can deliver rendering information differently. Please see [Rendering Info?](rendering-info.html) for more information what we mean with that term. E.g. if your target cannot render any markup you can deliver an image instead. For that purpose you would have to specify another endpoint in your tool configuration (and of cource implement that endpoint in the tool itself). In the following example the endpoint is the same - _/rendering-info/html-static_ - for both targets, but different additional stylesheets are being loaded, specified in the stylesheets array.
 
 ```javascript
 const tools = {
@@ -80,8 +79,6 @@ const tools = {
 }
 ```
 
-Additionally further styles can be configured for each target individually. All stylesheets, i.e. tool specific stylesheets coming from the response of the tool rendering info endpoint and target specific styles either coming from styleheet files (see example above) or inline like that will be merged together in Q server.
-
 ```javascript
 // additional styles for specific targets can be configured here 
 // they will be merged with stylesheets of rendering info
@@ -112,4 +109,32 @@ const demo2Styles = `
   }
 `;
 ```
+
+# Technology related specifics
+_Noch mal drüber und allenfalls umformulieren:_
+Depending on the target each tool can can deliver rendering information differently. Please see [Rendering Info?](rendering-info.html) for more information what we mean with that term. E.g. if your target cannot render any markup you can deliver an image instead. For that purpose you would have to specify another endpoint in your tool configuration (and of cource implement that endpoint in the tool itself). In the following example the endpoint is the same - _/rendering-info/html-static_ - for both targets,
+
+```javascript
+const tools = {
+  //...
+    election_executive: {
+      //...
+      endpoint: {
+        $filter: 'target',
+        $default: false,
+        demo1: {
+          path: '/rendering-info/html-static', // endpoint path to get rendering info for this specific target
+          //...
+        },
+        demo2: {
+          path: '/rendering-info/html-static',
+          //...
+        }
+      }
+  //...
+}
+```
+
+
+
 
