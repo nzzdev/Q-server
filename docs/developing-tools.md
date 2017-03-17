@@ -50,7 +50,7 @@ Additionally you can specify an endpoint to get rendering information for a give
 
 As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'll need additional endpoints if a tool requires stylesheets or scripts to load:
 - __GET__ _/stylesheet/{name*}_: returns the stylesheet according to the given name. In our examples we use Sass for styling and return rendered css. Typically the handler method is the same for each stylesheet name, hence we just need one endpoint with the name as path parameter, like specified in our [Q renderer skeleton](https://github.com/nzzdev/Q-renderer-skeleton/blob/master/routes/stylesheet.js):
-<!-- what to do with postcss?? Leave it in skeleton, add it here? -->
+
 ```javascript
   module.exports = {
     method: 'GET',
@@ -70,7 +70,13 @@ As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'
             if (err) {
               reply(Boom.badImplementation(err));
             } else {
-              reply(result.css)
+              postcss([ autoprefixerPlugin ]).process(result.css)
+              .then(result => {
+                if (result.warnings().length > 0) {
+                  return reply(result).type('text/css');
+                }
+                return reply(result.css).type('text/css');
+              });
             }
           }
         )
