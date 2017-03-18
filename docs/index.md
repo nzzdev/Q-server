@@ -14,3 +14,7 @@ _This is the documentation for Q server. You will need to setup [Q editor](https
 - __Item__ is a document in the CouchDB. It contains information about the tool and the data to be used to create something useful for a given _target_.
 - __Target__ is a named configuration defining stylesheets and tool endpoints to use. Q server can use different tool endpoints to get a _rendering info_ for a different target (e.g. Website, native mobile App, Infoscreens). Read more [about targets](about-targets.html).
 
+# Architecture
+This should give you an overview of Q's architecture. The Q editor is not part of this diagram, it only shows the delivery part of Q.
+
+![Q architecture](/images/Q-server.png)
