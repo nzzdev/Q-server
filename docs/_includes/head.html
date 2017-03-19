@@ -8,6 +8,6 @@
   <title>{{ title }}</title>
   <meta name="description" content="{{ description }}">
   {% if page.keywords %}<meta name="keywords" content="{{ page.keywords }}">{% endif %}
-  <link rel="stylesheet" href="/assets/main.css">
+  <link rel="stylesheet" href="{{ "/assets/main.css" | relative_url }}">
   {% include fonts.html %}
 </head>

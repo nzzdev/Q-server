@@ -19,4 +19,4 @@ Demo: [https://q-demo.st.nzz.ch](https://q-demo.st.nzz.ch)
 # Architecture
 This should give you an overview of Q's architecture. The Q editor is not part of this diagram, it only shows the delivery part of Q.
 
-![Q architecture](/images/Q-server.png)
+![Q architecture](images/Q-server.png)
