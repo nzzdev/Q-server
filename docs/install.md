@@ -43,11 +43,13 @@ title: Installation
 ## Setup Q server
 Q server will run as a node service. At NZZ we use Docker to deploy it, but there are a lot of other solutions available. Q server comes as an npm package that you will add as a dependency to your own project. All the configuration will be done in code. In this tutorial we will use Q server demo implementation as base.
 1. Clone or download [Q server demo](https://github.com/nzzdev/Q-server-demo)
-2. We use (https://github.com/hapijs/confidence) for configuration of different environments. Have a look at some examples to get yourself familiar with the format.
+2. We use [Confidence](https://github.com/hapijs/confidence) for configuration of different environments. Have a look at some examples to get yourself familiar with the format.
 3. edit _config/misc.js_ and set the information about your setup, _qServerBaseUrl_ and _db_ will be different for sure.
 4. edit _config/targets.js_ to your needs. If you just want to serve visual elements to your website, you need only one target. [Learn more about targets](about-targets.html)
 5. edit _config/tools.js_ to configure your tools as well as the endpoint used per target.
 6. edit _config/editorConfig.js_ to set some configuration used by the Q editor connecting to your Q server.
+7. set the environment variables `COUCH_USER` and `COUCH_PASS` to a user/pass that has write permissions to your _items-db_
+8. start the Q server with `npm start:prod`
 
 
 ## Setup Q editor
