@@ -1,2 +1,32 @@
-theme: jekyll-whiteglass
 title: Q server
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+
+# Plugins
+gems:
+  # - jekyll-archives
+  # - jekyll-paginate
+  # - jekyll-sitemap
+
+# Build settings
+markdown: kramdown
+excerpt_separator: "<!-- more -->"
+
+# Markdown settings
+kramdown:
+  auto_ids: false
+  enable_coderay: false
+  entity_output: as_char
+  footnote_nr: 1
+  smart_quotes: lsquo,rsquo,ldquo,rdquo
+  toc_levels: 1..6
+
+# jekyll-archives
+# jekyll-archives:
+#   enabled:
+#     - categories
+#   layout: category_archives
+#   permalinks:
+#     category: /categories/:name/
