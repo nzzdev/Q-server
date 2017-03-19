@@ -51,4 +51,4 @@ Q server will run as a node service. At NZZ we use Docker to deploy it, but ther
 
 
 ## Setup Q editor
-Now you probably want to [setup your Q editor](https://nzzdev.github.io/Q-editor) to connect it to your Q server.
+Now you probably want to [setup your Q editor](https://github.com/nzzdev/Q-editor) to connect it to your Q server.
