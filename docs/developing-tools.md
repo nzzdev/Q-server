@@ -144,7 +144,9 @@ EXPOSE 3000
 CMD ["node", "/app/index.js"]
 ```
 
-All docker containers including Q editor and Q server implementation are hosted on our Rancher platform. See [Rancher Website](https://rancher.com/) or [Rancher documentation](https://docs.rancher.com) for more information. You can setup your whole environment differently and without Docker of course. 
+All docker containers are publicly available on [Docker Hub](https://hub.docker.com/), just search for our organization _nzzonline_ to get the container list. 
+
+We use Rancher to host our containers. See [Rancher Website](https://rancher.com/) or [Rancher documentation](https://docs.rancher.com) for more information. You can setup your whole environment differently and without Docker of course. 
 
 ## Travis
 
