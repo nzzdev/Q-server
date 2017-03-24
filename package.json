@@ -32,6 +32,7 @@
     "hoek": "^4.1.0",
     "inert": "^4.0.3",
     "joi": "^10.0.6",
+    "json-schema-ref-parser": "https://registry.npmjs.org/json-schema-ref-parser/-/json-schema-ref-parser-3.1.2.tgz",
     "mocha": "^3.2.0",
     "nano": "^6.2.0",
     "node-fetch": "^1.6.3",
