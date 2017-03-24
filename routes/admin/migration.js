@@ -13,10 +13,10 @@ module.exports = {
   path: '/admin/migration/{tool}/{id?}',
   method: 'GET',
   config: {      
-    /*auth: 'q-auth',
+    auth: 'q-auth',
     cors: {
       credentials: true
-    },*/
+    },
     description: 'Executes migration of items in database for specified tool or for a single item with the specified id respectively',
     tags: ['api']
   },
