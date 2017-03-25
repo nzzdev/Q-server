@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const server = require('../../server').getServer();
 const Boom = require('boom');
-const querystring = require('querystring');
 
 var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
@@ -33,7 +32,7 @@ server.method('getTranslations', getTranslations, {
   }
 });
 
-var scriptRoute = {
+var route = {
   method: 'GET',
   path: '/tools/{tool}/locales/{lng}/translation.json',
   handler: function(request, reply) {
@@ -55,4 +54,4 @@ var scriptRoute = {
   }
 }
 
-module.exports = scriptRoute;
+module.exports = route;

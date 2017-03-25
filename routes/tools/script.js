@@ -1,7 +1,6 @@
 const fetch = require('node-fetch');
 const server = require('../../server').getServer();
 const Boom = require('boom');
-const querystring = require('querystring');
 
 var getScript = function(tool, scriptName, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
