@@ -4,7 +4,6 @@ const Boom = require('boom');
 
 var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
-  console.log(`${baseUrl}/locales/${lng}/translation.json`)
   fetch(`${baseUrl}/locales/${lng}/translation.json`)
     .then(response => {
       if (!response.ok) {
