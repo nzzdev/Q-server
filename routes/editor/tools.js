@@ -13,6 +13,10 @@ module.exports = {
           name: toolName
         }
         Object.assign(toolEditorConfig, tools[toolName].editor)
+
+        // remove label_locales, we do not need these on the client
+        delete toolEditorConfig.label_locales;
+
         editorToolConfigs.push(toolEditorConfig);
       })
 
