@@ -4,6 +4,10 @@ const getServer = require('./server.js').getServer;
 const setServer = require('./server.js').setServer;
 const connectDb = require('./db.js').connect;
 
+const defaults = {
+  misc: require('./defaults/misc.js')
+}
+
 const defaultOptions = {
   cache: [
     {
@@ -38,7 +42,6 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
     }
   });
 
-
   let plugins = require('./server-plugins');
   let routes = require('./routes/routes');
 
@@ -46,6 +49,15 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
   const couchdbCookieStrategy = options.config.misc.get('/authStrategy/couchdb_cookie');
   if (couchdbCookieStrategy) {
     plugins = plugins.concat(require('./auth/couchdb-cookie/plugins'));
+  }
+
+  // add good logging if configured
+  const loggingConfig = Object.assign(defaults.misc.get('/logging'), options.config.misc.get('/logging'));
+  if (loggingConfig.good && loggingConfig.good.options) {
+    plugins = plugins.concat({
+      register: require('good'),
+      options: loggingConfig.good.options
+    })
   }
 
   server.register(plugins, async (err) => {
