@@ -33,7 +33,7 @@ server.method('getStylesheet', getStylesheet, {
 
 var styleRoute = {
   method: 'GET',
-  path: '/tools/{tool}/stylesheet/{stylesheetName}',,
+  path: '/tools/{tool}/stylesheet/{stylesheetName}',
   config: {
     cache: {
       expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
