@@ -1,30 +1,29 @@
 const Boom = require('boom');
 const fetch = require('node-fetch');
+const jsonSchemaRefParser = require('json-schema-ref-parser');
 
 module.exports = {
   path: '/tools/{tool}/schema.json',
   method: 'GET',
-  handler: (request, reply) => {
+  config: {
+    description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api']
+  },
+  handler: async (request, reply) => {
     const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
     
-    fetch(`${tool.baseUrl}/schema.json`)
-      .then(response => {
-        if (response.ok) {
-          return response.buffer();
-        } else {
-          return Boom.notFound()
-        }
-      })
-      .then(res => {
-        if (res.isBoom) {
-          return reply(res)
-        }
-        reply(res).type('application/json')
-      })
+    const response = await fetch(`${tool.baseUrl}/schema.json`);
 
-  },
-  config: {
-    description: 'Returns the schema by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
+    if (!response.ok || response.status !== 200) {
+      return reply(Boom.notFound());
+    }
+
+    const schema = await response.json();
+    const dereferencedSchema = await jsonSchemaRefParser.dereference(schema);
+
+    // delete the definition property as we do not need it anymore in the dereferenced schema
+    delete dereferencedSchema.definitions;
+
+    return reply(dereferencedSchema).type('application/json');
   }
 }

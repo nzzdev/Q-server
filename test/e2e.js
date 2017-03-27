@@ -1,7 +1,6 @@
 const Hoek = require('hoek');
 const expect = require('chai').expect;
-const routes = require('../routes/routes.js');
-const plugins = require('../server-plugins');
+const setServer = require('../server.js').setServer;
 const Hapi = require('hapi');
 
 const hapiOptions = {
@@ -13,13 +12,22 @@ const hapiOptions = {
         maxByteSize: 150000000
       }
     }
-  ]
+  ],
+  app: {
+    misc: require('./config/misc.js'),
+    tools: require('./config/tools.js')
+  }
 };
 
 const server = new Hapi.Server(hapiOptions);
 server.connection({
   port: 3001
 });
+
+setServer(server);
+
+const plugins = require('../server-plugins');
+const routes = require('../routes/routes.js');
 
 server.register(plugins, (err) => {
   Hoek.assert(!err, err);

@@ -2,17 +2,17 @@ const fetch = require('node-fetch');
 const server = require('../../server').getServer();
 const Boom = require('boom');
 
-var getStylesheet = function(tool, stylesheetName, next) {
+var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
-  fetch(`${baseUrl}/stylesheet/${stylesheetName}`)
+  fetch(`${baseUrl}/locales/${lng}/translation.json`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
       }
-      return response.text();
+      return response.json();
     })
-    .then(stylesheet => {
-      next(null, stylesheet);
+    .then(script => {
+      next(null, script);
     })
     .catch(err => {
       if (err.isBoom) {
@@ -24,32 +24,33 @@ var getStylesheet = function(tool, stylesheetName, next) {
     })
 }
 
-server.method('getStylesheet', getStylesheet, {
+server.method('getTranslations', getTranslations, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   }
 });
 
-var styleRoute = {
+var route = {
   method: 'GET',
-  path: '/tools/{tool}/stylesheet/{stylesheetName}',
+  path: '/tools/{tool}/locales/{lng}/translation.json',
   config: {
     cache: {
       expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
-    description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',
+    description: 'Returns the translations by the given language by proxying the renderer service for the given tool as defined in the environment',
     tags: ['api']
   },
   handler: function(request, reply) {
-    request.server.methods.getStylesheet(request.params.tool, request.params.stylesheetName, (err, result) => {
+    let lng = request.params.lng;    
+    request.server.methods.getTranslations(request.params.tool, lng, (err, result) => {
       if (err) {
         return reply(err);
       }
-      return reply(result).type('text/css')
+      return reply(result);
     })
   }
 }
 
-module.exports = styleRoute;
+module.exports = route;
