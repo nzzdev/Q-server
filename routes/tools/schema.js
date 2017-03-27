@@ -5,6 +5,10 @@ const jsonSchemaRefParser = require('json-schema-ref-parser');
 module.exports = {
   path: '/tools/{tool}/schema.json',
   method: 'GET',
+  config: {
+    description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api']
+  },
   handler: async (request, reply) => {
     const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
     
@@ -21,9 +25,5 @@ module.exports = {
     delete dereferencedSchema.definitions;
 
     return reply(dereferencedSchema).type('application/json');
-  },
-  config: {
-    description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
   }
 }

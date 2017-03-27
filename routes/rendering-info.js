@@ -131,7 +131,6 @@ const getRenderingInfoRoute = {
     tags: ['api']
   },
   handler: function(request, reply) {
-    
     let toolRuntimeConfig = {};
     if (request.query.toolRuntimeConfig) {
       toolRuntimeConfig = request.query.toolRuntimeConfig;
