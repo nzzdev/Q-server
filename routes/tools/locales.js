@@ -40,7 +40,7 @@ var route = {
       privacy: 'public'
     },
     description: 'Returns the translations by the given language by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
+    tags: ['api', 'editor', 'non-critical']
   },
   handler: function(request, reply) {
     let lng = request.params.lng;    

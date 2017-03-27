@@ -15,7 +15,14 @@ const misc = {
               module: 'good-squeeze',
               name: 'Squeeze',
               args: [{ log: '*', 'request-error': '*' }]
-            }, {
+            },
+            {
+              module: 'white-out',
+              args: [{
+                password: 'remove',
+              }]
+            },
+            {
               module: 'good-console',
               args: [{ format: '', utc: false }]
             },

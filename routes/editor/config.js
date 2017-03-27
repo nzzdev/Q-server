@@ -4,7 +4,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Returns configuration for Q Editor',
-    tags: ['api']
+    tags: ['api', 'editor']
   },
   handler: (request, reply) => {
     const editorConfig = request.server.settings.app.editorConfig.get('');

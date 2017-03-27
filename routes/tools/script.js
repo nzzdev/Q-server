@@ -40,7 +40,7 @@ var scriptRoute = {
       privacy: 'public'
     },
     description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
+    tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
     let scriptName = request.params.scriptName;    

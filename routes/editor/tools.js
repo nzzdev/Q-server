@@ -4,7 +4,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Returns all available Q tool names',
-    tags: ['api']
+    tags: ['api', 'editor']
   },
   handler: (request, reply) => {
     const tools = request.server.settings.app.tools.get('');
