@@ -16,6 +16,8 @@ module.exports = [
   require('./search'),
   require('./statistics/number-of-items'),
 
+  require('./admin/migration'),
+
   require('./version'),
 ]
 .concat(

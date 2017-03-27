@@ -26,8 +26,9 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
   );
   
   let server = new Hapi.Server(hapiOptions);
-
   setServer(server);
+
+  connectDb(server.settings.app.misc.get('/db'));
 
   server.connection({
     port: options.config.misc.get('/port'),
@@ -74,8 +75,6 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
 
 module.exports.start = function(callback) {
   let server = getServer();
-
-  connectDb(server.settings.app.misc.get('/db'));
 
   server.start(() => {
     console.log('server running: ', server.info.uri);
