@@ -3,6 +3,15 @@ const Joi = require('joi');
 module.exports = {
   path: '/editor/locales/{lng}/translation.json',
   method: 'GET',
+  config: {
+    description: 'Returns translations for given language',
+    tags: ['api'],
+    validate: {
+      params: {
+        lng: Joi.string().required()
+      }
+    }
+  },
   handler: (request, reply) => {
     const tools = request.server.settings.app.tools.get('');
 
@@ -18,14 +27,5 @@ module.exports = {
     }
 
     reply(translations);
-  },
-  config: {
-    description: 'Returns translations for given language',
-    tags: ['api'],
-    validate: {
-      params: {
-        lng: Joi.string().required()
-      }
-    }
   }
 }

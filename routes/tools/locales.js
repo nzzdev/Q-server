@@ -34,6 +34,14 @@ server.method('getTranslations', getTranslations, {
 var route = {
   method: 'GET',
   path: '/tools/{tool}/locales/{lng}/translation.json',
+  config: {
+    cache: {
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
+      privacy: 'public'
+    },
+    description: 'Returns the translations by the given language by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api']
+  },
   handler: function(request, reply) {
     let lng = request.params.lng;    
     request.server.methods.getTranslations(request.params.tool, lng, (err, result) => {
@@ -42,14 +50,6 @@ var route = {
       }
       return reply(result);
     })
-  },
-  config: {
-    cache: {
-      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
-      privacy: 'public'
-    },
-    description: 'Returns the translations by the given language by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
   }
 }
 
