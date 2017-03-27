@@ -22,6 +22,11 @@ module.exports = {
   },
   handler: (request, reply) => {
     const tool = request.params.tool;
+
+    if (!server.settings.app.tools.get(`/${tool}/baseUrl`)) {
+      return reply(Boom.notImplemented(`no base url configuration for ${tool} found`));
+    }
+
     const options = {
         keys: [tool],
         include_docs: true
@@ -30,6 +35,9 @@ module.exports = {
     if (request.params.id) {
 
       db.get(request.params.id, async(err, item) => {
+        if (err) {
+          return reply(Boom.create(err.statusCode, err.description));
+        }
         let migrationStatus = await migrateItem(item, tool);
         return reply({
           status: migrationStatus.status
@@ -40,7 +48,7 @@ module.exports = {
       
       db.view('items', 'byTool', options, async(err, data) => {
         if (err) {
-          return reply(Boom.internal(err));
+          return reply(Boom.create(err.statusCode, err.description));
         }
 
         const items = data.rows.map(item => {
@@ -85,22 +93,26 @@ function migrateItem(item, tool) {
         }
       })
 
-      if (response.ok && response.status === 200) {
+      if (response.status === 200) {
         const json = await response.json();
         await saveItem(json.item);
-        resolve({
+        return resolve({
           id: item._id,
           status: statusUpdated
         }); 
       }
 
-      resolve({
-        id: item._id,
-        status: statusNotUpdated
-      })
+      if (response.status === 304) {
+        return resolve({
+          id: item._id,
+          status: statusNotUpdated
+        });
+      }
+
+      throw new Error(`item ${item._id} could not be migrated`);
 
     } catch (e) {
-      console.log(e);
+      server.log(['error'], e);
       resolve({
         id: item._id,
         status: statusFailed
