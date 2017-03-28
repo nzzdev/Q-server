@@ -19,6 +19,7 @@ module.exports = [
   require('./admin/migration'),
 
   require('./version'),
+  require('./health'),
 ]
 .concat(
   require('./item.js')
