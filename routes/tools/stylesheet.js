@@ -40,7 +40,7 @@ var styleRoute = {
       privacy: 'public'
     },
     description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
+    tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
     request.server.methods.getStylesheet(request.params.tool, request.params.stylesheetName, (err, result) => {

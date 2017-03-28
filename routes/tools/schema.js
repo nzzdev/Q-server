@@ -7,7 +7,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
+    tags: ['api', 'editor']
   },
   handler: async (request, reply) => {
     const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);

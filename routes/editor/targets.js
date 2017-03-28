@@ -4,7 +4,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Returns all configured targets',
-    tags: ['api']
+    tags: ['api', 'editor']
   },
   handler: (request, reply) => {
     const targets = request.server.settings.app.targets.get('');

@@ -5,7 +5,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Returns translations for given language',
-    tags: ['api'],
+    tags: ['api', 'editor', 'non-critical'],
     validate: {
       params: {
         lng: Joi.string().required()

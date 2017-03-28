@@ -6,6 +6,15 @@ module.exports = [
   {
     path: '/item/{id}',
     method: 'GET',
+    config: {
+      validate: {
+        params: {
+          id: Joi.string().required(),
+        }
+      },
+      description: 'gets the item with the given id from the database',
+      tags: ['api', 'editor']
+    },
     handler: (request, reply) => {
       let db = getDb();
       db.get(request.params.id, (err, doc) => {
@@ -35,7 +44,7 @@ module.exports = [
         credentials: true
       },
       description: 'stores a new item to the database and returns the id among other things',
-      tags: ['api']
+      tags: ['api', 'editor']
     },
     handler: (request, reply) => {
       let db = getDb();
@@ -83,7 +92,7 @@ module.exports = [
         credentials: true
       },
       description: 'updates an existing item to the database and returns the new revision number among other things',
-      tags: ['api']
+      tags: ['api', 'editor']
     },
     handler: (request, reply) => {
       let db = getDb();

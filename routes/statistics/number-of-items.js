@@ -10,7 +10,9 @@ module.exports = {
       params: {
         since: Joi.number().optional()
       }
-    }
+    },
+    description: 'returns the number of items. If given since the timestamp passed.',
+    tags: ['api', 'statistics', 'non-critical']
   },
   handler: (request, reply) => {
     let db = getDb();

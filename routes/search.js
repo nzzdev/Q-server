@@ -8,7 +8,8 @@ module.exports = {
   config: {
     validate: {
       payload: Joi.object().required()
-    }
+    },
+    tags: ['api', 'editor']
   },
   handler: (request, reply) => {
     let db = getDb();

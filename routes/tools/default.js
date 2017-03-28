@@ -8,7 +8,7 @@ module.exports = {
   method: 'GET',
   config: {
     description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
-    tags: ['api'],
+    tags: ['api', 'reader-facing'],
     validate: {
       params: {
         tool: Joi.string().required(),
