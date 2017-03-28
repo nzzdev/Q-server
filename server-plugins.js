@@ -18,5 +18,23 @@ module.exports = [
         weak: true
       }
     }
+  },
+  {
+    register: require('hapi-alive'),
+    options: {
+      path: '/health',
+      tags: ['health', 'monitor'],
+      responses: {
+        healthy: {
+          message: 'Q server alive'
+        },
+        unhealthy: {
+          statusCode: 500
+        }
+      },
+      healthCheck: function(server, callback) {
+        callback();
+      }
+    }
   }
 ]
