@@ -2,14 +2,14 @@ const fetch = require('node-fetch');
 const server = require('../../server').getServer();
 const Boom = require('boom');
 
-var getScript = function(tool, scriptName, next) {
+var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
-  fetch(`${baseUrl}/script/${scriptName}`)
+  fetch(`${baseUrl}/locales/${lng}/translation.json`)
     .then(response => {
       if (!response.ok) {
         throw Boom.create(response.status, response.statusText);
       }
-      return response.text();
+      return response.json();
     })
     .then(script => {
       next(null, script);
@@ -24,33 +24,33 @@ var getScript = function(tool, scriptName, next) {
     })
 }
 
-server.method('getScript', getScript, {
+server.method('getTranslations', getTranslations, {
   cache: {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   }
 });
 
-var scriptRoute = {
+var route = {
   method: 'GET',
-  path: '/tools/{tool}/script/{scriptName}',
+  path: '/tools/{tool}/locales/{lng}/translation.json',
   config: {
     cache: {
       expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
       privacy: 'public'
     },
-    description: 'Returns the script by the given name by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api', 'reader-facing']
+    description: 'Returns the translations by the given language by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api', 'editor', 'non-critical']
   },
   handler: function(request, reply) {
-    let scriptName = request.params.scriptName;    
-    request.server.methods.getScript(request.params.tool, scriptName, (err, result) => {
+    let lng = request.params.lng;    
+    request.server.methods.getTranslations(request.params.tool, lng, (err, result) => {
       if (err) {
         return reply(err);
       }
-      return reply(result).type('text/javascript');
+      return reply(result);
     })
   }
 }
 
-module.exports = scriptRoute;
+module.exports = route;

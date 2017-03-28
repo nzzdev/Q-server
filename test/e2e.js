@@ -1,7 +1,6 @@
 const Hoek = require('hoek');
 const expect = require('chai').expect;
-const routes = require('../routes/routes.js');
-const plugins = require('../server-plugins');
+const setServer = require('../server.js').setServer;
 const Hapi = require('hapi');
 
 const hapiOptions = {
@@ -13,13 +12,22 @@ const hapiOptions = {
         maxByteSize: 150000000
       }
     }
-  ]
+  ],
+  app: {
+    misc: require('./config/misc.js'),
+    tools: require('./config/tools.js')
+  }
 };
 
 const server = new Hapi.Server(hapiOptions);
 server.connection({
   port: 3001
 });
+
+setServer(server);
+
+const plugins = require('../server-plugins');
+const routes = require('../routes/routes.js');
 
 server.register(plugins, (err) => {
   Hoek.assert(!err, err);
@@ -61,6 +69,15 @@ describe('Q server API etags', () => {
     }
     server.inject(request, (res) => {
       expect(res.statusCode).to.be.equal(304);
+      done();
+    });
+  })
+})
+
+describe('Q server health check', () => {
+  it('should return 200 for health check', function(done) {
+    server.inject('/health', (res) => {
+      expect(res.statusCode).to.be.equal(200);
       done();
     });
   })

@@ -15,7 +15,8 @@ module.exports = [
       },
       cors: {
         credentials: true
-      }
+      },
+      tags: ['sensitive', 'auth', 'editor']
     },
     handler: (request, reply) => {
       request.auth.session.authenticate(request.payload.username, request.payload.password, (err, credentials) => {
@@ -37,7 +38,8 @@ module.exports = [
       auth: 'q-auth',
       cors: {
         credentials: true
-      }
+      },
+      tags: ['auth', 'editor']
     },
     handler: (request, reply) => {
       request.auth.session.clear()

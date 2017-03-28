@@ -128,10 +128,9 @@ const getRenderingInfoRoute = {
       privacy: 'public'
     },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
-    tags: ['api']
+    tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
-    
     let toolRuntimeConfig = {};
     if (request.query.toolRuntimeConfig) {
       toolRuntimeConfig = request.query.toolRuntimeConfig;
@@ -180,7 +179,7 @@ const postRenderingInfoRoute = {
       }
     },
     description: 'Returns rendering information for the given data and target (as configured in the environment).',
-    tags: ['api']
+    tags: ['api', 'editor']
   },
   handler: function(request, reply) {
     let toolRuntimeConfig = {};

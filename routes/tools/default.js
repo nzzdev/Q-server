@@ -6,6 +6,16 @@ const querystring = require('querystring');
 module.exports = {
   path: '/tools/{tool}/{path*}',
   method: 'GET',
+  config: {
+    description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
+    tags: ['api', 'reader-facing'],
+    validate: {
+      params: {
+        tool: Joi.string().required(),
+        path: Joi.string().required()
+      }
+    }
+  },
   handler: (request, reply) => {
     const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
 
@@ -22,15 +32,5 @@ module.exports = {
       uri: `${tool.baseUrl}/${request.params.path}?${queryString}`
     })
 
-  },
-  config: {
-    description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
-    tags: ['api'],
-    validate: {
-      params: {
-        tool: Joi.string().required(),
-        path: Joi.string().required()
-      }
-    }
   }
 }

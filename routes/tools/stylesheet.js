@@ -34,6 +34,14 @@ server.method('getStylesheet', getStylesheet, {
 var styleRoute = {
   method: 'GET',
   path: '/tools/{tool}/stylesheet/{stylesheetName}',
+  config: {
+    cache: {
+      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
+      privacy: 'public'
+    },
+    description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',
+    tags: ['api', 'reader-facing']
+  },
   handler: function(request, reply) {
     request.server.methods.getStylesheet(request.params.tool, request.params.stylesheetName, (err, result) => {
       if (err) {
@@ -41,14 +49,6 @@ var styleRoute = {
       }
       return reply(result).type('text/css')
     })
-  },
-  config: {
-    cache: {
-      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
-      privacy: 'public'
-    },
-    description: 'Returns the css by the given name by proxying the renderer service for the given tool as defined in the environment',
-    tags: ['api']
   }
 }
 
