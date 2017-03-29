@@ -17,12 +17,13 @@ The migration endpoint in Q server expects a specific view called `byTool` which
   "_id": "_design/items",
   "views": {
     "byTool": {
-      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}"
+      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, 1);\n  }\n}",
+      "reduce": "_count"
     }
   }
 }
 ```
-See also [Installation](install.html) to get an overview of all views you should define on your Q item database(s).
+Q server uses this view without the reduce option. See also [Installation](install.html) to get an overview of all views you should define on your Q item database(s).
 
 ## Migration mechanism in tools
 

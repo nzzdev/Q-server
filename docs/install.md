@@ -31,7 +31,8 @@ title: Installation
       "reduce": "_count"
     },
     "byTool": {
-      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}"
+      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}",
+      "reduce": "_count"
     }
   },
   "indexes": {
