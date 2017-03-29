@@ -29,7 +29,8 @@ module.exports = {
 
     const options = {
         keys: [tool],
-        include_docs: true
+        include_docs: true,
+        reduce: false
     };
 
     if (request.params.id) {
