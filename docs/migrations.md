@@ -75,12 +75,12 @@ You have to define the following endpoint if you want to be able to migrate item
       }
     }
    ```
-We simply execute all migration scripts, that's why it's important that migration scripts are sorted by version. It's expected that each script exports a module named `migrate` which gets an item as parameter. Return value of each migrate module is an object containing a flag whether the item was changed and the (modified) item itself.
+We simply execute all migration modules, that's why it's important that migration modules are ordered by version. 
 
 ### Migration scripts
-We create one migration script file for each major, i.e. breaking, version of the tool and name it after the version we want to release, e.g. `to-v2.0.0.js`. As mentioned above each script file exports one `migrate` module. Of course it can contain several methods with different migration conditions. 
+We create one migration module for each major, i.e. breaking, version of the tool and name it after the version we want to release, e.g. `to-v2.0.0.js`. Each module exports one `migrate` function. Of course it can contain several methods with different migration conditions. 
 
-In the following example you see one `migrate` module with just one method. Since we made the party name required in the schema of Q election votes tool in version v2.0.0, an item will only be migrated if it has a party without having a name. The expected result object containing the item (modified or not) and the isChanged flag is returned.
+In the following example you see one migration module with just one method. Since we made the party name required in the schema of Q election votes tool in version v2.0.0, an item will only be migrated if it has a party without having a name. The return value is a result object containing the item (modified or not) and a `isChanged` flag which is used by the handler method of the migration endpoint to reply with the appropriate response.
 
 ```javascript
 // contains all scripts which shall be executed to migrate to tool version 2.0.0
