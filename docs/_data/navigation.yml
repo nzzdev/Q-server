@@ -7,3 +7,5 @@ main:
     url: developing-tools.html
   - title: "Rendering Info?"
     url: rendering-info.html
+  - title: "Migrations"
+    url: "migrations.html"

@@ -29,6 +29,9 @@ title: Installation
     "numberOfItemsPerDay": {
       "map": "function(doc) {\n  if (doc.active && doc.createdDate && doc.department) {\n    var d = new Date(doc.createdDate);\n    var year = d.getFullYear();\n    var month = d.getMonth() + 1;\n    if (month < 10) {\n      month = '0' + month;\n    }\n    var day = d.getDate();\n    if (day < 10) {\n      day = '0' + day;\n    }\n    emit('' + year + month + day, 1);\n  }\n}",
       "reduce": "_count"
+    },
+    "byTool": {
+      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}"
     }
   },
   "indexes": {
