@@ -6,13 +6,13 @@ var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
   fetch(`${baseUrl}/locales/${lng}/translation.json`)
     .then(response => {
-      if (!response.ok) {
+      if (!response.ok || response.statusCode >= 400) {
         throw Boom.create(response.status, response.statusText);
       }
       return response.json();
     })
-    .then(script => {
-      next(null, script);
+    .then(translation => {
+      next(null, translation);
     })
     .catch(err => {
       if (err.isBoom) {
