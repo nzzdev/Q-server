@@ -74,6 +74,15 @@ describe('Q server API etags', () => {
   })
 })
 
+describe('Q server health check', () => {
+  it('should return 200 for health check', function(done) {
+    server.inject('/health', (res) => {
+      expect(res.statusCode).to.be.equal(200);
+      done();
+    });
+  })
+})
+
 describe('Q server /item', () => {
   it('should fail to save existing item using POST', function(done) {
     const request = {
