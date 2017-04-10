@@ -100,7 +100,7 @@ const getRenderingInfoForId = function(id, target, requestToolRuntimeConfig, nex
           next(error, null);
         }
       })
-  })    
+  })
 }
 
 server.method('getRenderingInfoForId', getRenderingInfoForId, {
@@ -146,27 +146,28 @@ const getRenderingInfoRoute = {
     tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
-    let toolRuntimeConfig = {};
-    if (request.query.toolRuntimeConfig) {
-      toolRuntimeConfig = request.query.toolRuntimeConfig;
+    let requestToolRuntimeConfig = {};
 
-      if (toolRuntimeConfig.size) {
-        if (toolRuntimeConfig.size.width) {
-          let error = validateDimension(toolRuntimeConfig.size.width);
+    if (request.query.toolRuntimeConfig) {
+      if (request.query.toolRuntimeConfig.size) {
+        if (request.query.toolRuntimeConfig.size.width) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.width);
           if (error.isBoom) {
             return reply(error);
           }
         }
-        if (toolRuntimeConfig.size.height) {
-          let error = validateDimension(toolRuntimeConfig.size.height);
+        if (request.query.toolRuntimeConfig.size.height) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.height);
           if (error.isBoom) {
             return reply(error);
           }
         }
       }
+
+      requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, toolRuntimeConfig, (err, result) => {
+    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, (err, result) => {
       if (err) {
         return reply(err);
       }
