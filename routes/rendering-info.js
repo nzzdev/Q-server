@@ -1,11 +1,10 @@
 const Boom = require('boom');
 const Joi = require('joi');
 
-const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
+const renderingInfoFetcher = require('../processing/rendering-info-fetcher.js');
 const getDb = require('../db.js').getDb;
 
-const server = require('../server').getServer();
-
+const server = require('../server.js').getServer();
 
 // size, width and height are optional 
 // if a width or height array is defined the following restrictions apply:
@@ -24,13 +23,6 @@ const sizeValidationObject = {
     unit: Joi.string().optional()
   })).max(2).optional() 
 };
-
-function getToolRuntimeConfig(item) {
-  let toolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
-  toolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools/${item.tool}`;
-
-  return toolRuntimeConfig;
-}
 
 function validateDimension(dimension) {
   let error = "";
@@ -57,9 +49,31 @@ function validateDimension(dimension) {
   return error;
 }
 
+function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {}) {
+  // get overall tool runtime config
+  let overallToolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
+  overallToolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools/${item.tool}`;
+
+  // get the andpoint config for the tool and target combo
+  const toolEndpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target });
+  
+  // default to the overall config
+  let toolRuntimeConfig = overallToolRuntimeConfig;
+
+  // if endpoint defines tool runtime config, apply it
+  if (toolEndpointConfig.toolRuntimeConfig) {
+    toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
+  }
+
+  // apply to runtime config from the request
+  toolRuntimeConfig = Object.assign(toolRuntimeConfig, requestToolRuntimeConfig);
+
+  return toolRuntimeConfig;
+}
+
 // wrap getRenderingInfo as a server method to cache the response within Q-server
 // as we do not want to load the tool services with caching logic.
-const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
+const getRenderingInfoForId = function(id, target, requestToolRuntimeConfig, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
   let db = getDb();
   db.get(id, (err, item) => {
@@ -72,7 +86,8 @@ const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
     // has some problems with key names containing dashes
     item.tool = item.tool.replace(new RegExp('-', 'g'), '_');
 
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(item));
+    const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig);
+
     renderingInfoFetcher.getRenderingInfo(item, target, toolRuntimeConfig)
       .then(renderingInfo => {
         next(null, renderingInfo);
@@ -85,7 +100,7 @@ const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
           next(error, null);
         }
       })
-  })    
+  })
 }
 
 server.method('getRenderingInfoForId', getRenderingInfoForId, {
@@ -131,27 +146,28 @@ const getRenderingInfoRoute = {
     tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
-    let toolRuntimeConfig = {};
-    if (request.query.toolRuntimeConfig) {
-      toolRuntimeConfig = request.query.toolRuntimeConfig;
+    let requestToolRuntimeConfig = {};
 
-      if (toolRuntimeConfig.size) {
-        if (toolRuntimeConfig.size.width) {
-          let error = validateDimension(toolRuntimeConfig.size.width);
+    if (request.query.toolRuntimeConfig) {
+      if (request.query.toolRuntimeConfig.size) {
+        if (request.query.toolRuntimeConfig.size.width) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.width);
           if (error.isBoom) {
             return reply(error);
           }
         }
-        if (toolRuntimeConfig.size.height) {
-          let error = validateDimension(toolRuntimeConfig.size.height);
+        if (request.query.toolRuntimeConfig.size.height) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.height);
           if (error.isBoom) {
             return reply(error);
           }
         }
       }
+
+      requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, toolRuntimeConfig, (err, result) => {
+    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, (err, result) => {
       if (err) {
         return reply(err);
       }
@@ -171,7 +187,7 @@ const postRenderingInfoRoute = {
       payload: {
         item: Joi.object().required(),
         toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
+          size: Joi.object(sizeValidationObject).optional()
         })
       },
       options: {
@@ -182,27 +198,28 @@ const postRenderingInfoRoute = {
     tags: ['api', 'editor']
   },
   handler: function(request, reply) {
-    let toolRuntimeConfig = {};
-    if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
-      toolRuntimeConfig = request.payload.toolRuntimeConfig;
+    let requestToolRuntimeConfig = {};
 
-      if (toolRuntimeConfig.size) {
-        if (toolRuntimeConfig.size.width) {
-          let error = validateDimension(toolRuntimeConfig.size.width);
+    if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
+      if (request.payload.toolRuntimeConfig.size) {
+        if (request.payload.toolRuntimeConfig.size.width) {
+          let error = validateDimension(request.payload.toolRuntimeConfig.size.width);
           if (error.isBoom) {
             return reply(error);
           }
         }
-        if (toolRuntimeConfig.size.height) {
-          let error = validateDimension(toolRuntimeConfig.size.height);
+        if (request.payload.toolRuntimeConfig.size.height) {
+          let error = validateDimension(request.payload.toolRuntimeConfig.size.height);
           if (error.isBoom) {
             return reply(error);
           }
         }
       }
+
+      requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
     }
 
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(request.payload.item));
+    const toolRuntimeConfig = getCompiledToolRuntimeConfig(request.payload.item, request.params.target, requestToolRuntimeConfig);
 
     renderingInfoFetcher.getRenderingInfo(request.payload.item, request.params.target, toolRuntimeConfig)
       .then(renderingInfo => {
