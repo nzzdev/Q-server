@@ -1,7 +1,6 @@
 module.exports = [
   require('./tools/script'),
   require('./tools/stylesheet'),
-  require('./tools/schema'),
   require('./tools/locales'),  
   require('./tools/default'),
 
@@ -22,5 +21,6 @@ module.exports = [
   require('./health'),
 ]
 .concat(
-  require('./item.js')
+  require('./item.js'),
+  require('./tools/schema')
 )
