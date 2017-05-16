@@ -73,12 +73,16 @@ function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {
 
 // wrap getRenderingInfo as a server method to cache the response within Q-server
 // as we do not want to load the tool services with caching logic.
-const getRenderingInfoForId = function(id, target, requestToolRuntimeConfig, next) {
+const getRenderingInfoForId = function(id, target, requestToolRuntimeConfig, ignoreInactive, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
   let db = getDb();
   db.get(id, (err, item) => {
     if (err) {
       return next(Boom.create(err.statusCode, err.description))
+    }
+
+    if (!ignoreInactive && item.active !== true) {
+      return next(Boom.forbidden('Item is not active'));
     }
 
     // transform legacy tool name with dashes to underscore
@@ -108,14 +112,14 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   },
-  generateKey: (id, target, toolRuntimeConfig) => {
+  generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
     let toolRuntimeConfigKey = JSON
       .stringify(toolRuntimeConfig)
       .replace(new RegExp('{', 'g'), '')
       .replace(new RegExp('}', 'g'), '')
       .replace(new RegExp('"', 'g'), '')
       .replace(new RegExp(':', 'g'), '-');
-    let key = `${id}-${target}-${toolRuntimeConfigKey}`;
+    let key = `${id}-${target}-${toolRuntimeConfigKey}-${ignoreInactive}`;
     return key;
   }
 });
@@ -132,7 +136,9 @@ const getRenderingInfoRoute = {
       query: {
         toolRuntimeConfig: Joi.object({
           size: Joi.object(sizeValidationObject).optional() 
-        })
+        }),
+        noCache: Joi.boolean().optional(),
+        ignoreInactive: Joi.boolean().optional()
       },
       options: {
         allowUnknown: true
@@ -167,12 +173,21 @@ const getRenderingInfoRoute = {
       requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, (err, result) => {
-      if (err) {
-        return reply(err);
-      }
-      reply(result);
-    })
+    if (request.query.noCache) {
+      getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+        reply(result);
+      })
+    } else {
+      request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+        reply(result);
+      })
+    }
   }
 }
 
