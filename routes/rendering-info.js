@@ -63,8 +63,6 @@ function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {
   // add the item id if given or to a randomized id if not
   if (item.hasOwnProperty('_id')) {
     toolRuntimeConfig.id = item._id;
-  } else {
-    toolRuntimeConfig.id = Math.floor(Math.random() * (10 ** 16));
   }
 
   // if endpoint defines tool runtime config, apply it
