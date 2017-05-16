@@ -60,8 +60,13 @@ function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {
   // default to the overall config
   let toolRuntimeConfig = overallToolRuntimeConfig;
 
+  // add the item id if given or to a randomized id if not
+  if (item.hasOwnProperty('_id')) {
+    toolRuntimeConfig.id = item._id;
+  }
+
   // if endpoint defines tool runtime config, apply it
-  if (toolEndpointConfig.toolRuntimeConfig) {
+  if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
     toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
   }
 
