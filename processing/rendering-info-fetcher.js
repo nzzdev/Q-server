@@ -16,7 +16,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
   const toolName = data.tool;
 
   if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
-    throw Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`);
+    return Promise.reject(Boom.notImplemented(`no endpoint for tool ${toolName} and target ${target}`));
   }
 
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
