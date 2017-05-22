@@ -3,7 +3,8 @@ module.exports = [
   require('./tools/stylesheet'),
   require('./tools/schema'),
   require('./tools/locales'),  
-  require('./tools/default'),
+  require('./tools/default').get,
+  require('./tools/default').post,
 
   require('./editor/targets'),
   require('./editor/tools'),
