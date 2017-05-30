@@ -2,6 +2,18 @@ const Joi = require('joi');
 const Boom = require('boom');
 const fetch = require('node-fetch');
 
+function getDbUrl(server) {
+  let dbUrl = server.settings.app.misc.get('/authStrategy/couchdb_cookie/db/host');
+  if (!dbUrl) {
+    dbUrl = server.settings.app.misc.get('/authStrategy/couchdb_cookie/couchdbHost');
+  }
+
+  if (!dbUrl.startsWith('http')) {
+    dbUrl = `${server.settings.app.misc.get('/authStrategy/couchdb_cookie/db/protocol') || 'https'}://${dbUrl}`;
+  }
+  return dbUrl;
+}
+
 module.exports = [
   {
     path: '/authenticate',
@@ -56,9 +68,8 @@ module.exports = [
       }
     },
     handler: (request, reply) => {
-      const db = request.server.settings.app.misc.get('/db');
-
-      fetch(`${db.host}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
+      const dbUrl = getDbUrl(request.server);
+      fetch(`${dbUrl}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
         headers: {
           'Cookie': `AuthSession=${request.state['AuthSession']};`
         }
@@ -97,9 +108,8 @@ module.exports = [
       }
     },
     handler: (request, reply) => {
-      const db = request.server.settings.app.misc.get('/db');
-
-      fetch(`${db.host}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
+      const dbUrl = getDbUrl(request.server);
+      fetch(`${dbUrl}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
         headers: {
           'Cookie': `AuthSession=${request.state['AuthSession']};`
         }
@@ -115,7 +125,7 @@ module.exports = [
       })
       .then(data => {
         let newUserData = Object.assign(data, request.payload);
-        return fetch(`${db.host}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
+        return fetch(`${dbUrl}/_users/org.couchdb.user:${request.auth.credentials.name}`, {
           method: 'PUT',
           headers: {
             'Cookie': `AuthSession=${request.state['AuthSession']};`
@@ -127,7 +137,6 @@ module.exports = [
         if (response.ok) {
           return reply('ok')
         } else {
-          console.log(response)
           return reply(Boom.internal());
         }
       })
