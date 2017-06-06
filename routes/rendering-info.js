@@ -19,7 +19,7 @@ const sizeValidationObject = {
   }).required()).max(2).optional(), 
   height: Joi.array().items(Joi.object({
     value: Joi.number().required(),
-    comparisonSign: Joi.string().optional(),
+    comparison: Joi.string().regex(/^(<|>|=){1}$/).required(),
     unit: Joi.string().optional()
   })).max(2).optional() 
 };
