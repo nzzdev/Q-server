@@ -2,9 +2,10 @@ const nano = require('nano')
 var db;
 
 module.exports.connect = function(config) {
-  console.log(`Connecting to database https://${config.host}/${config.database}`);
+  const dbUrl = `${config.protocol || 'https'}://${config.host}/${config.database}`;
+  console.log(`Connecting to database ${dbUrl}`);
   db = nano({
-    url: `https://${config.host}/${config.database}`,
+    url: dbUrl,
     requestDefaults: {
       auth: {
         user: config.user,
