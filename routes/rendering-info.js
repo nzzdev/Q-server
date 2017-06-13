@@ -1,11 +1,10 @@
 const Boom = require('boom');
 const Joi = require('joi');
 
-const renderingInfoFetcher = require('../processing/rendering-info-fetcher');
+const renderingInfoFetcher = require('../processing/rendering-info-fetcher.js');
 const getDb = require('../db.js').getDb;
 
-const server = require('../server').getServer();
-
+const server = require('../server.js').getServer();
 
 // size, width and height are optional 
 // if a width or height array is defined the following restrictions apply:
@@ -20,17 +19,10 @@ const sizeValidationObject = {
   }).required()).max(2).optional(), 
   height: Joi.array().items(Joi.object({
     value: Joi.number().required(),
-    comparisonSign: Joi.string().optional(),
+    comparison: Joi.string().regex(/^(<|>|=){1}$/).required(),
     unit: Joi.string().optional()
   })).max(2).optional() 
 };
-
-function getToolRuntimeConfig(item) {
-  let toolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
-  toolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools/${item.tool}`;
-
-  return toolRuntimeConfig;
-}
 
 function validateDimension(dimension) {
   let error = "";
@@ -57,9 +49,56 @@ function validateDimension(dimension) {
   return error;
 }
 
+function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {}) {
+  // get overall tool runtime config
+  let overallToolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
+
+  
+  const toolBaseUrlConfig = server.settings.app.misc.get('/toolBaseUrl');
+  if (toolBaseUrlConfig && toolBaseUrlConfig.host) {
+    // if we have a toolBaseUrl config object in misc, we take this to generate the toolBaseUrl
+    let protocol = 'https';
+    if (toolBaseUrlConfig.protocol) {
+      protocol = toolBaseUrlConfig.protocol;
+    }
+    let path = 'tools';
+    if (toolBaseUrlConfig.path) {
+      path = toolBaseUrlConfig.path;
+    }
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${toolBaseUrlConfig.host}/${path}`;
+  } else {
+    // otherwise we fall back to using the qServerBaseUrl with hardcoded `tools` path
+    overallToolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools`;
+  }
+
+  // add the tools name to the toolBaseUrl
+  overallToolRuntimeConfig.toolBaseUrl = `${overallToolRuntimeConfig.toolBaseUrl}/${item.tool}`;
+
+  // get the endpoint config for the tool and target combo
+  const toolEndpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target });
+  
+  // default to the overall config
+  let toolRuntimeConfig = overallToolRuntimeConfig;
+
+  // add the item id if given or to a randomized id if not
+  if (item.hasOwnProperty('_id')) {
+    toolRuntimeConfig.id = item._id;
+  }
+
+  // if endpoint defines tool runtime config, apply it
+  if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
+    toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
+  }
+
+  // apply to runtime config from the request
+  toolRuntimeConfig = Object.assign(toolRuntimeConfig, requestToolRuntimeConfig);
+
+  return toolRuntimeConfig;
+}
+
 // wrap getRenderingInfo as a server method to cache the response within Q-server
 // as we do not want to load the tool services with caching logic.
-const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
+const getRenderingInfoForId = function(id, target, requestToolRuntimeConfig, ignoreInactive, next) {
   const itemDbBaseUrl = server.settings.app.misc.get('/itemDbBaseUrl');
   let db = getDb();
   db.get(id, (err, item) => {
@@ -67,12 +106,17 @@ const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
       return next(Boom.create(err.statusCode, err.description))
     }
 
+    if (!ignoreInactive && item.active !== true) {
+      return next(Boom.forbidden('Item is not active'));
+    }
+
     // transform legacy tool name with dashes to underscore
     // we need to do this as the configuration framework 'confidence' we use
     // has some problems with key names containing dashes
     item.tool = item.tool.replace(new RegExp('-', 'g'), '_');
 
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(item));
+    const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig);
+
     renderingInfoFetcher.getRenderingInfo(item, target, toolRuntimeConfig)
       .then(renderingInfo => {
         next(null, renderingInfo);
@@ -85,7 +129,7 @@ const getRenderingInfoForId = function(id, target, toolRuntimeConfig, next) {
           next(error, null);
         }
       })
-  })    
+  })
 }
 
 server.method('getRenderingInfoForId', getRenderingInfoForId, {
@@ -93,14 +137,14 @@ server.method('getRenderingInfoForId', getRenderingInfoForId, {
     expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
     generateTimeout: 10000
   },
-  generateKey: (id, target, toolRuntimeConfig) => {
+  generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
     let toolRuntimeConfigKey = JSON
       .stringify(toolRuntimeConfig)
       .replace(new RegExp('{', 'g'), '')
       .replace(new RegExp('}', 'g'), '')
       .replace(new RegExp('"', 'g'), '')
       .replace(new RegExp(':', 'g'), '-');
-    let key = `${id}-${target}-${toolRuntimeConfigKey}`;
+    let key = `${id}-${target}-${toolRuntimeConfigKey}-${ignoreInactive}`;
     return key;
   }
 });
@@ -116,8 +160,10 @@ const getRenderingInfoRoute = {
       },
       query: {
         toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
-        })
+          size: Joi.object(sizeValidationObject).optional()
+        }),
+        noCache: Joi.boolean().optional(),
+        ignoreInactive: Joi.boolean().optional()
       },
       options: {
         allowUnknown: true
@@ -131,32 +177,42 @@ const getRenderingInfoRoute = {
     tags: ['api', 'reader-facing']
   },
   handler: function(request, reply) {
-    let toolRuntimeConfig = {};
-    if (request.query.toolRuntimeConfig) {
-      toolRuntimeConfig = request.query.toolRuntimeConfig;
+    let requestToolRuntimeConfig = {};
 
-      if (toolRuntimeConfig.size) {
-        if (toolRuntimeConfig.size.width) {
-          let error = validateDimension(toolRuntimeConfig.size.width);
+    if (request.query.toolRuntimeConfig) {
+      if (request.query.toolRuntimeConfig.size) {
+        if (request.query.toolRuntimeConfig.size.width) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.width);
           if (error.isBoom) {
             return reply(error);
           }
         }
-        if (toolRuntimeConfig.size.height) {
-          let error = validateDimension(toolRuntimeConfig.size.height);
+        if (request.query.toolRuntimeConfig.size.height) {
+          let error = validateDimension(request.query.toolRuntimeConfig.size.height);
           if (error.isBoom) {
             return reply(error);
           }
         }
       }
+
+      requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, toolRuntimeConfig, (err, result) => {
-      if (err) {
-        return reply(err);
-      }
-      reply(result);
-    })
+    if (request.query.noCache) {
+      getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+        reply(result);
+      })
+    } else {
+      request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+        reply(result);
+      })
+    }
   }
 }
 
@@ -171,7 +227,7 @@ const postRenderingInfoRoute = {
       payload: {
         item: Joi.object().required(),
         toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
+          size: Joi.object(sizeValidationObject).optional()
         })
       },
       options: {
@@ -182,27 +238,28 @@ const postRenderingInfoRoute = {
     tags: ['api', 'editor']
   },
   handler: function(request, reply) {
-    let toolRuntimeConfig = {};
-    if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
-      toolRuntimeConfig = request.payload.toolRuntimeConfig;
+    let requestToolRuntimeConfig = {};
 
-      if (toolRuntimeConfig.size) {
-        if (toolRuntimeConfig.size.width) {
-          let error = validateDimension(toolRuntimeConfig.size.width);
+    if (request.payload.hasOwnProperty('toolRuntimeConfig')) {
+      if (request.payload.toolRuntimeConfig.size) {
+        if (request.payload.toolRuntimeConfig.size.width) {
+          let error = validateDimension(request.payload.toolRuntimeConfig.size.width);
           if (error.isBoom) {
             return reply(error);
           }
         }
-        if (toolRuntimeConfig.size.height) {
-          let error = validateDimension(toolRuntimeConfig.size.height);
+        if (request.payload.toolRuntimeConfig.size.height) {
+          let error = validateDimension(request.payload.toolRuntimeConfig.size.height);
           if (error.isBoom) {
             return reply(error);
           }
         }
       }
+
+      requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
     }
 
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, getToolRuntimeConfig(request.payload.item));
+    const toolRuntimeConfig = getCompiledToolRuntimeConfig(request.payload.item, request.params.target, requestToolRuntimeConfig);
 
     renderingInfoFetcher.getRenderingInfo(request.payload.item, request.params.target, toolRuntimeConfig)
       .then(renderingInfo => {

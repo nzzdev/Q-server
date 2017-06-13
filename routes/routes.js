@@ -1,9 +1,9 @@
 module.exports = [
   require('./tools/script'),
   require('./tools/stylesheet'),
-  require('./tools/schema'),
-  require('./tools/locales'),  
-  require('./tools/default'),
+  require('./tools/locales'),
+  require('./tools/default').get,
+  require('./tools/default').post,
 
   require('./editor/targets'),
   require('./editor/tools'),
@@ -22,5 +22,6 @@ module.exports = [
   require('./health'),
 ]
 .concat(
-  require('./item.js')
+  require('./item.js'),
+  require('./tools/schema')
 )
