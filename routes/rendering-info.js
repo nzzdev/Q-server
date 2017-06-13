@@ -52,9 +52,29 @@ function validateDimension(dimension) {
 function getCompiledToolRuntimeConfig(item, target, requestToolRuntimeConfig = {}) {
   // get overall tool runtime config
   let overallToolRuntimeConfig = server.settings.app.misc.get('/toolRuntimeConfig');
-  overallToolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools/${item.tool}`;
 
-  // get the andpoint config for the tool and target combo
+  
+  const toolBaseUrlConfig = server.settings.app.misc.get('/toolBaseUrl');
+  if (toolBaseUrlConfig && toolBaseUrlConfig.host) {
+    // if we have a toolBaseUrl config object in misc, we take this to generate the toolBaseUrl
+    let protocol = 'https';
+    if (toolBaseUrlConfig.protocol) {
+      protocol = toolBaseUrlConfig.protocol;
+    }
+    let path = 'tools';
+    if (toolBaseUrlConfig.path) {
+      path = toolBaseUrlConfig.path;
+    }
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${toolBaseUrlConfig.host}/${path}`;
+  } else {
+    // otherwise we fall back to using the qServerBaseUrl with hardcoded `tools` path
+    overallToolRuntimeConfig.toolBaseUrl = server.settings.app.misc.get('/qServerBaseUrl') + `/tools`;
+  }
+
+  // add the tools name to the toolBaseUrl
+  overallToolRuntimeConfig.toolBaseUrl = `${overallToolRuntimeConfig.toolBaseUrl}/${item.tool}`;
+
+  // get the endpoint config for the tool and target combo
   const toolEndpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target });
   
   // default to the overall config
@@ -140,7 +160,7 @@ const getRenderingInfoRoute = {
       },
       query: {
         toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional() 
+          size: Joi.object(sizeValidationObject).optional()
         }),
         noCache: Joi.boolean().optional(),
         ignoreInactive: Joi.boolean().optional()

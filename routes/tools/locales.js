@@ -6,7 +6,7 @@ var getTranslations = function(tool, lng, next) {
   const baseUrl = server.settings.app.tools.get(`/${tool}/baseUrl`);
   fetch(`${baseUrl}/locales/${lng}/translation.json`)
     .then(response => {
-      if (!response.ok || response.statusCode >= 400) {
+      if (!response.ok || response.status >= 400) {
         throw Boom.create(response.status, response.statusText);
       }
       return response.json();
@@ -43,7 +43,7 @@ var route = {
     tags: ['api', 'editor', 'non-critical']
   },
   handler: function(request, reply) {
-    let lng = request.params.lng;    
+    let lng = request.params.lng;
     request.server.methods.getTranslations(request.params.tool, lng, (err, result) => {
       if (err) {
         return reply(err);
