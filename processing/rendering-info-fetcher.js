@@ -21,6 +21,14 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
 
   const baseUrl = server.settings.app.tools.get(`/${toolName}/baseUrl`, { target: target })
   const endpoint = server.settings.app.tools.get(`/${toolName}/endpoint`, { target: target })
+  let requestUrl;
+  if (endpoint.hasOwnProperty('path')) {
+    requestUrl = `${baseUrl}${endpoint.path}`;
+  } else if (endpoint.hasOwnProperty('url')) {
+    requestUrl = endpoint.url;
+  } else {
+    throw new Error('Endpoint has no path nor url configured');
+  }
 
   // add _id, createdDate and updatedDate as query params to rendering info request
   let queryParams = ['_id', 'createdDate', 'updatedDate'];
@@ -38,7 +46,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
     toolRuntimeConfig: toolRuntimeConfig
   }
 
-  return fetch(`${baseUrl}${endpoint.path}?${queryString}`, {
+  return fetch(`${requestUrl}?${queryString}`, {
       method: 'POST',
       body: JSON.stringify(body),
       headers: {

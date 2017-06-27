@@ -77,6 +77,10 @@ const tools = {
         demo2: {
           path: '/rendering-info/html-static',
           //...
+        },
+        demo3: {
+          url: 'https://some-other-service.example.com/rendering-info', // you can use url to use an external service providing the rendering information
+          //...
         }
       }
   //...
