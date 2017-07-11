@@ -1,5 +1,7 @@
 const querystring = require('querystring');
 const fetch = require('node-fetch');
+const clone = require('clone');
+const deepmerge = require('deepmerge');
 const Boom = require('boom');
 const server = require('../server').getServer();
 const deleteMetaProperties = require('../helper/meta-properties').deleteMetaProperties;
@@ -13,6 +15,8 @@ function isToolConfiguredForTarget(toolName, target, tools) {
 }
 
 function getRenderingInfo(data, target, toolRuntimeConfig) {
+  // we will change data in this function, so we clone it here to have be pure
+  data = clone(data);
   const toolName = data.tool;
 
   if (!isToolConfiguredForTarget(toolName, target, server.settings.app.tools)) {
@@ -76,6 +80,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
 
       // add stylesheets configured in tool config
       if (endpoint.stylesheets && endpoint.stylesheets.length) {
+        console.log('DEPRECATION NOTICE: endpoint.stylesheets support will be removed in Q server 3.0. Use endpoint.additionalRenderingInfo.stylesheets');
         if (Array.isArray(renderingInfo.stylesheets)) {
           renderingInfo.stylesheets = renderingInfo.stylesheets.concat(endpoint.stylesheets);
         } else {
@@ -95,9 +100,21 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
 
       // add scripts configured in tool config
       if (endpoint.scripts && endpoint.scripts.length) {
+        console.log('DEPRECATION NOTICE: endpoint.scripts support will be removed in Q server 3.0. Use endpoint.additionalRenderingInfo.scripts');
         renderingInfo.scripts = renderingInfo.scripts.concat(endpoint.scripts)
       }
 
+      return renderingInfo;
+    })
+    .then(renderingInfo => {
+      // check if the tool config has additional renderingInfo and apply it if so
+      if (endpoint.additionalRenderingInfo) {
+        renderingInfo = deepmerge(renderingInfo, endpoint.additionalRenderingInfo, {
+          arrayMerge: (destArr, srcArr) => {
+            return srcArr.concat(destArr);
+          }
+        });
+      }
       return renderingInfo;
     })
 }
