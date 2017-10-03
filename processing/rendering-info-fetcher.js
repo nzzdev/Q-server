@@ -68,16 +68,6 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
       }
     })
     .then(renderingInfo => {
-      // add the path to the stylesheets returned from rendering service
-      if (renderingInfo.stylesheets !== undefined && renderingInfo.stylesheets.length > 0) {
-        for (var i = 0; i < renderingInfo.stylesheets.length; i++) {
-          let stylesheet = renderingInfo.stylesheets[i];
-          if (stylesheet.name !== undefined) {
-            stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
-          }
-        }
-      }
-
       // add stylesheets configured in tool config
       if (endpoint.stylesheets && endpoint.stylesheets.length) {
         console.log('DEPRECATION NOTICE: endpoint.stylesheets support will be removed in Q server 3.0. Use endpoint.additionalRenderingInfo.stylesheets');
@@ -86,17 +76,7 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
         } else {
           renderingInfo.stylesheets = endpoint.stylesheets;
         }
-      }
-
-      // add the path to the scripts returned from rendering service
-      if (renderingInfo.scripts !== undefined && renderingInfo.scripts.length > 0) {
-        for (var i = 0; i < renderingInfo.scripts.length; i++) {
-          let script = renderingInfo.scripts[i];
-          if (script.name !== undefined) {
-            script.path = `/tools/${toolName}/script/${script.name}`;
-          }
-        }
-      }
+      }     
 
       // add scripts configured in tool config
       if (endpoint.scripts && endpoint.scripts.length) {
@@ -115,6 +95,29 @@ function getRenderingInfo(data, target, toolRuntimeConfig) {
           }
         });
       }
+      return renderingInfo;
+    })
+    .then(renderingInfo => {
+      // add the path to the stylesheets returned from rendering service if they have a name property
+      if (renderingInfo.stylesheets !== undefined && renderingInfo.stylesheets.length > 0) {
+        for (var i = 0; i < renderingInfo.stylesheets.length; i++) {
+          let stylesheet = renderingInfo.stylesheets[i];
+          if (stylesheet.name !== undefined) {
+            stylesheet.path = `/tools/${toolName}/stylesheet/${stylesheet.name}`;
+          }
+        }
+      }
+
+      // add the path to the scripts returned from rendering service if they have a name property
+      if (renderingInfo.scripts !== undefined && renderingInfo.scripts.length > 0) {
+        for (var i = 0; i < renderingInfo.scripts.length; i++) {
+          let script = renderingInfo.scripts[i];
+          if (script.name !== undefined) {
+            script.path = `/tools/${toolName}/script/${script.name}`;
+          }
+        }
+      }
+
       return renderingInfo;
     })
 }
