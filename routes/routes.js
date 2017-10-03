@@ -1,7 +1,7 @@
 module.exports = [
-  require('./tools/script'),
-  require('./tools/stylesheet'),
-  require('./tools/locales'),
+  // require('./tools/script'),
+  // require('./tools/stylesheet'),
+  // require('./tools/locales'),
   require('./tools/default').get,
   require('./tools/default').post,
 

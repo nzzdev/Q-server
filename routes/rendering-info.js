@@ -5,6 +5,7 @@ const renderingInfoFetcher = require('../processing/rendering-info-fetcher.js');
 const getDb = require('../db.js').getDb;
 
 const server = require('../server.js').getServer();
+const getCacheControlDirectivesFromConfig = require('../helper/cache.js').getCacheControlDirectivesFromConfig;
 
 // size, width and height are optional 
 // if a width or height array is defined the following restrictions apply:
@@ -194,31 +195,15 @@ const getRenderingInfoRoute = {
       requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
-    const cacheControlDirectives = [
-      'public'
-    ];
-
-    if (server.settings.app.misc.get('/cache/cacheControl/maxAge')) {
-      cacheControlDirectives.push(`max-age=${server.settings.app.misc.get('/cache/cacheControl/maxAge')}`);
-    }
-    if (server.settings.app.misc.get('/cache/cacheControl/sMaxAge')) {
-      cacheControlDirectives.push(`s-maxage=${server.settings.app.misc.get('/cache/cacheControl/sMaxAge')}`);
-    }
-    if (server.settings.app.misc.get('/cache/cacheControl/staleWhileRevalidate')) {
-      cacheControlDirectives.push(`stale-while-revalidate=${server.settings.app.misc.get('/cache/cacheControl/staleWhileRevalidate')}`);
-    }
-    if (server.settings.app.misc.get('/cache/cacheControl/staleIfError')) {
-      cacheControlDirectives.push(`stale-if-error=${server.settings.app.misc.get('/cache/cacheControl/staleIfError')}`);
-    }
+    const configCacheControl = getCacheControlDirectivesFromConfig(server);
 
     if (request.query.noCache) {
       getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
         if (err) {
           return reply(err);
         }
-
         return reply(result)
-          .header('Cache-Control', cacheControlDirectives.join(', '));
+          .header('cache-control', 'no-cache');
       })
     } else {
       request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
@@ -226,7 +211,7 @@ const getRenderingInfoRoute = {
           return reply(err);
         }
         return reply(result)
-          .header('Cache-Control', cacheControlDirectives.join(', '));
+          .header('cache-control', configCacheControl.join(', '));
       })
     }
   }
