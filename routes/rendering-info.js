@@ -169,10 +169,6 @@ const getRenderingInfoRoute = {
         allowUnknown: true
       }
     },
-    cache: {
-      expiresIn: server.settings.app.misc.get('/cache/cacheControl/maxAge') * 1000,
-      privacy: 'public'
-    },
     description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
     tags: ['api', 'reader-facing']
   },
@@ -198,19 +194,39 @@ const getRenderingInfoRoute = {
       requestToolRuntimeConfig = request.query.toolRuntimeConfig;
     }
 
+    const cacheControlDirectives = [
+      'public'
+    ];
+
+    if (server.settings.app.misc.get('/cache/cacheControl/maxAge')) {
+      cacheControlDirectives.push(`max-age=${server.settings.app.misc.get('/cache/cacheControl/maxAge')}`);
+    }
+    if (server.settings.app.misc.get('/cache/cacheControl/sMaxAge')) {
+      cacheControlDirectives.push(`s-maxage=${server.settings.app.misc.get('/cache/cacheControl/sMaxAge')}`);
+    }
+    if (server.settings.app.misc.get('/cache/cacheControl/staleWhileRevalidate')) {
+      cacheControlDirectives.push(`stale-while-revalidate=${server.settings.app.misc.get('/cache/cacheControl/staleWhileRevalidate')}`);
+    }
+    if (server.settings.app.misc.get('/cache/cacheControl/staleIfError')) {
+      cacheControlDirectives.push(`stale-if-error=${server.settings.app.misc.get('/cache/cacheControl/staleIfError')}`);
+    }
+
     if (request.query.noCache) {
       getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
         if (err) {
           return reply(err);
         }
-        reply(result);
+
+        return reply(result)
+          .header('Cache-Control', cacheControlDirectives.join(', '));
       })
     } else {
       request.server.methods.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive, (err, result) => {
         if (err) {
           return reply(err);
         }
-        reply(result);
+        return reply(result)
+          .header('Cache-Control', cacheControlDirectives.join(', '));
       })
     }
   }
