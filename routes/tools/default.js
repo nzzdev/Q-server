@@ -27,7 +27,7 @@ function handler(request, reply) {
 
       const configCacheControl = getCacheControlDirectivesFromConfig(request.server);
 
-      // if a tool has set its a Cache Control header, we honor it but add some additional directives for the CDN
+      // if a tool has set a Cache Control header, we honor it but add some additional directives for the CDN
       if (res.headers['cache-control']) {
 
         const responseCacheControl = Wreck.parseCacheControl(res.headers['cache-control']);
