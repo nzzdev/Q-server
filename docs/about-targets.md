@@ -23,28 +23,32 @@ const tools = {
       $default: false,
       demo1: {
         path: '/rendering-info/html-static', // endpoint path to get rendering info for this specific target
-        stylesheets: [ // target specific stylesheets to load
-          {
-            url: 'https://service.sophie.nzz.ch/bundle/sophie-q@^1,sophie-font@^1,sophie-color@^1.css' 
-          },
-          {
-            content: '.q-item { color: #f5f5f5; background-color: #f5f5f5; }'
-          }
-        ]
+        additionalRenderingInfo: {
+          stylesheets: [ // target specific stylesheets to load
+            {
+              url: 'https://service.sophie.nzz.ch/bundle/sophie-q@^1,sophie-font@^1,sophie-color@^1.css' 
+            },
+            {
+              content: '.q-item { color: #f5f5f5; background-color: #f5f5f5; }'
+            }
+          ]
+        }
       },
       demo2: {
         path: '/rendering-info/html-static',
-        stylesheets: [
-          {
-            url: 'https://service.sophie.nzz.ch/bundle/sophie-color@^1.css'
-          },
-          {
-            content: '.q-item { color: #f5f5f5; background-color: #f5f5f5; }'
-          },
-          {
-            content: '.s-font-note { color: black; font-size: 14px; }'
-          }
-        ]
+        additionalRenderingInfo: {
+          stylesheets: [
+            {
+              url: 'https://service.sophie.nzz.ch/bundle/sophie-color@^1.css'
+            },
+            {
+              content: '.q-item { color: #f5f5f5; background-color: #f5f5f5; }'
+            },
+            {
+              content: '.s-font-note { color: black; font-size: 14px; }'
+            }
+          ]
+        }
       }
     }
   //...
