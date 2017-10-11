@@ -55,6 +55,9 @@ As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'
   module.exports = {
     method: 'GET',
     path: '/stylesheet/{name*}',
+    config: {
+      cache: false // set cache to false to use default cache-control headers from Q server config
+    }
     handler: function(request, reply) {
       const filePath = stylesDir + `${request.params.name}.scss`;
       fs.exists(filePath, (exists) => {
@@ -89,6 +92,9 @@ As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'
   module.exports = {
     method: 'GET',
     path: '/script/system.js',
+    config: {
+      cache: false // set cache to false to use default cache-control headers from Q server config
+    }
     handler: function(request, reply) {
       reply.file(__dirname + '/../node_modules/systemjs/dist/system-production.src.js');
     }
@@ -159,7 +165,7 @@ services:
 - docker
 language: node_js
 node_js:
-- '7.6'
+- '8'
 install:
 - npm install
 before_script:
