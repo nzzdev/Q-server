@@ -1,24 +1,38 @@
-module.exports = [
-  require('./tools/default').get,
-  require('./tools/default').post,
+function getRoutes() {
+  const server = require('../server').getServer();
 
-  require('./editor/targets'),
-  require('./editor/tools'),
-  require('./editor/config'),
-  require('./editor/locales'),
+  let routes = [
+    require('./tools/default').get,
+    require('./tools/default').post,
 
-  require('./rendering-info').getRenderingInfoRoute,
-  require('./rendering-info').postRenderingInfoRoute,
+    require('./editor/targets'),
+    require('./editor/tools'),
+    require('./editor/config'),
+    require('./editor/locales'),
 
-  require('./search'),
-  require('./statistics/number-of-items'),
+    require('./rendering-info').getRenderingInfoRoute,
+    require('./rendering-info').postRenderingInfoRoute,
 
-  require('./admin/migration'),
+    require('./search'),
+    require('./statistics/number-of-items'),
 
-  require('./version'),
-  require('./health'),
-]
-.concat(
-  require('./item.js'),
-  require('./tools/schema')
-)
+    require('./admin/migration'),
+
+    require('./version'),
+    require('./health'),
+  ]
+  .concat(
+    require('./item.js'),
+    require('./tools/schema')
+  )
+
+  if (server.methods.screenshot && typeof server.methods.screenshot.getScripts === 'function' && typeof server.methods.screenshot.getStylesheets === 'function') {
+    routes = routes.concat(require('./screenshot.js'));
+  }
+
+  return routes;
+}
+
+module.exports = {
+  getRoutes: getRoutes 
+};

@@ -44,7 +44,6 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
   });
 
   let plugins = require('./server-plugins');
-  let routes = require('./routes/routes');
 
   // if couchdb-cookie-auth-strategy is enabled, we load the required plugin
   const couchdbCookieStrategy = options.config.misc.get('/authStrategy/couchdb_cookie');
@@ -75,7 +74,8 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
       server.route(require('./auth/couchdb-cookie/routes'));
     }
 
-    server.route(routes);    
+    let routes = require('./routes/routes').getRoutes();  
+    server.route(routes);
 
     if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
       await callbacks['onAfterRoutes'](server)
