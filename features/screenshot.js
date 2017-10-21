@@ -1,7 +1,7 @@
 const puppeteer = require('puppeteer');
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
-  const browser = await puppeteer.launch();
+  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
   
   const page = await browser.newPage();
   await page.setViewport({
