@@ -57,10 +57,13 @@ module.exports = [
             width: request.query.width,
             dpr: request.query.dpr || 1
           }
-          return reply(screenshot.getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config))
+
+          const screenshotBuffer = await screenshot.getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config);
+          
+          return reply(screenshotBuffer)
             .type('image/png');
         } catch (e) {
-          console.log(e);
+          server.log(['error'], e);
           return reply(Boom.internal());
         }
       })
