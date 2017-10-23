@@ -1,8 +1,19 @@
 const puppeteer = require('puppeteer');
+const browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
+let browserWSEndpoint;
+browserPromise
+  .then(browser => {
+    browserWSEndpoint = browser.wsEndpoint();
+  })
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
-  const browser = await puppeteer.launch({ args: ['--no-sandbox'] });
-  
+
+  if (!browserWSEndpoint) {
+    throw new Error('Browser not ready yet');
+  }
+
+  const browser = puppeteer.connect(browserWSEndpoint);
+
   const page = await browser.newPage();
   await page.setViewport({
     width: config.width,
@@ -25,7 +36,7 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   const graphicElement = await page.$('#q-screenshot-service-container');
 
   const imageBuffer = await graphicElement.screenshot();
-  browser.close();
+  browser.disconnect();
   return imageBuffer;
 }
 
