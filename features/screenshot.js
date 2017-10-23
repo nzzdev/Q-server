@@ -8,11 +8,13 @@ browserPromise
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
 
+  await browserPromise;
+
   if (!browserWSEndpoint) {
     throw new Error('Browser not ready yet');
   }
 
-  const browser = puppeteer.connect(browserWSEndpoint);
+  const browser = await puppeteer.connect({browserWSEndpoint: browserWSEndpoint});
 
   const page = await browser.newPage();
   await page.setViewport({
@@ -36,7 +38,7 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   const graphicElement = await page.$('#q-screenshot-service-container');
 
   const imageBuffer = await graphicElement.screenshot();
-  browser.disconnect();
+  await browser.close();
   return imageBuffer;
 }
 
