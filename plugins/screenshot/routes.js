@@ -23,11 +23,15 @@ module.exports = [
       tags: ['api']
     },
     handler: (request, reply) => {
+      const targetKey = request.query.target;
+
       if (request.server.settings.app.targets.get(`/${request.query.target}`)) {
         return reply(Boom.badRequest('no such target'));
       }
 
-      const targetKey = request.query.target;
+      if (request.server.settings.app.targets.get(`/${request.query.target}/type`) !== 'web') {
+        return reply(Boom.badRequest('the target is not of type web'));
+      }
 
       request.server.inject({
         url: `/rendering-info/${request.params.id}/${request.query.target}`
