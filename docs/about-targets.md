@@ -94,14 +94,15 @@ const tools = {
 
 ## Preview in Q editor
 
-To have a preview environment that matches your target as close as possible, you can configure stylesheets and scripts that will be loaded within the Shadow Root of the preview element in Q editor in _config/targets.js_. Use these to load any stylesheets and scripts that may influence the behaviour of your visual element when embedded in the target environment.
+To have a preview environment that matches your target as close as possible, you can configure stylesheets and scripts that will be loaded within the Shadow Root of the preview element in Q editor in _config/targets.js_. Use these to load any stylesheets and scripts that may influence the behaviour of your visual element when embedded in the target environment. Any stylesheets and scripts configured in `context` will be loaded in the preview.
 
 ```javascript
 const targets = [
   {
     key: 'demo1',
     label: 'Demo 1',
-    preview: {
+    type: 'web',
+    context: {
       stylesheets: [
         /*{
           url: 'url to stylesheet specific for target'
@@ -113,7 +114,8 @@ const targets = [
   {
     key: 'demo2',
     label: 'Demo 2',
-    preview: {
+    type: 'web',
+    context: {
       stylesheets: [
         /*{
           url: 'url to stylesheet specific for target'
