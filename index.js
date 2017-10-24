@@ -20,7 +20,7 @@ const defaultOptions = {
   ]
 }
 
-module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
+module.exports.init = async function(options = {hapi: {}, config: {}}, callbacks) {
   let hapiOptions = Object.assign(
     defaultOptions,
     options.hapi, 
@@ -43,8 +43,12 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
     }
   });
 
-  let plugins = require('./server-plugins');
+  if (typeof callbacks === 'object' && callbacks['onBeforePlugins']) {
+    await callbacks['onBeforePlugins'](server)
+  }
 
+  let plugins = require('./server-plugins');
+  
   // if couchdb-cookie-auth-strategy is enabled, we load the required plugin
   const couchdbCookieStrategy = options.config.misc.get('/authStrategy/couchdb_cookie');
   if (couchdbCookieStrategy) {
@@ -58,6 +62,10 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
       register: require('good'),
       options: loggingConfig.good.options
     })
+  }
+
+  if (server.methods.plugins && server.methods.plugins.screenshot && typeof server.methods.plugins.screenshot.getScripts === 'function' && typeof server.methods.plugins.screenshot.getStylesheets === 'function') {
+    plugins = plugins.concat(require('./plugins/screenshot/index.js'));
   }
 
   server.register(plugins, async (err) => {
@@ -89,6 +97,7 @@ module.exports.start = function(callback) {
   let server = getServer();
 
   server.start(() => {
+    server.log(['info'], `server running: ${server.info.uri}`);
     console.log('server running: ', server.info.uri);
     if (callback) {
       callback(server.info);

@@ -26,10 +26,6 @@ function getRoutes() {
     require('./tools/schema')
   )
 
-  if (server.methods.screenshot && typeof server.methods.screenshot.getScripts === 'function' && typeof server.methods.screenshot.getStylesheets === 'function') {
-    routes = routes.concat(require('./screenshot.js'));
-  }
-
   return routes;
 }
 

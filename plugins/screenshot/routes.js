@@ -1,7 +1,7 @@
 const Boom = require('boom');
 const Joi = require('joi');
 
-const screenshot = require('../features/screenshot.js');
+const getScreenshot = require('./helpers.js').getScreenshot;
 
 module.exports = [
   {
@@ -15,7 +15,9 @@ module.exports = [
         query: {
           target: Joi.string().required(),
           width: Joi.number().required(),
-          dpr: Joi.number().optional()
+          dpr: Joi.number().optional(),
+          background: Joi.string().optional(),
+          padding: Joi.string().optional(),
         }
       },
       tags: ['api']
@@ -38,8 +40,8 @@ module.exports = [
         const server = response.request.server;
         const renderingInfo = JSON.parse(response.payload);
         try {
-          let scripts = server.methods.screenshot.getScripts(renderingInfo);
-          let stylesheets = server.methods.screenshot.getStylesheets(renderingInfo);
+          let scripts = server.methods.plugins.screenshot.getScripts(renderingInfo);
+          let stylesheets = server.methods.plugins.screenshot.getStylesheets(renderingInfo);
 
           const target = server.settings.app.targets.get('').find(element => {
             return element.key === targetKey;
@@ -55,10 +57,12 @@ module.exports = [
 
           const config = {
             width: request.query.width,
-            dpr: request.query.dpr || 1
+            dpr: request.query.dpr || 1,
+            padding: request.query.padding || '0',
+            background: request.query.background
           }
 
-          const screenshotBuffer = await screenshot.getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config);
+          const screenshotBuffer = await getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config);
           
           return reply(screenshotBuffer)
             .type('image/png');
@@ -73,7 +77,7 @@ module.exports = [
     path: '/screenshot/empty-page.html',
     method: 'GET',
     handler: (request, reply) => {
-      reply('<!DOCTYPE html><html><head></head><body style="margin: 0;"></body></html>');
+      reply('<!DOCTYPE html><html><head></head><body></body></html>');
     }
   }
 ]
