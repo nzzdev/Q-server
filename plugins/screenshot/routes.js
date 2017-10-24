@@ -17,7 +17,7 @@ module.exports = [
           width: Joi.number().required(),
           dpr: Joi.number().optional(),
           background: Joi.string().optional(),
-          padding: Joi.string().optional(),
+          padding: Joi.string().regex(/^$|^(([0-9]+)(px|em|ex|%|in|cm|mm|pt|pc)([ ])?){1,4}$/).optional(),
         }
       },
       tags: ['api']
@@ -25,11 +25,16 @@ module.exports = [
     handler: (request, reply) => {
       const targetKey = request.query.target;
 
-      if (request.server.settings.app.targets.get(`/${request.query.target}`)) {
+      const target = request.server.settings.app.targets.get(`/`)
+        .find(configuredTarget => {
+          return configuredTarget.key === request.query.target
+        })
+
+      if (!target) {
         return reply(Boom.badRequest('no such target'));
       }
 
-      if (request.server.settings.app.targets.get(`/${request.query.target}/type`) !== 'web') {
+      if (target.type !== 'web') {
         return reply(Boom.badRequest('the target is not of type web'));
       }
 
