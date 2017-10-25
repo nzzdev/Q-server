@@ -40,10 +40,10 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
 
   const page = await browser.newPage();
 
-  // the height of 30000 is just a wild guess that no graphic will ever exceed this
+  // the height of 16384 is just a wild guess that no graphic will ever exceed this
   await page.setViewport({
     width: config.width,
-    height: 30000,
+    height: 16384,
     deviceScaleFactor: config.dpr
   });
 
@@ -81,10 +81,11 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   const imageBuffer = await graphicElement.screenshot({
     omitBackground: !config.background
   });
-  await browser.close();
 
   // we should use disconnect once this is released in puppeteer. it's merged to master, so anything after 0.12.0 should have it
   // await browser.disconnect();
+  await browser.close();
+  
   return imageBuffer;
 }
 

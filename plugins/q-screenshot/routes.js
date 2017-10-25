@@ -49,8 +49,8 @@ module.exports = [
         const server = response.request.server;
         const renderingInfo = JSON.parse(response.payload);
         try {
-          let scripts = server.methods.plugins.screenshot.getScripts(renderingInfo);
-          let stylesheets = server.methods.plugins.screenshot.getStylesheets(renderingInfo);
+          let scripts = server.settings.plugins['q-screenshot'].methods.getScripts(renderingInfo);
+          let stylesheets = server.settings.plugins['q-screenshot'].methods.getStylesheets(renderingInfo);
 
           const target = server.settings.app.targets.get('').find(element => {
             return element.key === targetKey;

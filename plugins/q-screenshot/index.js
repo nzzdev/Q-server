@@ -2,7 +2,7 @@ const routes = require('./routes.js');
 
 const screenshot = {
   register: function(server, options, next) {
-    
+
     server.route(routes);
 
     next();

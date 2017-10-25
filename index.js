@@ -64,29 +64,34 @@ module.exports.init = async function(options = {hapi: {}, config: {}}, callbacks
     })
   }
 
-  if (server.methods.plugins && server.methods.plugins.screenshot && typeof server.methods.plugins.screenshot.getScripts === 'function' && typeof server.methods.plugins.screenshot.getStylesheets === 'function') {
-    plugins = plugins.concat(require('./plugins/screenshot/index.js'));
+  if (server.settings.plugins.hasOwnProperty('q-screenshot')) {
+    plugins = plugins.concat(require('./plugins/q-screenshot/index.js'));
   }
 
   server.register(plugins, async (err) => {
-    Hoek.assert(!err, err);
+    try {
+      Hoek.assert(!err, err);
 
-    if (typeof callbacks === 'object' && callbacks['onBeforeRoutes']) {
-      await callbacks['onBeforeRoutes'](server)
-    }
+      if (typeof callbacks === 'object' && callbacks['onBeforeRoutes']) {
+        await callbacks['onBeforeRoutes'](server)
+      }
 
-    // register the auth strategy if any
-    if (couchdbCookieStrategy) {
-      require('./auth/couchdb-cookie/strategy');
-      require('./auth/couchdb-cookie/state');
-      server.route(require('./auth/couchdb-cookie/routes'));
-    }
+      // register the auth strategy if any
+      if (couchdbCookieStrategy) {
+        require('./auth/couchdb-cookie/strategy');
+        require('./auth/couchdb-cookie/state');
+        server.route(require('./auth/couchdb-cookie/routes'));
+      }
 
-    let routes = require('./routes/routes').getRoutes();  
-    server.route(routes);
+      let routes = require('./routes/routes').getRoutes();  
+      server.route(routes);
 
-    if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
-      await callbacks['onAfterRoutes'](server)
+      if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
+        await callbacks['onAfterRoutes'](server)
+      }
+    } catch (e) {
+      console.log(e);
+      process.exit(1);
     }
   });
 }
