@@ -64,7 +64,7 @@ module.exports.init = async function(options = {hapi: {}, config: {}}, callbacks
     })
   }
 
-  if (server.settings.plugins.hasOwnProperty('q-screenshot')) {
+  if (server.settings.plugins && server.settings.plugins.hasOwnProperty('q-screenshot')) {
     plugins = plugins.concat(require('./plugins/q-screenshot/index.js'));
   }
 
