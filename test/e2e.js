@@ -27,7 +27,7 @@ server.connection({
 setServer(server);
 
 const plugins = require('../server-plugins');
-const routes = require('../routes/routes.js');
+const getRoutes = require('../routes/routes.js').getRoutes;
 
 server.register(plugins, (err) => {
   Hoek.assert(!err, err);
@@ -42,7 +42,7 @@ server.register(plugins, (err) => {
   });
   server.auth.strategy('q-auth', 'mock');
 
-  server.route(routes);
+  server.route(getRoutes());
 
   server.start(err => {
     Hoek.assert(!err, err);

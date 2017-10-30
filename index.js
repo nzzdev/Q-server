@@ -20,7 +20,7 @@ const defaultOptions = {
   ]
 }
 
-module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
+module.exports.init = async function(options = {hapi: {}, config: {}}, callbacks) {
   let hapiOptions = Object.assign(
     defaultOptions,
     options.hapi, 
@@ -43,9 +43,12 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
     }
   });
 
-  let plugins = require('./server-plugins');
-  let routes = require('./routes/routes');
+  if (typeof callbacks === 'object' && callbacks['onBeforePlugins']) {
+    await callbacks['onBeforePlugins'](server)
+  }
 
+  let plugins = require('./server-plugins');
+  
   // if couchdb-cookie-auth-strategy is enabled, we load the required plugin
   const couchdbCookieStrategy = options.config.misc.get('/authStrategy/couchdb_cookie');
   if (couchdbCookieStrategy) {
@@ -61,24 +64,34 @@ module.exports.init = function(options = {hapi: {}, config: {}}, callbacks) {
     })
   }
 
+  if (server.settings.plugins && server.settings.plugins.hasOwnProperty('q-screenshot')) {
+    plugins = plugins.concat(require('./plugins/q-screenshot/index.js'));
+  }
+
   server.register(plugins, async (err) => {
-    Hoek.assert(!err, err);
+    try {
+      Hoek.assert(!err, err);
 
-    if (typeof callbacks === 'object' && callbacks['onBeforeRoutes']) {
-      await callbacks['onBeforeRoutes'](server)
-    }
+      if (typeof callbacks === 'object' && callbacks['onBeforeRoutes']) {
+        await callbacks['onBeforeRoutes'](server)
+      }
 
-    // register the auth strategy if any
-    if (couchdbCookieStrategy) {
-      require('./auth/couchdb-cookie/strategy');
-      require('./auth/couchdb-cookie/state');
-      server.route(require('./auth/couchdb-cookie/routes'));
-    }
+      // register the auth strategy if any
+      if (couchdbCookieStrategy) {
+        require('./auth/couchdb-cookie/strategy');
+        require('./auth/couchdb-cookie/state');
+        server.route(require('./auth/couchdb-cookie/routes'));
+      }
 
-    server.route(routes);    
+      let routes = require('./routes/routes').getRoutes();  
+      server.route(routes);
 
-    if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
-      await callbacks['onAfterRoutes'](server)
+      if (typeof callbacks === 'object' && callbacks['onAfterRoutes']) {
+        await callbacks['onAfterRoutes'](server)
+      }
+    } catch (e) {
+      console.log(e);
+      process.exit(1);
     }
   });
 }
@@ -89,6 +102,7 @@ module.exports.start = function(callback) {
   let server = getServer();
 
   server.start(() => {
+    server.log(['info'], `server running: ${server.info.uri}`);
     console.log('server running: ', server.info.uri);
     if (callback) {
       callback(server.info);

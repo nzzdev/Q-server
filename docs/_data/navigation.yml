@@ -9,5 +9,7 @@ main:
     url: rendering-info.html
   - title: "toolRuntimeConfig"
     url: tool-runtime-config.html
+  - title: "Plugins"
+    url: "plugins.html"
   - title: "Migrations"
     url: "migrations.html"
