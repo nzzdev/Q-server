@@ -1,6 +1,24 @@
 const getDb = require('../db.js').getDb;
 const Boom = require('boom');
 const Joi = require('joi');
+const Enjoi = require('enjoi');
+
+function validateAgainstSchema(request, doc, validationResult) {
+  request.server.inject(`/tools/${doc.tool}/schema.json`, (response) => {
+    if (response.statusCode !== 200) {
+      validationResult(Boom.create(response.statusCode, `Error occured while fetching schema of tool ${doc.tool}`));
+    }
+
+    let schema = Enjoi(JSON.parse(response.payload));
+    let result = Joi.validate(doc, schema, {
+       stripUnknown: true
+   });
+    if (result.error) {
+      validationResult(result.err);
+    }
+    validationResult(null, result);
+  });
+}
 
 module.exports = [
   {
@@ -33,7 +51,8 @@ module.exports = [
         payload: {
           _id: Joi.forbidden(),
           _rev: Joi.forbidden(),
-          title: Joi.string().required()
+          title: Joi.string().required(),
+          tool: Joi.string().required()
         },
         options: {
           allowUnknown: true
@@ -50,6 +69,12 @@ module.exports = [
       let db = getDb();
       let doc = request.payload;
       let now = new Date();
+
+      validateAgainstSchema(request, doc, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+      })
 
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
@@ -81,7 +106,8 @@ module.exports = [
         payload: {
           _id: Joi.string().required(),
           _rev: Joi.string().required(),
-          title: Joi.string().required()
+          title: Joi.string().required(),
+          tool: Joi.string().required()
         },
         options: {
           allowUnknown: true
@@ -98,6 +124,12 @@ module.exports = [
       let db = getDb();
       let doc = request.payload;
       let now = new Date();
+
+      validateAgainstSchema(request, doc, (err, result) => {
+        if (err) {
+          return reply(err);
+        }
+      })
       
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
