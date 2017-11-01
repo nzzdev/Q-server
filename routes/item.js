@@ -68,7 +68,7 @@ module.exports = [
       description: 'stores a new item to the database and returns the id among other things',
       tags: ['api', 'editor']
     },
-    handler: (request, reply) => {
+    handler: async (request, reply) => {
       let db = getDb();
       let doc = request.payload;
       let now = new Date();
@@ -123,7 +123,7 @@ module.exports = [
       description: 'updates an existing item to the database and returns the new revision number among other things',
       tags: ['api', 'editor']
     },
-    handler: (request, reply) => {
+    handler: async (request, reply) => {
       let db = getDb();
       let doc = request.payload;
       let now = new Date();
