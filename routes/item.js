@@ -3,20 +3,23 @@ const Boom = require('boom');
 const Joi = require('joi');
 const Enjoi = require('enjoi');
 
-function validateAgainstSchema(request, doc, validationResult) {
-  request.server.inject(`/tools/${doc.tool}/schema.json`, (response) => {
-    if (response.statusCode !== 200) {
-      validationResult(Boom.create(response.statusCode, `Error occured while fetching schema of tool ${doc.tool}`));
-    }
-
-    let schema = Enjoi(JSON.parse(response.payload));
-    let result = Joi.validate(doc, schema, {
-       stripUnknown: true
-   });
-    if (result.error) {
-      validationResult(result.err);
-    }
-    validationResult(null, result);
+function validateAgainstSchema(request, doc, next) {
+  return new Promise((resolve, reject) => {
+    request.server.inject(`/tools/${doc.tool}/schema.json`, (response) => {
+      if (response.statusCode !== 200) {
+        reject(Boom.internal(`Error occured while fetching schema of tool ${doc.tool}`));
+      }
+  
+      let schema = Enjoi(JSON.parse(response.payload));
+      let result = Joi.validate(doc, schema, {
+         stripUnknown: true
+      });
+  
+      if (result.error) {
+        reject(Boom.badRequest(result.error.message));
+      }
+      resolve(true);
+    });
   });
 }
 
@@ -39,7 +42,7 @@ module.exports = [
         if (err) {
           return reply(Boom.error(err.statusCode, err.description))
         }
-        return reply(doc).type('application/json')
+        return reply(doc).type('application/json');
       })
     }
   },
@@ -70,11 +73,11 @@ module.exports = [
       let doc = request.payload;
       let now = new Date();
 
-      validateAgainstSchema(request, doc, (err, result) => {
-        if (err) {
-          return reply(err);
-        }
-      })
+      try {
+        await validateAgainstSchema(request, doc);
+      } catch (e) {
+        return reply(e)
+      }
 
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
@@ -125,12 +128,12 @@ module.exports = [
       let doc = request.payload;
       let now = new Date();
 
-      validateAgainstSchema(request, doc, (err, result) => {
-        if (err) {
-          return reply(err);
-        }
-      })
-      
+      try {
+        await validateAgainstSchema(request, doc);
+      } catch (e) {
+        return reply(e)
+      }
+
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
       // the existing item state
