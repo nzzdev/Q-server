@@ -20,6 +20,7 @@
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
+    "ajv": "^5.3.0",
     "boom": "^4.2.0",
     "catbox-memory": "^2.0.4",
     "chai": "^3.5.0",
