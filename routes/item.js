@@ -3,7 +3,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 const Enjoi = require('enjoi');
 
-function validateAgainstSchema(request, doc, next) {
+function validateAgainstSchema(request, doc) {
   return new Promise((resolve, reject) => {
     request.server.inject(`/tools/${doc.tool}/schema.json`, (response) => {
       if (response.statusCode !== 200) {
