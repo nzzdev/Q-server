@@ -3,11 +3,6 @@ const fetch = require('node-fetch');
 
 // start a chromium process here
 const browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
-let browserWSEndpoint;
-browserPromise
-  .then(browser => {
-    browserWSEndpoint = browser.wsEndpoint();
-  })
 
 // fetches assets and returnes a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
@@ -31,16 +26,11 @@ async function getConcatenatedAssets(assets, userAgent) {
 }
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
-  await browserPromise;
-
-  if (!browserWSEndpoint) {
-    throw new Error('Browser not ready yet');
-  }
-  const browser = await puppeteer.connect({browserWSEndpoint: browserWSEndpoint});
+  const browser = await browserPromise;
 
   const page = await browser.newPage();
 
-  // the height of 16384 is just a wild guess that no graphic will ever exceed this
+  // the height of 16384 is the max height of a GL context in chromium or something
   await page.setViewport({
     width: config.width,
     height: 16384,
@@ -49,42 +39,56 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
 
   await page.goto(emptyPageUrl);
 
-  let bodyStyle = 'margin: 0;';
-  if (config.background) {
-    bodyStyle += `background: ${config.background}`;
-  }
-  page.setContent(`<body style="${bodyStyle}"><div id="q-screenshot-service-container" style="padding: ${config.padding};">${markup}</div></body>`);
-
   const userAgent = await page.evaluate(() => {
     return navigator.userAgent;
   })
+
+  const styleContent = await getConcatenatedAssets(stylesheets);  
+  
+  let bodyStyle = 'margin: 0; padding: 0;';
+  if (config.background) {
+    bodyStyle += `background: ${config.background}`;
+  }
+
+  const content = `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>${styleContent}</style>
+      </head>
+      <body style="${bodyStyle}">
+        <div id="q-screenshot-service-container" style="padding: ${config.padding};>${markup}</div>
+      </body>
+    </html>`;
+  
+  await page.setContent(content, {
+    waitUntil: 'load'
+  });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
   await page.mainFrame().addScriptTag({
     content: scriptContent
   });
 
-  const styleContent = await getConcatenatedAssets(stylesheets);
-  await page.mainFrame().addStyleTag({
-    content: styleContent
-  });
-
-  // wait for the next animation frame (style is applied then)
+  // wait for the next idle callback (to have most probably finished all work)
   await page.evaluate(() => {
     return new Promise((resolve, reject) => {
-      requestAnimationFrame(resolve);
+      requestIdleCallback(resolve);
     });
   });
 
   const graphicElement = await page.$('#q-screenshot-service-container');
 
+  let isTransparent = false;
+  if (!config.background || config.background === 'none') {
+    isTransparent = true;
+  }
+
   const imageBuffer = await graphicElement.screenshot({
-    omitBackground: !config.background
+    omitBackground: isTransparent
   });
 
-  // we should use disconnect once this is released in puppeteer. it's merged to master, so anything after 0.12.0 should have it
-  // await browser.disconnect();
-  await browser.close();
+  await page.close();
   
   return imageBuffer;
 }

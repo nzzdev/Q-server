@@ -34,4 +34,4 @@ init({
 ```
 You need to have a _config/targets.js_ in your Q server implementation that configures the targets to be used with the screenshot api as `type: 'web'`.
 
-This gives you an endpoint `/screenshot/{id}.png?target=your_target&width=600&dpr=2&background=white&padding=20` where `dpr` (default: `1`), `background` (default: no background) and `padding` (default: `0`) are optional.
+This gives you an endpoint `/screenshot/{id}.png?target=your_target&width=600&dpr=2&background=white&padding=20` where `dpr` (default: `1`), `background` (default: background could be set by any context css loaded for the target. set to none to get transparent in any case) and `padding` (default: `0`) are optional.

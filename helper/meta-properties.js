@@ -9,10 +9,12 @@ const metaProperties = [
   'department',
   'annotations',
   'editedBy',
+  'updatedBy',
   'updatedDate',
   'active',
   'activateDate',
-  'deactivateDate'
+  'deactivateDate',
+  'publication'
 ];
 
 const deleteMetaProperties = function(item) {
