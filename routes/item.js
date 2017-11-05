@@ -19,7 +19,7 @@ function validateAgainstSchema(request, doc) {
       if (validate(doc)) {
         resolve(true);
       } else {
-        reject(Boom.badRequest());
+        reject(Boom.badRequest(JSON.stringify(validate.errors)));
       }
     });
   });
