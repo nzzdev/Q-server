@@ -1,7 +1,10 @@
 const getDb = require('../db.js').getDb;
 const Boom = require('boom');
 const Joi = require('joi');
-const Enjoi = require('enjoi');
+const Ajv = require('ajv');
+const ajv = new Ajv();
+// add draft-04 support explicit
+ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
 
 function validateAgainstSchema(request, doc) {
   return new Promise((resolve, reject) => {
@@ -9,16 +12,15 @@ function validateAgainstSchema(request, doc) {
       if (response.statusCode !== 200) {
         reject(Boom.internal(`Error occured while fetching schema of tool ${doc.tool}`));
       }
-  
-      let schema = Enjoi(JSON.parse(response.payload));
-      let result = Joi.validate(doc, schema, {
-         stripUnknown: true
-      });
-  
-      if (result.error) {
-        reject(Boom.badRequest(result.error.message));
+
+      const schema = JSON.parse(response.payload);
+
+      const validate = ajv.compile(schema);
+      if (validate(doc)) {
+        resolve(true);
+      } else {
+        reject(Boom.badRequest(JSON.stringify(validate.errors)));
       }
-      resolve(true);
     });
   });
 }
