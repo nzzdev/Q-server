@@ -1,4 +1,3 @@
-const getDb = require('../db.js').getDb;
 const Boom = require('boom');
 const Joi = require('joi');
 const Ajv = require('ajv');
@@ -25,11 +24,11 @@ function validateAgainstSchema(request, doc) {
   });
 }
 
-module.exports = [
-  {
+module.exports = {
+  get: {
     path: '/item/{id}',
     method: 'GET',
-    config: {
+    options: {
       validate: {
         params: {
           id: Joi.string().required(),
@@ -38,20 +37,14 @@ module.exports = [
       description: 'gets the item with the given id from the database',
       tags: ['api', 'editor']
     },
-    handler: (request, reply) => {
-      let db = getDb();
-      db.get(request.params.id, (err, doc) => {
-        if (err) {
-          return reply(Boom.error(err.statusCode, err.description))
-        }
-        return reply(doc).type('application/json');
-      })
+    handler: async function (request, h) {
+      return request.server.methods.item.getById(request.params.id);
     }
   },
-  {
+  post: {
     path: '/item',
     method: 'POST',
-    config: {
+    options: {
       validate: {
         payload: {
           _id: Joi.forbidden(),
@@ -70,15 +63,14 @@ module.exports = [
       description: 'stores a new item to the database and returns the id among other things',
       tags: ['api', 'editor']
     },
-    handler: async (request, reply) => {
-      let db = getDb();
+    handler: async function (request, h) {
       let doc = request.payload;
       let now = new Date();
 
       try {
         await validateAgainstSchema(request, doc);
-      } catch (e) {
-        return reply(e)
+      } catch (err) {
+        return err;
       }
 
       // docDiff is used to store all the changed properties
@@ -91,22 +83,24 @@ module.exports = [
       doc.createdBy = request.auth.credentials.name;
       docDiff.createdBy = doc.createdBy;
 
-      db.insert(request.payload, (err, res) => {
-        if (err) {
-          return reply(Boom.create(err.statusCode, err.description))
-        }
-
-        docDiff._id = res.id;
-        docDiff._rev = res.rev;
-
-        return reply(docDiff).type('application/json')
-      })
+      return new Promise((resolve, reject) => {
+        request.server.app.db.insert(request.payload, (err, res) => {
+          if (err) {
+            return reject(Boom.create(err.statusCode, err.description));
+          }
+  
+          docDiff._id = res.id;
+          docDiff._rev = res.rev;
+  
+          return resolve(docDiff);
+        })
+      });
     }
   },
-  {
+  put: {
     path: '/item',
     method: 'PUT',
-    config: {
+    options: {
       validate: {
         payload: {
           _id: Joi.string().required(),
@@ -125,8 +119,7 @@ module.exports = [
       description: 'updates an existing item to the database and returns the new revision number among other things',
       tags: ['api', 'editor']
     },
-    handler: async (request, reply) => {
-      let db = getDb();
+    handler: async function (request, h) {
       let doc = request.payload;
       let now = new Date();
 
@@ -144,29 +137,31 @@ module.exports = [
       doc.updatedDate = now.toISOString();
       doc.updatedBy = request.auth.credentials.name;
 
-      db.get(request.payload._id, (err, oldDoc) => {
-        // if the active state change to true, we set activateDate
-        if (doc.active === true && oldDoc.active === false) {
-          doc.activateDate = now.toISOString();
-          docDiff.activateDate = doc.activateDate;
-        }
+      const oldDoc = await request.server.methods.item.getById(request.payload._id);
 
-        // if the active state change to false, we set activateDate
-        if (doc.active === false && oldDoc.active === true) {
-          doc.deactivateDate = now.toISOString();
-          docDiff.deactivateDate = doc.deactivateDate;
-        }
+      // if the active state change to true, we set activateDate
+      if (doc.active === true && oldDoc.active === false) {
+        doc.activateDate = now.toISOString();
+        docDiff.activateDate = doc.activateDate;
+      }
 
+      // if the active state change to false, we set activateDate
+      if (doc.active === false && oldDoc.active === true) {
+        doc.deactivateDate = now.toISOString();
+        docDiff.deactivateDate = doc.deactivateDate;
+      }
+
+      return new Promise((resolve, reject) => {
         db.insert(doc, (err, res) => {
           if (err) {
-            return reply(Boom.create(err.statusCode, err.description))
+            return reject(Boom.create(err.statusCode, err.description))
           }
 
           docDiff._rev = res.rev;
 
-          return reply(docDiff).type('application/json')
+          return resolve(docDiff);
         })
-      })
+      });
     }
   }
-]
+};

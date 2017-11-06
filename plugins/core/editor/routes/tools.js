@@ -2,11 +2,11 @@
 module.exports = {
   path: '/editor/tools',
   method: 'GET',
-  config: {
+  options: {
     description: 'Returns all available Q tool names',
     tags: ['api', 'editor']
   },
-  handler: (request, reply) => {
+  handler: (request, h) => {
     const tools = request.server.settings.app.tools.get('');
 
     let editorToolConfigs = [];
@@ -24,6 +24,6 @@ module.exports = {
         editorToolConfigs.push(toolEditorConfig);
       })
 
-    reply(editorToolConfigs);
+    return editorToolConfigs;
   }
 }

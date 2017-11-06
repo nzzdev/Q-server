@@ -2,43 +2,42 @@ const Boom = require('boom');
 const fetch = require('node-fetch');
 const jsonSchemaRefParser = require('json-schema-ref-parser');
 
-module.exports = [
-  {
+module.exports = {
+  schema: {
     path: '/tools/{tool}/schema.json',
     method: 'GET',
-    config: {
+    options: {
       description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
       tags: ['api', 'editor']
     },
     handler: async (request, reply) => {
-      const dereferencedSchema = await getSchema(request, 'schema.json');
+      const toolConfig = request.server.settings.app.tools.get(`/${request.params.tool}`);
+      const dereferencedSchema = await getSchema(toolConfig, 'schema.json');
       if (!dereferencedSchema) {
-        return reply(Boom.notFound());
+        return Boom.notFound();
       }
-      return reply(dereferencedSchema).type('application/json');
+      return dereferencedSchema;
     }
   },
-  {
+  displayOptionsSchema: {
     path: '/tools/{tool}/display-options-schema.json',
     method: 'GET',
-    config: {
+    options: {
       description: 'Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment',
       tags: ['api', 'editor']
     },
     handler: async (request, reply) => {
-      const dereferencedSchema = await getSchema(request, 'display-options-schema.json');
+      const dereferencedSchema = await getSchema(toolConfig, 'display-options-schema.json');
       if (!dereferencedSchema) {
-        return reply(Boom.notFound());
+        return Boom.notFound();
       }
-      return reply(dereferencedSchema).type('application/json');
+      return dereferencedSchema;
     }
   }
-]
+}
 
-async function getSchema(request, filename) {
-  const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
-    
-  const response = await fetch(`${tool.baseUrl}/${filename}`);
+async function getSchema(toolConfig, filename) {
+  const response = await fetch(`${toolConfig.baseUrl}/${filename}`);
 
   if (!response.ok || response.status !== 200) {
     return null;

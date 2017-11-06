@@ -3,8 +3,6 @@
   "_rev": "8-aa68b15381dd78982abd01d57568cc0a",
   "title": "Q test item",
   "tool": "some_example_tool",
-  "editorVersion": "0.2.0",
-  "rendererVersion": "0.2.0",
   "data": "data attribute for test purposes, should not be stripped",
   "sources": [],
   "annotations": "",
