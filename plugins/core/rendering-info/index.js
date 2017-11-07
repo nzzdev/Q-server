@@ -1,7 +1,7 @@
 const Boom = require('boom');
 const Joi = require('joi');
 
-const renderingInfoFetcher = require('./rendering-info-fetcher.js');
+const getRenderingInfo = require('./helpers.js').getRenderingInfo;
 const sizeValidationObject = require('./size-helpers.js').sizeValidationObject;
 const validateSize = require('./size-helpers.js').validateSize;
 
@@ -102,7 +102,6 @@ const getRenderingInfoRoute = {
           .header('cache-control', configCacheControl.join(', '));
       }
     } catch (err) {
-      debugger;
       if (err.stack) {
         request.server.log(['error'], err.stack);
       }
@@ -155,8 +154,6 @@ const postRenderingInfoRoute = {
       requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
     }
 
-    const toolRuntimeConfig = getCompiledToolRuntimeConfig(request.payload.item, request.params.target, requestToolRuntimeConfig, server.settings);
-
     try {
       return await request.server.methods.renderingInfo.getRenderingInfoForItem(request.payload.item, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
     } catch (err) {
@@ -191,16 +188,16 @@ module.exports = {
 
       const baseUrl = server.settings.app.tools.get(`/${item.tool}/baseUrl`, { target: target });
 
-      return await renderingInfoFetcher.getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig);
+      return await getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig);
     });
 
     server.method('renderingInfo.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
-      const item = await server.methods.db.item.getById(id);
+      const item = await server.methods.db.item.getById(id, ignoreInactive);
       return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
     });
 
     server.method('renderingInfo.cached.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
-      const item = await server.methods.db.item.getById(id);
+      const item = await server.methods.db.item.getById(id, ignoreInactive);
       return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
     }, {
       cache: {

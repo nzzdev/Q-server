@@ -3,7 +3,7 @@ const Boom = require('boom');
 const Wreck = require('wreck');
 const querystring = require('querystring');
 
-async function handler(request, h) {
+async function handler(request, h, payload = null) {
   const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
 
   if (!tool) {
@@ -15,7 +15,14 @@ async function handler(request, h) {
     queryString = querystring.stringify(request.query);
   }
 
-  const toolResponse = await Wreck.get(`${tool.baseUrl}/${request.params.path}?${queryString}`);
+  let toolResponse;
+  if (payload) {
+    toolResponse = await Wreck.post(`${tool.baseUrl}/${request.params.path}?${queryString}`, {
+      payload: payload
+    });
+  } else {
+    toolResponse = await Wreck.get(`${tool.baseUrl}/${request.params.path}?${queryString}`);
+  }
 
   // prepare the response to add more headers
   const response = h.response(toolResponse.payload);
@@ -58,7 +65,9 @@ module.exports = {
         }
       }
     },
-    handler: handler
+    handler: async (request, h) => {
+      return await Reflect.apply(handler, this, [request, h]);
+    }
   },
   post: {
     path: '/tools/{tool}/{path*}',
@@ -70,13 +79,12 @@ module.exports = {
         params: {
           tool: Joi.string().required(),
           path: Joi.string().required()
-        }
-      },
-      payload: {
-        output: 'stream',
-        parse: false
+        },
+        payload: Joi.object()
       }
     },
-    handler: handler
+    handler:  async (request, h) => {
+      return await Reflect.apply(handler, this, [request, h, request.payload]);
+    }
   }
 }

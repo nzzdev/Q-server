@@ -1,4 +1,5 @@
 const nano = require('nano');
+const Boom = require('boom');
 
 module.exports = {
   name: 'q-db',
@@ -15,7 +16,7 @@ module.exports = {
       }
     });
 
-    server.method('db.item.getById', async function(id, ignoreInactive = false) {
+    server.method('db.item.getById', function(id, ignoreInactive = false) {
       return new Promise((resolve, reject) => {
         server.app.db.get(id, (err, item) => {
           if (err) {
@@ -30,7 +31,7 @@ module.exports = {
       });
     });
 
-    server.method('db.item.search', async function(payload) {
+    server.method('db.item.search', function(payload) {
       return new Promise((resolve, reject) => {
         server.app.db.search('items', 'search', payload, (err, data) => {
           if (err) {

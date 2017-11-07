@@ -1,5 +1,6 @@
 module.exports = {
   name: 'q-base',
+  dependencies: ['q-db'],
   register: async function(server, options) {
 
     server.register([

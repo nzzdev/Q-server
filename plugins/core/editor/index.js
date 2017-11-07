@@ -21,9 +21,9 @@ module.exports = {
     server.route({
       path: '/editor/config',
       method: 'GET',
-      config: {
+      options: {
         description: 'Returns configuration for Q Editor',
-        tags: ['api', 'editor']
+        tags: ['api', 'editor'],
       },
       handler: (request, h) => {
         return settings.editorConfig;

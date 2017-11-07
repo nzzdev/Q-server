@@ -11,7 +11,6 @@ module.exports = {
     tags: ['api', 'editor']
   },
   handler: async (request, h) => {
-    let db = getDb();
-    return request.server.methods.item.search(request.payload);
+    return request.server.methods.db.item.search(request.payload);
   }
 }
