@@ -37,7 +37,10 @@ module.exports = {
       require('./routes/tool-default.js').get,
       require('./routes/tool-default.js').post,
       require('./routes/tool-schema.js').schema,
-      require('./routes/tool-schema.js').displayOptionsSchema
+      require('./routes/tool-schema.js').displayOptionsSchema,
+      require('./routes/health.js'),
+      require('./routes/version.js'),
+      require('./routes/admin/migration.js')
     ])
   }
 }

@@ -31,6 +31,26 @@ module.exports = {
       });
     });
 
+    server.method('db.item.getAllByTool', function(tool) {
+      const options = {
+        keys: [tool],
+        include_docs: true,
+        reduce: false
+      };
+      return new Promise((resolve, reject) => {
+        server.app.db.view('items', 'byTool', options, async(err, data) => {
+          if (err) {
+            return reject(Boom.internal(err));
+          } else {
+            const items = data.rows.map(item => {
+              return item.doc;
+            });
+            return resolve(items);
+          }
+        })
+      });
+    });
+
     server.method('db.item.search', function(payload) {
       return new Promise((resolve, reject) => {
         server.app.db.search('items', 'search', payload, (err, data) => {
@@ -42,8 +62,5 @@ module.exports = {
         })
       });
     });
-
-
-
   }
 };
