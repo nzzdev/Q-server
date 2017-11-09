@@ -20,7 +20,7 @@ module.exports = {
       return new Promise((resolve, reject) => {
         server.app.db.get(id, (err, item) => {
           if (err) {
-            return reject(Boom.create(err.statusCode, err.description));
+            return reject(new Boom(err.statusCode, err.description));
           }
       
           if (!ignoreInactive && item.active !== true) {

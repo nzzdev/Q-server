@@ -87,7 +87,7 @@ module.exports = {
         debugger;
         request.server.app.db.insert(request.payload, (err, res) => {
           if (err) {
-            return reject(Boom.create(err.statusCode, err.description));
+            return reject(new Boom(err.statusCode, err.description));
           }
   
           docDiff._id = res.id;
@@ -154,7 +154,7 @@ module.exports = {
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(doc, (err, res) => {
           if (err) {
-            return reject(Boom.create(err.statusCode, err.description))
+            return reject(new Boom(err.statusCode, err.description))
           }
 
           docDiff._rev = res.rev;
