@@ -1,32 +1,28 @@
 const Boom = require('boom');
 const Joi = require('joi');
+const Hoek = require('hoek');
 
 const getRenderingInfo = require('./helpers.js').getRenderingInfo;
 const sizeValidationObject = require('./size-helpers.js').sizeValidationObject;
 const validateSize = require('./size-helpers.js').validateSize;
 
-function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolBaseUrlConfig, qServerBaseUrl, toolEndpointConfig, requestToolRuntimeConfig }) {
+function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }) {
   const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
   
-  if (toolBaseUrlConfig && toolBaseUrlConfig.host) {
-    // if we have a toolBaseUrl config object in misc, we take this to generate the toolBaseUrl
+  // simplify the toolBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
+  if (typeof overallToolRuntimeConfig.toolBaseUrl === 'object' && overallToolRuntimeConfig.toolBaseUrl.host) {
     let protocol = 'https';
-    if (toolBaseUrlConfig.protocol) {
-      protocol = toolBaseUrlConfig.protocol;
+    if (overallToolRuntimeConfig.toolBaseUrl.protocol) {
+      protocol = overallToolRuntimeConfig.toolBaseUrl.protocol;
     }
-    let path = 'tools';
-    if (toolBaseUrlConfig.path) {
-      path = toolBaseUrlConfig.path;
+    // the default if no path is given is to add /tools/{toolname}
+    let path = `/tools/${item.tool}`;
+    if (overallToolRuntimeConfig.toolBaseUrl.path) {
+      path = overallToolRuntimeConfig.toolBaseUrl.path;
     }
-    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${toolBaseUrlConfig.host}/${path}`;
-  } else {
-    // otherwise we fall back to using the qServerBaseUrl with hardcoded `tools` path
-    overallToolRuntimeConfig.toolBaseUrl =  qServerBaseUrl + `/tools`;
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}/${path}`;
   }
 
-  // add the tools name to the toolBaseUrl
-  overallToolRuntimeConfig.toolBaseUrl = `${overallToolRuntimeConfig.toolBaseUrl}/${item.tool}`;
-  
   // default to the overall config
   let toolRuntimeConfig = overallToolRuntimeConfig;
 
@@ -46,143 +42,144 @@ function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolB
   return toolRuntimeConfig;
 }
 
-const getRenderingInfoRoute = {
-  method: 'GET',
-  path: '/rendering-info/{id}/{target}',
-  options: {
-    validate: {
-      params: {
-        id: Joi.string().required(),
-        target: Joi.string().required()
+function getGetRenderingInfoRoute(config) {
+  return {
+    method: 'GET',
+    path: '/rendering-info/{id}/{target}',
+    options: {
+      validate: {
+        params: {
+          id: Joi.string().required(),
+          target: Joi.string().required()
+        },
+        query: {
+          toolRuntimeConfig: Joi.object({
+            size: Joi.object(sizeValidationObject).optional()
+          }),
+          noCache: Joi.boolean().optional(),
+          ignoreInactive: Joi.boolean().optional()
+        },
+        options: {
+          allowUnknown: true
+        }
       },
-      query: {
-        toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional()
-        }),
-        noCache: Joi.boolean().optional(),
-        ignoreInactive: Joi.boolean().optional()
-      },
-      options: {
-        allowUnknown: true
-      }
+      description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
+      tags: ['api', 'reader-facing']
     },
-    description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
-    tags: ['api', 'reader-facing']
-  },
-  handler: async function(request, h) {
-    let requestToolRuntimeConfig = {};
+    handler: async function(request, h) {
+      let requestToolRuntimeConfig = {};
 
-    if (request.query.toolRuntimeConfig) {
-      if (request.query.toolRuntimeConfig.size) {
-        try {
-          validateSize(request.query.toolRuntimeConfig.size)
-        } catch (err) {
-          if (err.isBoom) {
-            throw err;
-          } else {
-            throw Boom.internal(err);
+      if (request.query.toolRuntimeConfig) {
+        if (request.query.toolRuntimeConfig.size) {
+          try {
+            validateSize(request.query.toolRuntimeConfig.size)
+          } catch (err) {
+            if (err.isBoom) {
+              throw err;
+            } else {
+              throw Boom.internal(err);
+            }
           }
         }
+
+        requestToolRuntimeConfig = request.query.toolRuntimeConfig;
       }
 
-      requestToolRuntimeConfig = request.query.toolRuntimeConfig;
-    }
-
-    try {
-
-      const configCacheControl = await request.server.methods.getCacheControlDirectivesFromConfig();
-
-      if (request.query.noCache) {
-        const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
-        return h.response(renderingInfo)
-          .header('cache-control', 'no-cache');
-      } else {
-        const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
-        return h.response(renderingInfo)
-          .header('cache-control', configCacheControl.join(', '));
-      }
-    } catch (err) {
-      if (err.stack) {
-        request.server.log(['error'], err.stack);
-      }
-      if (err.isBoom) {
-        return err;
-      } else {
-        return Boom.internal(err.message);
+      try {
+        if (request.query.noCache) {
+          const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+          return h.response(renderingInfo)
+            .header('cache-control', 'no-cache');
+        } else {
+          const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+          return h.response(renderingInfo)
+            .header('cache-control', config.cacheControlHeader);
+        }
+      } catch (err) {
+        if (err.stack) {
+          request.server.log(['error'], err.stack);
+        }
+        if (err.isBoom) {
+          return err;
+        } else {
+          return Boom.serverUnavailable(err.message);
+        }
       }
     }
-  }
+  };
 }
 
-const postRenderingInfoRoute = {
-  method: 'POST',
-  path: '/rendering-info/{target}',
-  options: {
-    cache: false,
-    validate: {
-      params: {
-        target: Joi.string().required()
+function getPostRenderingInfoRoute(config) {
+  return {
+    method: 'POST',
+    path: '/rendering-info/{target}',
+    options: {
+      cache: false,
+      validate: {
+        params: {
+          target: Joi.string().required()
+        },
+        payload: {
+          item: Joi.object().required(),
+          toolRuntimeConfig: Joi.object({
+            size: Joi.object(sizeValidationObject).optional()
+          })
+        },
+        options: {
+          allowUnknown: true
+        },
       },
-      payload: {
-        item: Joi.object().required(),
-        toolRuntimeConfig: Joi.object({
-          size: Joi.object(sizeValidationObject).optional()
-        })
-      },
-      options: {
-        allowUnknown: true
-      },
+      description: 'Returns rendering information for the given data and target (as configured in the environment).',
+      tags: ['api', 'editor']
     },
-    description: 'Returns rendering information for the given data and target (as configured in the environment).',
-    tags: ['api', 'editor']
-  },
-  handler: async function(request, h) {
-    let requestToolRuntimeConfig = {};
+    handler: async function(request, h) {
+      debugger;
+      let requestToolRuntimeConfig = {};
 
-    if (request.query.toolRuntimeConfig) {
-      if (request.query.toolRuntimeConfig.size) {
-        try {
-          validateSize(request.query.toolRuntimeConfig.size)
-        } catch (err) {
-          if (err.isBoom) {
-            throw err;
-          } else {
-            throw Boom.internal(err);
+      if (request.query.toolRuntimeConfig) {
+        if (request.query.toolRuntimeConfig.size) {
+          try {
+            validateSize(request.query.toolRuntimeConfig.size)
+          } catch (err) {
+            if (err.isBoom) {
+              throw err;
+            } else {
+              throw Boom.internal(err);
+            }
           }
         }
+        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
-      requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
-    }
 
-    try {
-      return await request.server.methods.renderingInfo.getRenderingInfoForItem(request.payload.item, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
-    } catch (err) {
-      if (err.isBoom) {
-        return err;
-      } else {
-        return Boom.internal(err.message);
+      try {
+        return await request.server.methods.renderingInfo.getRenderingInfoForItem(request.payload.item, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+      } catch (err) {
+        if (err.isBoom) {
+          return err;
+        } else {
+          return Boom.serverUnavailable(err.message);
+        }
       }
     }
-  }
+  };
 }
 
 module.exports = {
   name: 'q-rendering-info',
   dependencies: 'q-base',
   register: async function(server, options) {
-
+    Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function'));    
     server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive) => {
       const endpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target })
+      
       if (!endpointConfig) {
         throw new Error(`no endpoint configured for tool: ${item.tool} and target: ${target}`);
       }
-      
+
       // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
       const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
-        serverWideToolRuntimeConfig: server.settings.app.misc.get('/toolRuntimeConfig'),
-        toolBaseUrlConfig:           server.settings.app.misc.get('/toolBaseUrl'),
-        qServerBaseUrl:              server.settings.app.misc.get('/qServerBaseUrl'),
-        toolEndpointConfig:          server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target }),
+        serverWideToolRuntimeConfig: options.get('/toolRuntimeConfig', { target: target, tool: item.tool }),
+        toolEndpoint:                endpointConfig,
         requestToolRuntimeConfig:    requestToolRuntimeConfig
       });
 
@@ -201,7 +198,7 @@ module.exports = {
       return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
     }, {
       cache: {
-        expiresIn: server.settings.app.misc.get('/cache/serverCacheTime'),
+        expiresIn: Number.isInteger(options.get('/cache/serverCacheTime')) ? options.get('/cache/serverCacheTime') : 1000,
         generateTimeout: 10000
       },
       generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
@@ -216,9 +213,17 @@ module.exports = {
       }
     });
 
+    // calculate the cache control header from options given
+    const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
+    const cacheControlHeader = cacheControlDirectives.join(', ');
+
+    const routesConfig = {
+      cacheControlHeader: cacheControlHeader
+    }
+
     server.route([
-      getRenderingInfoRoute,
-      postRenderingInfoRoute
+      getGetRenderingInfoRoute(routesConfig),
+      getPostRenderingInfoRoute(routesConfig)
     ])
   }
 }

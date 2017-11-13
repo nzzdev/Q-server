@@ -3,7 +3,7 @@ const Boom = require('boom');
 const Wreck = require('wreck');
 const querystring = require('querystring');
 
-async function handler(request, h, payload = null) {
+async function handler(options, request, h, payload = null) {
   const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
 
   if (!tool) {
@@ -32,59 +32,63 @@ async function handler(request, h, payload = null) {
     response.header(header, toolResponse.res.headers[header]);
   }
 
-  // apply defaults by not overriding the headers present from the tool response
-  const configCacheControl = await request.server.methods.getCacheControlDirectivesFromConfig();
-  const defaultCacheControl = Wreck.parseCacheControl(configCacheControl.join(', '));
+  // add Cache-Control directives from config if we do not have no-cache set in the tool response
+  const responseCacheControl = Wreck.parseCacheControl(toolResponse.res.headers['cache-control']);
+  if (responseCacheControl['no-cache'] !== true) {
+    const configCacheControl = await request.server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
+    const defaultCacheControl = Wreck.parseCacheControl(configCacheControl.join(', '));
 
-  const addHeaderOptions = {
-    append: true,
-  };
-
-  response.header('cache-control', `stale-if-error=${defaultCacheControl['stale-if-error']}`, addHeaderOptions);
-
-  // the CDN should only get specific caching instructions if we do not have no-cache set in the tool response
-  if (Wreck.parseCacheControl(toolResponse.res.headers['cache-control'])['no-cache'] !== true) {
-    response.header('cache-control', `s-maxage=${defaultCacheControl['s-maxage']}`, addHeaderOptions);
-    response.header('cache-control', `stale-while-revalidate=${defaultCacheControl['stale-while-revalidate']}`, addHeaderOptions);
+    for (directive of Object.keys(defaultCacheControl)) {
+      // only add the default cache control if the directive is not present on the response from the tool
+      if (!responseCacheControl.hasOwnProperty(directive)) {
+        response.header('cache-control', `${directive}=${defaultCacheControl[directive]}`, {
+          append: true
+        });
+      }
+    }
   }
 
   return response;
 }
 
 module.exports = {
-  get: {
-    path: '/tools/{tool}/{path*}',
-    method: 'GET',
-    options: {
-      description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
-      tags: ['api', 'reader-facing'],
-      validate: {
-        params: {
-          tool: Joi.string().required(),
-          path: Joi.string().required()
+  getGetRoute: function(options) {
+    return {
+      path: '/tools/{tool}/{path*}',
+      method: 'GET',
+      options: {
+        description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
+        tags: ['api', 'reader-facing'],
+        validate: {
+          params: {
+            tool: Joi.string().required(),
+            path: Joi.string().required()
+          }
         }
+      },
+      handler: async (request, h) => {
+        return await Reflect.apply(handler, this, [options, request, h]);
       }
-    },
-    handler: async (request, h) => {
-      return await Reflect.apply(handler, this, [request, h]);
-    }
+    };
   },
-  post: {
-    path: '/tools/{tool}/{path*}',
-    method: 'POST',
-    options: {
-      description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
-      tags: ['api', 'reader-facing'],
-      validate: {
-        params: {
-          tool: Joi.string().required(),
-          path: Joi.string().required()
-        },
-        payload: Joi.object()
+  getPostRoute: function(options) {
+    return {
+      path: '/tools/{tool}/{path*}',
+      method: 'POST',
+      options: {
+        description: 'Proxies the request to the renderer service for the given tool as defined in the environment',
+        tags: ['api', 'reader-facing'],
+        validate: {
+          params: {
+            tool: Joi.string().required(),
+            path: Joi.string().required()
+          },
+          payload: Joi.object()
+        }
+      },
+      handler:  async (request, h) => {
+        return await Reflect.apply(handler, this, [options, request, h, request.payload]);
       }
-    },
-    handler:  async (request, h) => {
-      return await Reflect.apply(handler, this, [request, h, request.payload]);
     }
   }
 }
