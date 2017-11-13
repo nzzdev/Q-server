@@ -20,7 +20,7 @@ function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolE
     if (overallToolRuntimeConfig.toolBaseUrl.path) {
       path = overallToolRuntimeConfig.toolBaseUrl.path;
     }
-    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}/${path}`;
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}${path}`;
   }
 
   // default to the overall config
@@ -133,7 +133,6 @@ function getPostRenderingInfoRoute(config) {
       tags: ['api', 'editor']
     },
     handler: async function(request, h) {
-      debugger;
       let requestToolRuntimeConfig = {};
 
       if (request.query.toolRuntimeConfig) {
@@ -169,6 +168,7 @@ module.exports = {
   dependencies: 'q-base',
   register: async function(server, options) {
     Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function'));    
+
     server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive) => {
       const endpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target })
       

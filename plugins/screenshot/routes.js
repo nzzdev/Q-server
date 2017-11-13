@@ -42,9 +42,8 @@ module.exports = [
         url: `/rendering-info/${request.params.id}/${request.query.target}`
       });
       
-      // debugger;
       if (response.statusCode !== 200) {
-        throw new Boom(response.statusCode, response.statusMessage);
+        throw new Boom(response.statusMessage, { statusCode: response.statusCode } );
       }
 
       const server = response.request.server;

@@ -43,9 +43,9 @@ async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig
   if (!response.ok) {
     try {
       const data = await response.json();
-      throw new Boom(response.status, data.message);
+      throw new Boom(data.message, { statusCode: response.status });
     } catch (err) {
-      throw new Boom(response.status);
+      throw new Boom(err.message, { statusCode: response.status });
     }
   }
 

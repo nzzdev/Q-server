@@ -84,10 +84,9 @@ module.exports = {
       docDiff.createdBy = doc.createdBy;
 
       return new Promise((resolve, reject) => {
-        debugger;
         request.server.app.db.insert(request.payload, (err, res) => {
           if (err) {
-            return reject(new Boom(err.statusCode, err.description));
+            return reject(new Boom(err.description, { statusCode: err.statusCode } ));
           }
   
           docDiff._id = res.id;
@@ -125,8 +124,8 @@ module.exports = {
       let now = new Date();
       try {
         await validateAgainstSchema(request, doc);
-      } catch (e) {
-        throw Boom.badRequest(e);
+      } catch (err) {
+        throw Boom.badRequest(err);
       }
 
       // docDiff is used to store all the changed properties
@@ -154,7 +153,7 @@ module.exports = {
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(doc, (err, res) => {
           if (err) {
-            return reject(new Boom(err.statusCode, err.description))
+            return reject(new Boom(err.description, { statusCode: err.statusCode } ));
           }
 
           docDiff._rev = res.rev;
