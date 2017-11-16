@@ -10,7 +10,7 @@ Demo: [https://q-demo.st.nzz.ch](https://q-demo.st.nzz.ch)
 # Terminology
 - __Q__ is used as the name for a complete system containing a [CouchDB](https://couchdb.apache.org/), a Q server, a [Q editor](https://github.com/nzzdev/Q-editor) and some _tools_.
 - __Q server__ is a HTTP service providing an API as a proxy to several tool services
-- __Q server implementation__ provides the configuration of Q server for your very specific environment including _tool_, _target_ and _editor_ configuration. We've setup a [demo implementation](https://github.com/nzzdev/Q-server-demo), please see also [installation instructions](install.html)
+- __Q server implementation__ implements a [hapi](https://hapijs.com/) server using the plugins provided by [@nzz/q-server](https://github.com/nzzdev/Q-server) and providing configuration for your very specific environment including _tool_, _target_ and _editor_ configuration. We've setup a [demo implementation](https://github.com/nzzdev/Q-server-demo), please see also [installation instructions](install.html)
 - __Q editor__ is a Web application used to create new _items_ and preview the rendering. Head over to [Q editor](https://github.com/nzzdev/Q-editor) to learn more.
 - __Tool__ is a HTTP service providing an API to get rendering information for a given dataset (there is some more in a tool, see the page about [developing tools](developing-tools.html)).
 - __Item__ is a document in the CouchDB. It contains information about the tool and the data to be used to create something useful for a given _target_.

@@ -47,14 +47,14 @@ You have to define the following endpoint if you want to be able to migrate item
     module.exports = {
       method: 'POST',
       path:'/migration',
-      config: {
+      options: {
         validate: {
           payload: {
             item: Joi.object().required()
           }
         }
       },
-      handler: (request, reply) => {
+      handler: async (request, h) => {
         let item = request.payload.item;
         const results = migrationScripts.map(script => {
           const result = script.migrate(item);
@@ -67,11 +67,11 @@ You have to define the following endpoint if you want to be able to migrate item
           return result.isChanged;
         });
         if (isChanged >= 0) {
-          return reply({
+          return {
             item: item
-          })
+          };
         }
-        return reply().code(304);
+        return h.response().code(304);
       }
     }
    ```

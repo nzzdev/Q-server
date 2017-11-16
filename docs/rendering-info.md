@@ -50,4 +50,4 @@ This is because the tool service itself does not know about its name as the mapp
 So if your tool service provides an endpoint _/stylesheet/{name*}_ you can use `name` property in the rendering info returned from your tool service and Q server will translate it to a path. The loader knows where the Q server is running and can build a full URL using this information to request the file.
 
 ## other types of rendering info
-We are thinking about how to extend the possibilities for the rendering info. Probably we will build support for other `Content-Type` headers than `application/json` to allow the tool services to respond with an image or `text/html` directly if it's the only thing that needs to get loaded. If you have ideas about this we are happy to talk to you.
+What exactly you are returning from a rendering-info endpoint varies by your needs. To get a preview in Q Editor you need to implement at least one rendering-info that is capable to be displayed in a browser. The only format that is supported in Q Editor at the moment is the above example. But we will extend this if we see fit and are happy to accept pull requests for this.
