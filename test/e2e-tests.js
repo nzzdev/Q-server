@@ -26,6 +26,7 @@ let server = Hapi.server({
 server.auth.scheme('mock', function(server, options) {
   return {
     authenticate: function(request, h) {
+      debugger;
       return {credentials: 'user'};
     }
   };
@@ -112,8 +113,6 @@ before(async () => {
     const setupCouch = await require('./mock/couchdb.js').setupCouch;
 
     await setupCouch();
-
-    debugger;
 
     await server.register(plugins);
     await server.start();
@@ -208,7 +207,7 @@ lab.experiment('core item', () => {
     expect(item._id).to.be.equal('mock-item-inactive');
   });
 
-  it('should fail to save existing item using POST', async () => {
+  it('should respond with 400 if trying to save existing item using POST', async () => {
     const request = {
       method: 'POST',
       credentials: {username: 'user', password: 'pass'},
@@ -223,7 +222,7 @@ lab.experiment('core item', () => {
     expect(response.statusCode).to.be.equal(400);
   });
 
-  it('should fail to save new item using PUT', async () => {
+  it('should respond with 400 if trying to save new item using PUT', async () => {
     const request = {
       method: 'PUT',
       credentials: {username: 'user', password: 'pass'},
@@ -235,6 +234,46 @@ lab.experiment('core item', () => {
     const response = await server.inject(request);
     expect(response.statusCode).to.be.equal(400);
   });
+
+  it('should respond with 400 if trying to save item that does not validate against schema and tell the error', async () => {
+    const request = {
+      method: 'PUT',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: {
+        '_id': 'some-id',
+        '_rev': 'some_rev',
+        'title': 'title',
+        'tool': 'tool1'
+      }
+    }
+    const response = await server.inject(request);
+    expect(response.statusCode).to.be.equal(400);
+    expect(response.result.message).to.be.equal(`{"keyword":"required","dataPath":"","schemaPath":"#/required","params":{"missingProperty":"foo"},"message":"should have required property 'foo'"}`);
+  })
+
+  it('should save and existing item if it validates against schema', async () => {
+    try {
+      const itemResponse = await server.inject('/item/mock-item-to-test-edits');
+      const item = JSON.parse(itemResponse.payload);
+      let value = Date.now();
+      item.bar = value;
+      const request = {
+        method: 'PUT',
+        credentials: {username: 'user', password: 'pass'},
+        url: '/item',
+        payload: item
+      };
+      const response = await server.inject(request);
+      expect(response.statusCode).to.be.equal(200);
+
+      const newItemResponse = await server.inject('/item/mock-item-to-test-edits');
+      const newItem = JSON.parse(newItemResponse.payload);
+      expect(newItem.bar).to.equal(value);
+    } catch (err) {
+      expect(err).to.be.undefined();
+    }
+  })
 
 });
 

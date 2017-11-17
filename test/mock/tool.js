@@ -16,6 +16,26 @@ server.route({
 });
 
 server.route({
+  method: 'GET',
+  path: '/schema.json',
+  handler: function(request, h) {
+    return `
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "mock",
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "string"
+          }
+        },
+        "required": ["foo"]
+      }
+    `;
+  }
+});
+
+server.route({
   method: 'POST',
   path: '/rendering-info/mock',
   handler: function(request, h) {

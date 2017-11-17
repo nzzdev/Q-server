@@ -125,7 +125,7 @@ module.exports = {
       try {
         await validateAgainstSchema(request, doc);
       } catch (err) {
-        throw Boom.badRequest(err);
+        throw Boom.badRequest(err.message);
       }
 
       // docDiff is used to store all the changed properties
