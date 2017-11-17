@@ -101,11 +101,19 @@ before(async () => {
     await require('./mock/tool.js').start();
 
     const { spawn } = require('child_process');
-    pouchdbServer = spawn('./node_modules/pouchdb-server/bin/pouchdb-server', ['--in-memory']);
-
-    const setupCouch = require('./mock/couchdb.js').setupCouch;
+    pouchdbServer = spawn('./node_modules/pouchdb-server/bin/pouchdb-server', ['-c','test/pouchdb-server-config.json', '--in-memory']);
+    
+    // wait a second to give pouchdbServer time to boot
+    await new Promise(resolve => {
+      setTimeout(resolve, 1000);
+    });
+    
+    console.log('started pouchdb server with pid', pouchdbServer.pid);
+    const setupCouch = await require('./mock/couchdb.js').setupCouch;
 
     await setupCouch();
+
+    debugger;
 
     await server.register(plugins);
     await server.start();
@@ -117,7 +125,9 @@ before(async () => {
 
 after(() => {
   server = null;
+  console.log('\ngoing to kill pouchdb server with pid', pouchdbServer.pid);
   pouchdbServer.kill('SIGHUP');
+  console.log('killed?', pouchdbServer.killed);
   return;
 });
 
@@ -191,7 +201,7 @@ lab.experiment('core base', () => {
 
 lab.experiment('core item', () => {
   
-  it('returnes existing item from db', async () => {
+  it('returnes existing item from db', { plan: 2 }, async () => {
     const response = await server.inject('/item/mock-item-inactive');
     expect(response.statusCode).to.be.equal(200);
     const item = JSON.parse(response.payload);
