@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha",
+    "test": "lab -a code -c -P tests",
     "start:prod": "APP_ENV=prod node index.js",
     "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
@@ -24,27 +24,25 @@
     "boom": "^7.1.1",
     "bounce": "^1.2.0",
     "catbox-memory": "^3.1.1",
-    "chai": "^4.1.2",
     "clone": "^2.1.1",
-    "confidence": "^3.0.2",
     "deepmerge": "^2.0.1",
-    "good-console": "^6.4.0",
-    "good-squeeze": "^5.0.2",
-    "h2o2": "^6.0.1",
     "hapi": "^17.0.1",
-    "hapi-auth-couchdb-cookie": "^3.1.0",
-    "hapi-etags": "^0.1.0",
     "hoek": "^5.0.2",
     "inert": "^5.0.1",
     "joi": "^13.0.2",
     "json-schema-ref-parser": "^4.0.4",
-    "mocha": "^4.0.1",
     "nano": "^6.4.2",
     "nano-promises": "^1.2.0",
     "node-fetch": "^1.7.3",
     "puppeteer": "^0.13.0",
     "vision": "^5.1.0",
-    "white-out": "^2.0.0",
     "wreck": "^14.0.2"
+  },
+  "devDependencies": {
+    "code": "^5.1.2",
+    "confidence": "^3.0.2",
+    "lab": "^15.1.2",
+    "mock-couch": "^0.1.9",
+    "pouchdb-server": "^2.3.7"
   }
 }

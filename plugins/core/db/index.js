@@ -6,15 +6,21 @@ module.exports = {
   register: async function (server, options) {
     const dbUrl = `${options.protocol || 'https'}://${options.host}/${options.database}`;
     server.log(['info'], `Connecting to database ${dbUrl}`);
-    server.app.db = nano({
-      url: dbUrl,
-      requestDefaults: {
+
+    const nanoConfig = {
+      url: dbUrl
+    };
+
+    if (options.user && options.pass) {
+      nanoConfig.requestDefaults = {
         auth: {
           user: options.user,
           pass: options.pass
         }
       }
-    });
+    }
+
+    server.app.db = nano(nanoConfig);
 
     server.method('db.item.getById', function(id, ignoreInactive = false) {
       return new Promise((resolve, reject) => {
