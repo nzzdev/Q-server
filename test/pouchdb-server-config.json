@@ -1,0 +1,6 @@
+{
+  "log": {
+    "level": "info",
+    "file": "./test/logs/pouchdb.log"
+  }
+}
