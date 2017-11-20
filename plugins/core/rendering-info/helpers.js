@@ -82,6 +82,44 @@ async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig
   return renderingInfo;
 }
 
+function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }) {
+  const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
+  
+  // simplify the toolBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
+  if (typeof overallToolRuntimeConfig.toolBaseUrl === 'object' && overallToolRuntimeConfig.toolBaseUrl.host) {
+    // the default protocol is https
+    let protocol = 'https';
+    if (overallToolRuntimeConfig.toolBaseUrl.protocol) {
+      protocol = overallToolRuntimeConfig.toolBaseUrl.protocol;
+    }
+    // the default if no path is given is to add /tools/{toolname}
+    let path = `/tools/${item.tool}`;
+    if (overallToolRuntimeConfig.toolBaseUrl.path) {
+      path = overallToolRuntimeConfig.toolBaseUrl.path;
+    }
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}${path}`;
+  }
+
+  // default to the overall config
+  let toolRuntimeConfig = overallToolRuntimeConfig;
+
+  // add the item id if given
+  if (item.hasOwnProperty('_id')) {
+    toolRuntimeConfig.id = item._id;
+  }
+
+  // if endpoint defines tool runtime config, apply it
+  if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
+    toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
+  }
+
+  // apply to runtime config from the request
+  toolRuntimeConfig = Object.assign(toolRuntimeConfig, requestToolRuntimeConfig);
+
+  return toolRuntimeConfig;
+}
+
 module.exports = {
-  getRenderingInfo: getRenderingInfo
+  getRenderingInfo: getRenderingInfo,
+  getCompiledToolRuntimeConfig: getCompiledToolRuntimeConfig
 }

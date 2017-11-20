@@ -11,89 +11,8 @@ const it = lab.it;
 
 const package = require('../package.json');
 
-let server = Hapi.server({
-  port: process.env.PORT || 3001,
-  app: {
-    tools: require('./config/tools.js'),
-    targets: require('./config/targets.js'),
-  },
-  routes: {
-    cors: true
-  }
-});
-
-// mock the auth strategy
-server.auth.scheme('mock', function(server, options) {
-  return {
-    authenticate: function(request, h) {
-      debugger;
-      return {credentials: 'user'};
-    }
-  };
-});
-server.auth.strategy('q-auth', 'mock');
-
-const plugins = [
-  {
-    plugin: require('../plugins/core/base'),
-    options: require('./config/base.js')
-  },
-  {
-    plugin: require('../plugins/core/db'),
-    options: {
-      protocol: 'http',
-      host: 'localhost:5984',
-      database: 'q-items'
-    }
-  },
-  {
-    plugin: require('../plugins/core/editor'),
-    options: {
-      editorConfig: require('./config/editor.js').get('')
-    }
-  },
-  {
-    plugin: require('../plugins/core/rendering-info'),
-    options: require('./config/rendering-info.js')
-  },
-  {
-    plugin: require('../plugins/statistics')
-  },
-  {
-    plugin: require('../plugins/screenshot'),
-    options: {
-      getScripts: function(renderingInfo) {
-        const scripts = [];
-        if (renderingInfo.loaderConfig && renderingInfo.loaderConfig.loadSystemJs === 'full') {
-          scripts.push({url: `${process.env.Q_SERVER_BASE_URL}/files/system.js`});
-        }
-        if (renderingInfo.loaderConfig && renderingInfo.loaderConfig.polyfills) {
-          scripts.push({url: `https://cdn.polyfill.io/v2/polyfill.min.js?features=${renderingInfo.loaderConfig.polyfills.join(',')}`});
-        }
-        if (renderingInfo.scripts && Array.isArray(renderingInfo.scripts)) {
-          for (let script of renderingInfo.scripts) {
-            script = resolvePath(script);
-            if (script.url && script.url.includes('track-manager')) {
-              continue;
-            }
-            scripts.push(script);
-          }
-        }
-        return scripts;
-      },
-      getStylesheets: function(renderingInfo) {
-        const stylesheets = [];
-        if (renderingInfo.stylesheets && Array.isArray(renderingInfo.stylesheets)) {
-          for (let stylesheet of renderingInfo.stylesheets) {
-            stylesheet = resolvePath(stylesheet);
-            stylesheets.push(stylesheet);
-          }
-        }
-        return stylesheets;
-      }
-    }
-  }
-]
+let server = require('./server.js').getServer();
+const plugins = require('./plugins');
 
 let pouchdbServer;
 before(async () => {
@@ -122,11 +41,12 @@ before(async () => {
   }
 });
 
-after(() => {
+after(async () => {
+  await server.stop({ timeout: 2000 });
   server = null;
   console.log('\ngoing to kill pouchdb server with pid', pouchdbServer.pid);
   pouchdbServer.kill('SIGHUP');
-  console.log('killed?', pouchdbServer.killed);
+  console.log('killed?', pouchdbServer.killed, '\n');
   return;
 });
 
@@ -144,56 +64,6 @@ lab.experiment('basics', () => {
   it('returnes its version', async () => {
     const response = await server.inject('/version');
     expect(response.payload).to.equal(package.version);
-  });
-
-});
-
-lab.experiment('core base', () => {
-
-  it('returnes Cache-Control: public if no config given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig();
-    expect(configCacheControl[0]).to.be.equal('public');
-  });
-
-  it('returnes correct cache control header if maxAge given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
-      maxAge: 1
-    });
-    expect(configCacheControl[0]).to.be.equal('public');
-    expect(configCacheControl[1]).to.be.equal('max-age=1');
-  });
-
-  it('returnes correct cache control header if sMaxAge given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
-      sMaxAge: 1
-    });
-    expect(configCacheControl[0]).to.be.equal('public');
-    expect(configCacheControl[1]).to.be.equal('s-maxage=1');
-  });
-
-  it('returnes correct cache control header if staleWhileRevalidate given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
-      staleWhileRevalidate: 1
-    });
-    expect(configCacheControl[0]).to.be.equal('public');
-    expect(configCacheControl[1]).to.be.equal('stale-while-revalidate=1');
-  });
-
-  it('returnes correct cache control header if staleIfError given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
-      staleIfError: 1
-    });
-    expect(configCacheControl[0]).to.be.equal('public');
-    expect(configCacheControl[1]).to.be.equal('stale-if-error=1');
-  });
-  
-  it('computes correct cache control headers if all config given', async () => {
-    const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig(require('./config/base.js').get('/cache/cacheControl'));
-    expect(configCacheControl[0]).to.be.equal('public');
-    expect(configCacheControl[1]).to.be.equal('max-age=1');
-    expect(configCacheControl[2]).to.be.equal('s-maxage=1');
-    expect(configCacheControl[3]).to.be.equal('stale-while-revalidate=1');
-    expect(configCacheControl[4]).to.be.equal('stale-if-error=1');
   });
 
 });
@@ -250,9 +120,28 @@ lab.experiment('core item', () => {
     const response = await server.inject(request);
     expect(response.statusCode).to.be.equal(400);
     expect(response.result.message).to.be.equal(`{"keyword":"required","dataPath":"","schemaPath":"#/required","params":{"missingProperty":"foo"},"message":"should have required property 'foo'"}`);
-  })
+  });
 
-  it('should save and existing item if it validates against schema', async () => {
+  it('should save a new item if it validates against schema', async () => {
+    try {
+      const request = {
+        method: 'POST',
+        credentials: {username: 'user', password: 'pass'},
+        url: '/item',
+        payload: {
+          title: 'some-new-item-from-test',
+          tool: 'tool1',
+          foo: 'bar'
+        }
+      };
+      const response = await server.inject(request);
+      expect(response.statusCode).to.be.equal(200);
+    } catch (err) {
+      expect(err).to.be.undefined();
+    }
+  });
+
+  it('should save an existing item if it validates against schema', async () => {
     try {
       const itemResponse = await server.inject('/item/mock-item-to-test-edits');
       const item = JSON.parse(itemResponse.payload);
@@ -273,11 +162,35 @@ lab.experiment('core item', () => {
     } catch (err) {
       expect(err).to.be.undefined();
     }
-  })
+  });
 
 });
 
-lab.experiment('rendering-info', () => {
+lab.experiment('core tool proxy routes', () => {
+  
+  it('returnes Not Found if no config for given tool available', { plan: 1 }, async () => {
+    const response = await server.inject('/tools/inexisting_tool/stylesheet/test.123.css');
+    expect(response.statusCode).to.be.equal(404);
+  });
+
+  it('passes the querystring for tool-default route on to the tool', { plan: 1 }, async () => {
+    const response = await server.inject('/tools/tool1/stylesheet/test.123.css?background=red');
+    expect(response.result).to.be.equal('body { background: red; }');
+  });
+  
+  it('returnes stylesheet from tool when requested', { plan: 1 }, async () => {
+    const response = await server.inject('/tools/tool1/stylesheet/test.123.css');
+    expect(response.result).to.be.equal('body { background: black; }');
+  });
+
+  it('returnes correct cache-control header when responding from tool', { plan: 1 }, async () => {
+    const response = await server.inject('/tools/tool1/stylesheet/test.123.css');
+    expect(response.headers['cache-control']).to.be.equal("max-age=31536000,immutable,public=true,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
+  });
+
+});
+
+lab.experiment('core rendering-info', () => {
 
   it('returnes 403 for inactive item if no ignoreInactive given', { plan: 1 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-inactive/pub1');
@@ -291,4 +204,52 @@ lab.experiment('rendering-info', () => {
     expect(response.result.stylesheets).to.be.an.array();
   });
 
+  it('returnes an error if tool endpoint is not properly configured', { plan: 2 }, async () => {
+    const response = await server.inject('/rendering-info/mock-item-from-wrong-configured-tool/pub1');
+    expect(response.statusCode).to.be.equal(503);
+    expect(response.result.message).to.be.equal('Endpoint has no path nor url configured');
+  });
+
+  it('returnes an error if rendering-info tool endpoint returnes one', { plan: 1 }, async () => {
+    const response = await server.inject('/rendering-info/mock-item-active/fail');
+    expect(response.statusCode).to.be.equal(500);
+  });
+
+});
+
+lab.experiment('core editor endpoints', () => {
+  it('returnes the editor config', async () => {
+    const response = await server.inject('/editor/config');
+
+    // test various settings from the config, no need to test them all
+    expect(response.result.departments[0]).to.be.equal('department1');
+    expect(response.result.stylesheets[0].url).to.be.equal('https://fonts.googleapis.com/css?family=Merriweather:400,900|Roboto:400,700&subset=latin,latin');
+    expect(response.result.auth.type).to.be.equal('token');
+  });
+
+  it('returnes correctly generates translation file with tool names for given locale', async () => {
+    const responseDe = await server.inject('/editor/locales/de/translation.json');
+    expect(responseDe.result.tool1).to.be.equal('tool1_de');
+    expect(responseDe.result.tool2).to.be.undefined();
+
+    const responseEn = await server.inject('/editor/locales/en/translation.json');
+    expect(responseEn.result.tool1).to.be.equal('tool1_en');
+
+    const responseInexistingLanguage = await server.inject('/editor/locales/inexistingLanguage/translation.json');
+    expect(responseInexistingLanguage.result.tool1).to.be.undefined();
+  });
+
+  it('returnes the tool editor configs', async () => {
+    const response = await server.inject('/editor/tools');
+    expect(response.result[0].name).to.be.equal('tool1');
+    expect(response.result[0].icon).to.be.equal('<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M0 31h32v1H0zM25 0h6v30h-6zm-8 6h6v24h-6zm-8 7h6v17H9zm-8 5h6v12H1z" fill-rule="evenodd"/></svg>');
+    expect(response.result[1].name).to.be.equal('tool2');
+    expect(response.result[1].icon).to.be.equal('<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M0 31h32v1H0zM25 0h6v30h-6zm-8 6h6v24h-6zm-8 7h6v17H9zm-8 5h6v12H1z" fill-rule="evenodd"/></svg>');
+  });
+
+  it('returnes the target configs', async () => {
+    const response = await server.inject('/editor/targets');
+    expect(response.result).to.be.an.array();
+    expect(response.result[0].key).to.be.equal('pub1');
+  });
 });

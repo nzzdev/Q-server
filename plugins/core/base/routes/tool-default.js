@@ -11,7 +11,7 @@ async function handler(options, request, h, payload = null) {
   }
 
   let queryString = '';
-  if (request.query) {
+  if (request.query && Object.keys(request.query).length > 0) {
     queryString = querystring.stringify(request.query);
   }
 
@@ -36,7 +36,7 @@ async function handler(options, request, h, payload = null) {
   const responseCacheControl = Wreck.parseCacheControl(toolResponse.res.headers['cache-control']);
   if (responseCacheControl['no-cache'] !== true) {
     const configCacheControl = await request.server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
-    const defaultCacheControl = Wreck.parseCacheControl(configCacheControl.join(', '));
+    const defaultCacheControl = Wreck.parseCacheControl(configCacheControl.join(','));
 
     for (directive of Object.keys(defaultCacheControl)) {
       // only add the default cache control if the directive is not present on the response from the tool
@@ -47,6 +47,9 @@ async function handler(options, request, h, payload = null) {
       }
     }
   }
+
+  // strip whitespace from cache-control header value to be consistent
+  response.header('cache-control', response.headers['cache-control'].replace(/ /g,''));
 
   return response;
 }

@@ -1,4 +1,5 @@
 const Hapi = require('hapi');
+const Boom = require('boom');
 
 const server = Hapi.server({
   port: 9999,
@@ -52,6 +53,28 @@ server.route({
         }
       ]
     }
+  }
+});
+
+server.route({
+  method: 'POST',
+  path: '/rendering-info/fail',
+  handler: function(request, h) {
+    throw new Error('fail');
+  }
+});
+
+server.route({
+  method: 'GET',
+  path: '/stylesheet/{name}.{hash}.css',
+  handler: function(request, h) {
+    let background = 'black';
+    if (request.query.background) {
+      background = request.query.background;
+    }
+    return h.response(`body { background: ${background}; }`)
+      .type('text/css')
+      .header('cache-control', `max-age=${60 * 60 * 24 * 365}, immutable`); // 1 year
   }
 });
 

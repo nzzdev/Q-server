@@ -22,8 +22,16 @@ const sizeValidationObject = {
 
 function validateDimension(dimension) {
   if (dimension.length === 2) {
-    let dimensionA = dimension[0];
-    let dimensionB = dimension[1];
+
+    // first, we sort the dimensions
+    // this makes it easier for the plausibility checks later on
+    dimension = dimension
+      .sort((a, b) => {
+        return a.value - b.value;
+      });
+
+    const dimensionA = dimension[0];
+    const dimensionB = dimension[1];
     if (dimensionA.unit === undefined) {
       dimensionA.unit = 'px';
     }
@@ -33,13 +41,18 @@ function validateDimension(dimension) {
     if (dimensionA.unit !== dimensionB.unit) {
       throw Boom.badData('Units are not the same for the given range.');
     }
-    let comparisonA = dimensionA.comparison;
-    let comparisonB = dimensionB.comparison;
-    if (comparisonA === comparisonB || comparisonA === '=' || comparisonB === '=' 
+
+    // go on with some plausability checks
+    const comparisonA = dimensionA.comparison;
+    const comparisonB = dimensionB.comparison;
+    if (comparisonA === comparisonB // if the same comparison is the same 2 times, it makes no sense
+        || comparisonA === '=' // if we have = comparison, it makes no sense to have multiple width definitions
+        || comparisonB === '=' // if we have = comparison, it makes no sense to have multiple width definitions
         || (comparisonA === '<' && dimensionA.value < dimensionB.value)
         || (comparisonB === '>' && dimensionB.value > dimensionA.value)) {
       throw Boom.badData('The combination of values and comparison signs does not result in a meaningful range.')
     }
+
   }
   return true;
 }

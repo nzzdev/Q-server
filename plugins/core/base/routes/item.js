@@ -67,11 +67,7 @@ module.exports = {
       let doc = request.payload;
       let now = new Date();
 
-      try {
-        await validateAgainstSchema(request, doc);
-      } catch (err) {
-        return err;
-      }
+      await validateAgainstSchema(request, doc);
 
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with

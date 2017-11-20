@@ -27,6 +27,21 @@ const targets = [
         }
       ],
       background: {
+        color: 'green'
+      }
+    }
+  },
+  {
+    key: 'fail',
+    label: 'fail',
+    type: 'web',
+    context: {
+      stylesheets: [
+        {
+          url: 'https://proxy.st-cdn.nzz.ch/context-service/stylesheet/all/nzzas.nzz.ch.css'
+        }
+      ],
+      background: {
         color: 'red'
       }
     }

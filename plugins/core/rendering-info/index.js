@@ -3,44 +3,9 @@ const Joi = require('joi');
 const Hoek = require('hoek');
 
 const getRenderingInfo = require('./helpers.js').getRenderingInfo;
+const getCompiledToolRuntimeConfig = require('./helpers.js').getCompiledToolRuntimeConfig;
 const sizeValidationObject = require('./size-helpers.js').sizeValidationObject;
 const validateSize = require('./size-helpers.js').validateSize;
-
-function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }) {
-  const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
-  
-  // simplify the toolBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
-  if (typeof overallToolRuntimeConfig.toolBaseUrl === 'object' && overallToolRuntimeConfig.toolBaseUrl.host) {
-    let protocol = 'https';
-    if (overallToolRuntimeConfig.toolBaseUrl.protocol) {
-      protocol = overallToolRuntimeConfig.toolBaseUrl.protocol;
-    }
-    // the default if no path is given is to add /tools/{toolname}
-    let path = `/tools/${item.tool}`;
-    if (overallToolRuntimeConfig.toolBaseUrl.path) {
-      path = overallToolRuntimeConfig.toolBaseUrl.path;
-    }
-    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}${path}`;
-  }
-
-  // default to the overall config
-  let toolRuntimeConfig = overallToolRuntimeConfig;
-
-  // add the item id if given or to a randomized id if not
-  if (item.hasOwnProperty('_id')) {
-    toolRuntimeConfig.id = item._id;
-  }
-
-  // if endpoint defines tool runtime config, apply it
-  if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
-  }
-
-  // apply to runtime config from the request
-  toolRuntimeConfig = Object.assign(toolRuntimeConfig, requestToolRuntimeConfig);
-
-  return toolRuntimeConfig;
-}
 
 function getGetRenderingInfoRoute(config) {
   return {

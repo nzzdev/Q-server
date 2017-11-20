@@ -11,8 +11,8 @@ const editorConfig = {
     }
   ],
   departments: [
-    "departement1",
-    "departement2",
+    "department1",
+    "department2",
   ],
   publications: [
     {

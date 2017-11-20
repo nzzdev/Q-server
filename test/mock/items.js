@@ -26,4 +26,11 @@ module.exports = [
     foo: 'bar',
     active: true
   },
+  {
+    _id: 'mock-item-from-wrong-configured-tool',
+    title: 'title',
+    tool: 'tool2',
+    foo: 'bar',
+    active: true
+  },
 ];
