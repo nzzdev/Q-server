@@ -86,6 +86,13 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
     });
   });
 
+  // we support a wait parameter to be set in milliseconds to wait before we take the screenshot
+  if (config.waitBeforeScreenshot && config.waitBeforeScreenshot > 0) {
+    await new Promise(resolve => {
+      setTimeout(resolve, config.waitBeforeScreenshot);
+    })
+  }
+
   const graphicElement = await page.$('#q-screenshot-service-container');
 
   let isTransparent = false;

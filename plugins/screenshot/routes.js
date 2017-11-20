@@ -18,6 +18,7 @@ module.exports = [
           dpr: Joi.number().optional(),
           background: Joi.string().optional(),
           padding: Joi.string().regex(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?){1,4}$/).optional(),
+          wait: Joi.number().optional()
         }
       },
       tags: ['api']
@@ -64,7 +65,8 @@ module.exports = [
         width: request.query.width,
         dpr: request.query.dpr || 1,
         padding: request.query.padding || '0',
-        background: request.query.background
+        background: request.query.background,
+        waitBeforeScreenshot: request.query.wait || 0
       }
 
       const screenshotBuffer = await getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config);
