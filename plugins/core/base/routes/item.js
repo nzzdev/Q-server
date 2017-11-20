@@ -18,7 +18,13 @@ function validateAgainstSchema(request, doc) {
     if (validate(doc)) {
       resolve(true);
     } else {
-      reject(Boom.badRequest(JSON.stringify(validate.errors)));
+      reject(Boom.badRequest(
+        validate.errors
+          .map(error => {
+            return JSON.stringify(error);
+          })
+          .join('\n')
+      ));
     }
   });
 }
@@ -67,7 +73,11 @@ module.exports = {
       let doc = request.payload;
       let now = new Date();
 
-      await validateAgainstSchema(request, doc);
+      try {
+        await validateAgainstSchema(request, doc);
+      } catch (err) {
+        return err;
+      }
 
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
@@ -121,7 +131,7 @@ module.exports = {
       try {
         await validateAgainstSchema(request, doc);
       } catch (err) {
-        throw Boom.badRequest(err.message);
+        throw Boom.badRequest(err);
       }
 
       // docDiff is used to store all the changed properties
