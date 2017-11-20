@@ -2,7 +2,7 @@ const puppeteer = require('puppeteer');
 const fetch = require('node-fetch');
 
 // start a chromium process here
-const browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
+let browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
 
 // fetches assets and returnes a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
@@ -26,9 +26,18 @@ async function getConcatenatedAssets(assets, userAgent) {
 }
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
-  const browser = await browserPromise;
+  let browser = await browserPromise;
 
-  const page = await browser.newPage();
+  let page;
+
+  // try to open the page, if it doesn't work, launch a new browser
+  try {
+    page = await browser.newPage();
+  } catch (err) {
+    browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
+    browser = await browserPromise;
+    page = await browser.newPage();
+  }
 
   // the height of 16384 is the max height of a GL context in chromium or something
   await page.setViewport({
