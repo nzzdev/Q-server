@@ -42,7 +42,6 @@
     "code": "^5.1.2",
     "confidence": "^3.0.2",
     "lab": "^15.1.2",
-    "mock-couch": "^0.1.9",
     "pouchdb-server": "^2.3.7"
   }
 }
