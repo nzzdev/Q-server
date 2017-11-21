@@ -8,5 +8,5 @@ There is an object `toolRuntimeConfig` that gets passed to the tool service for 
 2. as a query parameter or payload object to rendering-info endpoint
 
 
-We use this the 1. option to pass the `toolBaseUrl` to the tool for the case where the client side js code of a tool needs to do additional requests to itself as the tool does not have knowledge about the URL to access itself otherwise. This knowledge is only available in Q server during runtime in our setup. Yours could vary here of course.
+We use this the 1. option to pass the `toolBaseUrl` to the tool in case the client side js code of a tool needs to do additional requests to itself as the tool does not have knowledge about the URL to access itself otherwise. This knowledge is only available in Q server during runtime in our setup. Yours could vary here of course.
 Use this for any runtime information that needs to be available in your tool.
