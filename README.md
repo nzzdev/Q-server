@@ -7,7 +7,9 @@ This is the server for the Q Toolbox. To make use of Q server you will also need
 Documentation: https://nzzdev.github.io/Q-server
 
 ## Development
-Run tests `npm run test`
+### Tests
+There is a 100% coverage aim with the tests. Please do not lower the coverage.
+The tests use `pouchdb-server` to mock the database and implement a simple mock tool endpoint. This makes e2e testing completely self contained without the need for any external services running. Just do a `npm install` and then `npm run test` and you are good to go. There are e2e tests in `test/e2e-tests.js` and some unit tests in `test/unit-tests.js`.
 
 ## License
 Copyright (c) 2017 Neue Zürcher Zeitung. All rights reserved.
