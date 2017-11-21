@@ -47,6 +47,9 @@ after(async () => {
   console.log('\ngoing to kill pouchdb server with pid', pouchdbServer.pid);
   pouchdbServer.kill('SIGHUP');
   console.log('killed?', pouchdbServer.killed, '\n');
+  if (!pouchdbServer.killed) {
+    console.log('somehow i could not kill your pouchdb server. maybe another one is still running. check with "lsof -i:5984" and kill it yourself');
+  }
   return;
 });
 
