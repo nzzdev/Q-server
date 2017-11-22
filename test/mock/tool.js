@@ -37,6 +37,25 @@ server.route({
 });
 
 server.route({
+  method: 'GET',
+  path: '/display-options-schema.json',
+  handler: function(request, h) {
+    return `
+      {
+        "$schema": "http://json-schema.org/draft-04/schema#",
+        "title": "display option mock",
+        "type": "object",
+        "properties": {
+          "foo": {
+            "type": "boolean"
+          }
+        }
+      }
+    `;
+  }
+})
+
+server.route({
   method: 'POST',
   path: '/rendering-info/mock',
   handler: function(request, h) {

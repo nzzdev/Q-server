@@ -64,7 +64,7 @@ lab.experiment('basics', () => {
     expect(response.payload).to.equal('Q server is alive');
   });
 
-  it('returnes its version', async () => {
+  it('returns its version', async () => {
     const response = await server.inject('/version');
     expect(response.payload).to.equal(package.version);
   });
@@ -73,7 +73,7 @@ lab.experiment('basics', () => {
 
 lab.experiment('core item', () => {
   
-  it('returnes existing item from db', { plan: 2 }, async () => {
+  it('returns existing item from db', { plan: 2 }, async () => {
     const response = await server.inject('/item/mock-item-inactive');
     expect(response.statusCode).to.be.equal(200);
     const item = JSON.parse(response.payload);
@@ -171,7 +171,7 @@ lab.experiment('core item', () => {
 
 lab.experiment('core tool proxy routes', () => {
   
-  it('returnes Not Found if no config for given tool available', { plan: 1 }, async () => {
+  it('returns Not Found if no config for given tool available', { plan: 1 }, async () => {
     const response = await server.inject('/tools/inexisting_tool/stylesheet/test.123.css');
     expect(response.statusCode).to.be.equal(404);
   });
@@ -181,12 +181,12 @@ lab.experiment('core tool proxy routes', () => {
     expect(response.result).to.be.equal('body { background: red; }');
   });
   
-  it('returnes stylesheet from tool when requested', { plan: 1 }, async () => {
+  it('returns stylesheet from tool when requested', { plan: 1 }, async () => {
     const response = await server.inject('/tools/tool1/stylesheet/test.123.css');
     expect(response.result).to.be.equal('body { background: black; }');
   });
 
-  it('returnes correct cache-control header when responding from tool', { plan: 1 }, async () => {
+  it('returns correct cache-control header when responding from tool', { plan: 1 }, async () => {
     const response = await server.inject('/tools/tool1/stylesheet/test.123.css');
     expect(response.headers['cache-control']).to.be.equal("max-age=31536000,immutable,public=true,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
   });
@@ -195,25 +195,25 @@ lab.experiment('core tool proxy routes', () => {
 
 lab.experiment('core rendering-info', () => {
 
-  it('returnes 403 for inactive item if no ignoreInactive given', { plan: 1 }, async () => {
+  it('returns 403 for inactive item if no ignoreInactive given', { plan: 1 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-inactive/pub1');
     expect(response.statusCode).to.be.equal(403);
   });
 
-  it('returnes the rendering info for inactive item if ignoreInactive=true given', { plan: 3 }, async () => {
+  it('returns the rendering info for inactive item if ignoreInactive=true given', { plan: 3 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-inactive/pub1?ignoreInactive=true');
     expect(response.statusCode).to.be.equal(200);
     expect(response.result.scripts).to.be.an.array();
     expect(response.result.stylesheets).to.be.an.array();
   });
 
-  it('returnes an error if tool endpoint is not properly configured', { plan: 2 }, async () => {
+  it('returns an error if tool endpoint is not properly configured', { plan: 2 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-from-wrong-configured-tool/pub1');
     expect(response.statusCode).to.be.equal(503);
     expect(response.result.message).to.be.equal('Endpoint has no path nor url configured');
   });
 
-  it('returnes an error if rendering-info tool endpoint returnes one', { plan: 1 }, async () => {
+  it('returns an error if rendering-info tool endpoint returns one', { plan: 1 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-active/fail');
     expect(response.statusCode).to.be.equal(500);
   });
@@ -221,7 +221,7 @@ lab.experiment('core rendering-info', () => {
 });
 
 lab.experiment('core editor endpoints', () => {
-  it('returnes the editor config', async () => {
+  it('returns the editor config', async () => {
     const response = await server.inject('/editor/config');
 
     // test various settings from the config, no need to test them all
@@ -230,7 +230,7 @@ lab.experiment('core editor endpoints', () => {
     expect(response.result.auth.type).to.be.equal('token');
   });
 
-  it('returnes correctly generates translation file with tool names for given locale', async () => {
+  it('returns correctly generates translation file with tool names for given locale', async () => {
     const responseDe = await server.inject('/editor/locales/de/translation.json');
     expect(responseDe.result.tool1).to.be.equal('tool1_de');
     expect(responseDe.result.tool2).to.be.undefined();
@@ -242,7 +242,7 @@ lab.experiment('core editor endpoints', () => {
     expect(responseInexistingLanguage.result.tool1).to.be.undefined();
   });
 
-  it('returnes the tool editor configs', async () => {
+  it('returns the tool editor configs', async () => {
     const response = await server.inject('/editor/tools');
     expect(response.result[0].name).to.be.equal('tool1');
     expect(response.result[0].icon).to.be.equal('<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M0 31h32v1H0zM25 0h6v30h-6zm-8 6h6v24h-6zm-8 7h6v17H9zm-8 5h6v12H1z" fill-rule="evenodd"/></svg>');
@@ -250,9 +250,18 @@ lab.experiment('core editor endpoints', () => {
     expect(response.result[1].icon).to.be.equal('<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M0 31h32v1H0zM25 0h6v30h-6zm-8 6h6v24h-6zm-8 7h6v17H9zm-8 5h6v12H1z" fill-rule="evenodd"/></svg>');
   });
 
-  it('returnes the target configs', async () => {
+  it('returns the target configs', async () => {
     const response = await server.inject('/editor/targets');
     expect(response.result).to.be.an.array();
     expect(response.result[0].key).to.be.equal('pub1');
   });
 });
+
+lab.experiment('core schema endpoints', () => {
+  it('returns the tool display option schema', async () => {
+    const response = await server.inject('/tools/tool1/display-options-schema.json');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result).to.be.an.object();
+    expect(response.result.properties.foo.type).to.be.equal('boolean');
+  })
+})

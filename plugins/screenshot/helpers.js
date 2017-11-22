@@ -4,7 +4,7 @@ const fetch = require('node-fetch');
 // start a chromium process here
 let browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
 
-// fetches assets and returnes a concatenated string containing everything fetched
+// fetches assets and returns a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
   let result = '';
   for (let asset of assets) {

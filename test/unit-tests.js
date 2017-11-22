@@ -47,12 +47,12 @@ lab.experiment('meta-properties', () => {
 });
 
 lab.experiment('server.method: getCacheControlDirectivesFromConfig', () => {
-  it('returnes Cache-Control: public if no config given', async () => {
+  it('returns Cache-Control: public if no config given', async () => {
     const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig();
     expect(configCacheControl[0]).to.be.equal('public');
   });
 
-  it('returnes correct cache control header if maxAge given', async () => {
+  it('returns correct cache control header if maxAge given', async () => {
     const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
       maxAge: 1
     });
@@ -60,7 +60,7 @@ lab.experiment('server.method: getCacheControlDirectivesFromConfig', () => {
     expect(configCacheControl[1]).to.be.equal('max-age=1');
   });
 
-  it('returnes correct cache control header if sMaxAge given', async () => {
+  it('returns correct cache control header if sMaxAge given', async () => {
     const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
       sMaxAge: 1
     });
@@ -68,7 +68,7 @@ lab.experiment('server.method: getCacheControlDirectivesFromConfig', () => {
     expect(configCacheControl[1]).to.be.equal('s-maxage=1');
   });
 
-  it('returnes correct cache control header if staleWhileRevalidate given', async () => {
+  it('returns correct cache control header if staleWhileRevalidate given', async () => {
     const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
       staleWhileRevalidate: 1
     });
@@ -76,7 +76,7 @@ lab.experiment('server.method: getCacheControlDirectivesFromConfig', () => {
     expect(configCacheControl[1]).to.be.equal('stale-while-revalidate=1');
   });
 
-  it('returnes correct cache control header if staleIfError given', async () => {
+  it('returns correct cache control header if staleIfError given', async () => {
     const configCacheControl = await server.methods.getCacheControlDirectivesFromConfig({
       staleIfError: 1
     });
