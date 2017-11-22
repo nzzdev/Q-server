@@ -18,7 +18,8 @@ let pouchdbServer;
 before(async () => {
   try {
     // start the tool mock server
-    await require('./mock/tool.js').start();
+    await require('./mock/tool1.js').start();
+    await require('./mock/tool2.js').start();
 
     const { spawn } = require('child_process');
     pouchdbServer = spawn('./node_modules/pouchdb-server/bin/pouchdb-server', ['-c','test/pouchdb-server-config.json', '--in-memory']);
@@ -230,7 +231,7 @@ lab.experiment('core editor endpoints', () => {
     expect(response.result.auth.type).to.be.equal('token');
   });
 
-  it('returns correctly generates translation file with tool names for given locale', async () => {
+  it('returns correctly generated translation file with tool names for given locale', async () => {
     const responseDe = await server.inject('/editor/locales/de/translation.json');
     expect(responseDe.result.tool1).to.be.equal('tool1_de');
     expect(responseDe.result.tool2).to.be.undefined();
@@ -264,4 +265,10 @@ lab.experiment('core schema endpoints', () => {
     expect(response.result).to.be.an.object();
     expect(response.result.properties.foo.type).to.be.equal('boolean');
   })
+
+  it('return 404 for a tool not having any display options', async () => {
+    const response = await server.inject('/tools/tool2/display-options-schema.json');
+    expect(response.statusCode).to.be.equal(404);
+  })
+
 })

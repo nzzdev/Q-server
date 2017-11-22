@@ -46,7 +46,7 @@ const tools = {
     }
   },
   tool2: {
-    baseUrl: 'http://localhost:9999',
+    baseUrl: 'http://localhost:9998',
     editor: {
       icon: '<svg viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg"><path d="M0 31h32v1H0zM25 0h6v30h-6zm-8 6h6v24h-6zm-8 7h6v17H9zm-8 5h6v12H1z" fill-rule="evenodd"/></svg>'
     },
