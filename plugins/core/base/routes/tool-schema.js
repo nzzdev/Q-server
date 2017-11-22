@@ -27,6 +27,7 @@ module.exports = {
       tags: ['api', 'editor']
     },
     handler: async (request, reply) => {
+      const toolConfig = request.server.settings.app.tools.get(`/${request.params.tool}`);      
       const dereferencedSchema = await getSchema(toolConfig, 'display-options-schema.json');
       if (!dereferencedSchema) {
         return Boom.notFound();
