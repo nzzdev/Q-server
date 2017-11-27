@@ -1,4 +1,4 @@
-const routes = require('./routes.js');
+const getRoutes = require('./routes.js').getRoutes;
 const Hoek = require('hoek');
 
 module.exports = {
@@ -11,6 +11,7 @@ module.exports = {
     server.method('plugins.q.screenshot.getStylesheets', options.getStylesheets);
     server.method('plugins.q.screenshot.getScripts', options.getScripts);
 
-    return server.route(routes);
+    const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(options.cache.cacheControl);
+    return server.route(getRoutes(cacheControlDirectives.join(',')));
   }
 };

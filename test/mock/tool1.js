@@ -1,5 +1,6 @@
 const Hapi = require('hapi');
 const Boom = require('boom');
+const Joi = require('joi');
 
 const server = Hapi.server({
   port: 9999,
@@ -58,9 +59,19 @@ server.route({
 server.route({
   method: 'POST',
   path: '/rendering-info/mock',
+  options: {
+    validate: {
+      options: {
+        allowUnknown: true
+      },
+      payload: {
+        item: Joi.object().required()
+      }
+    },
+  },
   handler: function(request, h) {
     return {
-      markup: '<div></div>',
+      markup: `<h1>${request.payload.item.title}</h1>`,
       stylesheets: [
         {
           name: 'mockstyle'

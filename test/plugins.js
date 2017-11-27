@@ -1,3 +1,12 @@
+// used in screenshot plugin
+function resolvePath(resource, env) {
+  if (!resource.url && resource.path) {
+    resource.url = `http://localhost:3001${resource.path}`
+  }
+  delete resource.path;
+  return resource;
+}
+
 module.exports = [
   {
     plugin: require('../plugins/core/base'),
@@ -55,6 +64,14 @@ module.exports = [
           }
         }
         return stylesheets;
+      },
+      cache: {
+        cacheControl: {
+          maxAge: 1,
+          sMaxAge: 1,
+          staleWhileRevalidate: 1,
+          staleIfError: 1
+        }
       }
     }
   }

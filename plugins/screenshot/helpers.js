@@ -48,9 +48,8 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
 
   await page.goto(emptyPageUrl);
 
-  const userAgent = await page.evaluate(() => {
-    return navigator.userAgent;
-  })
+  // use strings instead of functions here as it will break in the tests otherwise.
+  const userAgent = await page.evaluate('navigator.userAgent');
 
   const styleContent = await getConcatenatedAssets(stylesheets);  
   
@@ -66,7 +65,7 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
         <style>${styleContent}</style>
       </head>
       <body style="${bodyStyle}">
-        <div id="q-screenshot-service-container" style="padding: ${config.padding};>${markup}</div>
+        <div id="q-screenshot-service-container" style="padding: ${config.padding}";>${markup}</div>
       </body>
     </html>`;
   
@@ -80,11 +79,11 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   });
 
   // wait for the next idle callback (to have most probably finished all work)
-  await page.evaluate(() => {
+  await page.evaluate(`() => {
     return new Promise((resolve, reject) => {
       requestIdleCallback(resolve);
     });
-  });
+  }`);
 
   // we support a wait parameter to be set in milliseconds to wait before we take the screenshot
   if (config.waitBeforeScreenshot && config.waitBeforeScreenshot > 0) {

@@ -43,14 +43,14 @@ before(async () => {
 });
 
 after(async () => {
-  await server.stop({ timeout: 2000 });
-  server = null;
   console.log('\ngoing to kill pouchdb server with pid', pouchdbServer.pid);
   pouchdbServer.kill('SIGHUP');
   console.log('killed?', pouchdbServer.killed, '\n');
   if (!pouchdbServer.killed) {
     console.log('somehow i could not kill your pouchdb server. maybe another one is still running. check with "lsof -i:5984" and kill it yourself');
   }
+  await server.stop({ timeout: 2000 });
+  server = null;
   return;
 });
 
@@ -271,4 +271,13 @@ lab.experiment('core schema endpoints', () => {
     expect(response.statusCode).to.be.equal(404);
   })
 
-})
+});
+
+lab.experiment('screenshot plugin', async () => {
+  await it('returnes a screenshot with correct cache-control headers', { timeout: 5000 }, async () => {
+    const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.headers['content-type']).to.be.equal('image/png');
+    expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
+  });
+});
