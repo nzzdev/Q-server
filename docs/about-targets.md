@@ -8,9 +8,8 @@ So, in a nutshell we have to deal with two groups of target specifics.
 -  __Technology related specifics__: your targets are different applications which can interpret markup or not
 
 ## Styling related specifics
-For each tool - target - environment combination styles can be configured in _config/tools.js_ of your Q server implementation. That can be done either:
-- by specifying a `url` or
-- by specifying a string with the styles in `content`
+For each tool - target - environment combination additional [rendering info](rendering-info.html) can be configured in the config passed as `app.tools` to `Hapi.server()`. We use _config/tools.js_ for this. See our [demo implementation](https://github.com/nzzdev/Q-server-demo) for details.
+This `additionalRenderingInfo` object will be merged with the object returned from the defined endpoint of the tool before getting sent back to the client. We use this to apply the stylesheets of our styleguide system to theme the rendered output for different publications.
 
 ```javascript
 const tools = {

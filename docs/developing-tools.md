@@ -17,7 +17,7 @@ Additionally you can specify an endpoint to get rendering information for a give
     module.exports = {
       method: 'POST',
       path: '/rendering-info/html-static',
-      config: {
+      options: {
         validate: {
           options: {
             allowUnknown: true
@@ -31,7 +31,7 @@ Additionally you can specify an endpoint to get rendering information for a give
         },
         cors: true
       },
-      handler: function(request, reply) {
+      handler: async function(request, h) {
         let data = {
           stylesheets: [
             {
@@ -43,7 +43,7 @@ Additionally you can specify an endpoint to get rendering information for a give
           // pass the data object to svelte render function to get markup
           markup: staticTemplate.render(request.payload.item)
         }
-        return reply(data);
+        return data;
       }
     }
    ```
@@ -54,73 +54,19 @@ As explained in _on name and path_ on [Rendering Info?](rendering-info.html) we'
 ```javascript
   module.exports = {
     method: 'GET',
-    path: '/stylesheet/{name*}',
-    config: {
-      cache: false // set cache to false to use default cache-control headers from Q server config
-    }
-    handler: function(request, reply) {
-      const filePath = stylesDir + `${request.params.name}.scss`;
-      fs.exists(filePath, (exists) => {
-        if (!exists) {
-          return reply(Boom.notFound())
-        }
-        sass.render(
-          {
-            file: filePath,
-            outputStyle: 'compressed'
-          }, 
-          (err, result) => {
-            if (err) {
-              reply(Boom.badImplementation(err));
-            } else {
-              postcss([ autoprefixerPlugin ]).process(result.css)
-              .then(result => {
-                if (result.warnings().length > 0) {
-                  return reply(result).type('text/css');
-                }
-                return reply(result.css).type('text/css');
-              });
-            }
-          }
-        )
-      });
+    path: '/stylesheet/{name*}.css',
+    handler: async function(request, h) {
+      // return the stylesheet content
     }
   }
 ```
-- __GET__ _/script/{name*}_: returns the script according to the given name. Typically the handler method differs depending on the specific script, hence we need an endpoint for each specific name, like:
+- __GET__ _/script/{name*}_: returns the script according to the given name.
 ```javascript
   module.exports = {
     method: 'GET',
-    path: '/script/system.js',
-    config: {
-      cache: false // set cache to false to use default cache-control headers from Q server config
-    }
+    path: '/script/{name*}.js',
     handler: function(request, reply) {
-      reply.file(__dirname + '/../node_modules/systemjs/dist/system-production.src.js');
-    }
-  }
-```
-
-## Rendering
-
-We use [Svelte](https://svelte.technology/) to get the tool specific markup. All markup related files can be found in the _views_ folder of each tool. Typically we have a base markup file like _views/html-static.html_ and some components for rendering e.g. header or footer. A basic example can be found in our [Q renderer skeleton](https://github.com/nzzdev/Q-renderer-skeleton/tree/master/views). The renderer method of svelte is called in the handler method of the rendering-info endpoint and gets the Q item as parameter:
-```javascript
-  //...
-  require('svelte/ssr/register');
-  const staticTemplate = require(viewsDir + 'html-static.html');
-  //...
-  module.exports = {
-    //...
-    handler: function(request, reply) { 
-      let data = {
-        stylesheets: [
-          {
-            name: 'default'
-          }
-        ],
-        markup: staticTemplate.render(request.payload.item)
-      }
-      return reply(data);
+      // return the script content
     }
   }
 ```
@@ -131,7 +77,7 @@ We deploy each tool as a Docker container in our environment. See [Docker docume
 
 ```sh
 # Use following version of Node as the base image
-FROM node:7.6
+FROM node:9
 
 # Set work directory for run/cmd
 WORKDIR /app
@@ -142,9 +88,6 @@ RUN npm install
 
 # Copy everthing else in work directory
 COPY . /app
-
-# Expose server port
-EXPOSE 3000
 
 # Run node
 CMD ["node", "/app/index.js"]
@@ -176,10 +119,6 @@ script:
 - docker build -t $DOCKER_IMAGE_NAME:$DOCKER_TAG .
 - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"; docker tag $DOCKER_IMAGE_NAME:$DOCKER_TAG
   nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG; docker push nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG;
-- if [ "$TRAVIS_BRANCH" == "staging" ] && [ $TRAVIS_PULL_REQUEST == "false" ]; then docker run --rm -it -e RANCHER_URL -e CATTLE_ACCESS_KEY 
-  -e CATTLE_SECRET_KEY etlweather/gaucho upgrade $RANCHER_SERVICE_ID_STAGING --auto_complete 
-  --start_first --imageUuid="docker:nzzonline/$DOCKER_IMAGE_NAME:$DOCKER_TAG" || true; 
-  fi
 cache:
   directories:
   - node_modules

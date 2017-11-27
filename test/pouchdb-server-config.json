@@ -1,0 +1,9 @@
+{
+  "log": {
+    "level": "info",
+    "file": "./test/logs/pouchdb.log"
+  },
+  "couchdb": {
+    "uuid": "4e6a3063-e4a3-4bec-8430-5e7fad3bf68f"
+  }
+}
