@@ -5,18 +5,7 @@ title: Installation
 ## Setup CouchDB
 1. Get [CouchDB](https://couchdb.apache.org) up an running. At NZZ we use [Cloudant on IBM Bluemix](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db). But there are other providers or you can host it yourself. You have to get a little bit familiar with CouchDB.
 2. Create a new database to hold all the _item_ documents. Lets call it _items-db_ for now.
-3. Q server currently supports an authentication scheme to let users authenticate against CouchDB. Go and read about [CouchDB Security Features](https://wiki.apache.org/couchdb/Security_Features_Overview#Security_Features_Overview-1). If you are using Cloudant, you can decide if you want to use the Cloudant authentication system or if you prefer to use the CouchDB *_users* database. If you want to use the CouchDB *_users* database, make sure the *_security* document of your _items-db_ looks something like this:
-```json
-{
-  "_id": "_security",
-  "couchdb_auth_only": true,
-  "members": {
-    "names": [],
-    "roles": []
-  },
-  "admins": {}
-}
-```
+3. Implement an authentication scheme: q-server version >3 does not implement an authentication scheme, instead you need to configure a hapi auth scheme called q-auth on your own. At NZZ, we use a scheme letting users log in using the same credentials as the CMS, but you can also use https://github.com/ubilabs/hapi-auth-couchdb-cookie (if updated to support hapi 17) or some other hapi auth plugin or even roll your own. How exactly this works is out of scope for this howto, please find information in the hapi documentation: https://hapijs.com/api
 4. Add this document as _items-db/_design/items_ to get the neccessary views in place
 ```json
 {
@@ -48,11 +37,8 @@ title: Installation
 Q server will run as a node service. At NZZ we use Docker to deploy it, but there are a lot of other solutions available. Q server comes as an npm package that you will add as a dependency to your own project. All the configuration will be done in code. In this tutorial we will use Q server demo implementation as base.
 1. Clone or download [Q server demo](https://github.com/nzzdev/Q-server-demo)
 2. We use [Confidence](https://github.com/hapijs/confidence) for configuration of different environments. Have a look at some examples to get yourself familiar with the format.
-3. edit _config/misc.js_ and set the information about your setup, _qServerBaseUrl_ and _db_ will be different for sure.
-4. edit _config/targets.js_ to your needs. If you just want to serve visual elements to your website, you need only one target. [Learn more about targets](about-targets.html)
-5. edit _config/tools.js_ to configure your tools as well as the endpoint used per target.
-6. edit _config/editorConfig.js_ to set some configuration used by the Q editor connecting to your Q server.
-7. set the environment variables `COUCH_USER` and `COUCH_PASS` to a user/pass that has write permissions to your _items-db_
+3. edit all the configuration files in `config/` and adjust to your needs
+7. set the environment variables `COUCH_HOST`, `COUCH_DB`, `COUCH_USER` and `COUCH_PASS`to a host/db/user/pass combination that has write permissions to your _items-db_
 8. start the Q server with `npm start:prod`
 
 

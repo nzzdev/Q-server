@@ -1,0 +1,194 @@
+const Boom = require('boom');
+const Joi = require('joi');
+const Hoek = require('hoek');
+
+const getRenderingInfo = require('./helpers.js').getRenderingInfo;
+const getCompiledToolRuntimeConfig = require('./helpers.js').getCompiledToolRuntimeConfig;
+const sizeValidationObject = require('./size-helpers.js').sizeValidationObject;
+const validateSize = require('./size-helpers.js').validateSize;
+
+function getGetRenderingInfoRoute(config) {
+  return {
+    method: 'GET',
+    path: '/rendering-info/{id}/{target}',
+    options: {
+      validate: {
+        params: {
+          id: Joi.string().required(),
+          target: Joi.string().required()
+        },
+        query: {
+          toolRuntimeConfig: Joi.object({
+            size: Joi.object(sizeValidationObject).optional()
+          }),
+          noCache: Joi.boolean().optional(),
+          ignoreInactive: Joi.boolean().optional()
+        },
+        options: {
+          allowUnknown: true
+        }
+      },
+      description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
+      tags: ['api', 'reader-facing']
+    },
+    handler: async function(request, h) {
+      let requestToolRuntimeConfig = {};
+
+      if (request.query.toolRuntimeConfig) {
+        if (request.query.toolRuntimeConfig.size) {
+          try {
+            validateSize(request.query.toolRuntimeConfig.size)
+          } catch (err) {
+            if (err.isBoom) {
+              throw err;
+            } else {
+              throw Boom.internal(err);
+            }
+          }
+        }
+
+        requestToolRuntimeConfig = request.query.toolRuntimeConfig;
+      }
+
+      try {
+        if (request.query.noCache) {
+          const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+          return h.response(renderingInfo)
+            .header('cache-control', 'no-cache');
+        } else {
+          const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+          return h.response(renderingInfo)
+            .header('cache-control', config.cacheControlHeader);
+        }
+      } catch (err) {
+        if (err.stack) {
+          request.server.log(['error'], err.stack);
+        }
+        if (err.isBoom) {
+          return err;
+        } else {
+          return Boom.serverUnavailable(err.message);
+        }
+      }
+    }
+  };
+}
+
+function getPostRenderingInfoRoute(config) {
+  return {
+    method: 'POST',
+    path: '/rendering-info/{target}',
+    options: {
+      cache: false,
+      validate: {
+        params: {
+          target: Joi.string().required()
+        },
+        payload: {
+          item: Joi.object().required(),
+          toolRuntimeConfig: Joi.object({
+            size: Joi.object(sizeValidationObject).optional()
+          })
+        },
+        options: {
+          allowUnknown: true
+        },
+      },
+      description: 'Returns rendering information for the given data and target (as configured in the environment).',
+      tags: ['api', 'editor']
+    },
+    handler: async function(request, h) {
+      let requestToolRuntimeConfig = {};
+
+      if (request.query.toolRuntimeConfig) {
+        if (request.query.toolRuntimeConfig.size) {
+          try {
+            validateSize(request.query.toolRuntimeConfig.size)
+          } catch (err) {
+            if (err.isBoom) {
+              throw err;
+            } else {
+              throw Boom.internal(err);
+            }
+          }
+        }
+        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
+      }
+
+      try {
+        return await request.server.methods.renderingInfo.getRenderingInfoForItem(request.payload.item, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+      } catch (err) {
+        if (err.isBoom) {
+          return err;
+        } else {
+          return Boom.serverUnavailable(err.message);
+        }
+      }
+    }
+  };
+}
+
+module.exports = {
+  name: 'q-rendering-info',
+  dependencies: 'q-base',
+  register: async function(server, options) {
+    Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function'));    
+
+    server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive) => {
+      const endpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target })
+      
+      if (!endpointConfig) {
+        throw new Error(`no endpoint configured for tool: ${item.tool} and target: ${target}`);
+      }
+
+      // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
+      const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
+        serverWideToolRuntimeConfig: options.get('/toolRuntimeConfig', { target: target, tool: item.tool }),
+        toolEndpoint:                endpointConfig,
+        requestToolRuntimeConfig:    requestToolRuntimeConfig
+      });
+
+      const baseUrl = server.settings.app.tools.get(`/${item.tool}/baseUrl`, { target: target });
+
+      return await getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig);
+    });
+
+    server.method('renderingInfo.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
+      const item = await server.methods.db.item.getById(id, ignoreInactive);
+      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
+    });
+
+    server.method('renderingInfo.cached.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
+      const item = await server.methods.db.item.getById(id, ignoreInactive);
+      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
+    }, {
+      cache: {
+        expiresIn: Number.isInteger(options.get('/cache/serverCacheTime')) ? options.get('/cache/serverCacheTime') : 1000,
+        generateTimeout: 10000
+      },
+      generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
+        let toolRuntimeConfigKey = JSON
+          .stringify(toolRuntimeConfig)
+          .replace(new RegExp('{', 'g'), '')
+          .replace(new RegExp('}', 'g'), '')
+          .replace(new RegExp('"', 'g'), '')
+          .replace(new RegExp(':', 'g'), '-');
+        let key = `${id}-${target}-${toolRuntimeConfigKey}-${ignoreInactive}`;
+        return key;
+      }
+    });
+
+    // calculate the cache control header from options given
+    const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
+    const cacheControlHeader = cacheControlDirectives.join(', ');
+
+    const routesConfig = {
+      cacheControlHeader: cacheControlHeader
+    }
+
+    server.route([
+      getGetRenderingInfoRoute(routesConfig),
+      getPostRenderingInfoRoute(routesConfig)
+    ])
+  }
+}
