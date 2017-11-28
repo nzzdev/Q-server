@@ -144,7 +144,7 @@ module.exports = {
       // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
       const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
         serverWideToolRuntimeConfig: options.get('/toolRuntimeConfig', { target: target, tool: item.tool }),
-        toolEndpoint:                endpointConfig,
+        toolEndpointConfig:          endpointConfig,
         requestToolRuntimeConfig:    requestToolRuntimeConfig
       });
 
