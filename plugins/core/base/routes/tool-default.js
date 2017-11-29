@@ -66,11 +66,24 @@ module.exports = {
           params: {
             tool: Joi.string().required(),
             path: Joi.string().required()
+          },
+          query: {
+            appendItemToPayload: Joi.string().optional()
+          },
+          options: {
+            allowUnknown: true
           }
         }
       },
       handler: async (request, h) => {
-        return await Reflect.apply(handler, this, [options, request, h]);
+        let payload = null;
+        if (request.query.appendItemToPayload) {
+          const item = await request.server.methods.db.item.getById(request.query.appendItemToPayload);
+          payload = {
+            item: item
+          };
+        }
+        return await Reflect.apply(handler, this, [options, request, h, payload]);
       }
     };
   },
@@ -86,10 +99,22 @@ module.exports = {
             tool: Joi.string().required(),
             path: Joi.string().required()
           },
-          payload: Joi.object()
+          query: {
+            appendItemToPayload: Joi.string().optional(),
+          },
+          payload: Joi.object(),
+          options: {
+            allowUnknown: true
+          }
         }
       },
       handler:  async (request, h) => {
+        if (request.query.appendItemToPayload) {
+          const item = await request.server.methods.db.item.getById(request.query.appendItemToPayload);
+          request.payload = {
+            item: item
+          };
+        }
         return await Reflect.apply(handler, this, [options, request, h, request.payload]);
       }
     }
