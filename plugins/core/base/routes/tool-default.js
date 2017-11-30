@@ -111,9 +111,7 @@ module.exports = {
       handler:  async (request, h) => {
         if (request.query.appendItemToPayload) {
           const item = await request.server.methods.db.item.getById(request.query.appendItemToPayload);
-          request.payload = {
-            item: item
-          };
+          request.payload.item = item;
         }
         return await Reflect.apply(handler, this, [options, request, h, request.payload]);
       }
