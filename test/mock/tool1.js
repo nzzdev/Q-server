@@ -108,6 +108,14 @@ server.route({
   }
 });
 
+server.route({
+  method: 'POST',
+  path: '/endpoint-returning-the-id-from-tool-in-payload',
+  handler: function(request, h) {
+    return request.payload.item._id;
+  }
+});
+
 module.exports = {
   start: async function() {
     await server.start();
