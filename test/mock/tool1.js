@@ -108,6 +108,19 @@ server.route({
   }
 });
 
+server.route({
+  method: 'GET',
+  path: '/fixtures/data',
+  handler: function(request, h) {
+    return [
+      {
+        title: "FIXTURE: mock",
+        foo: "bar"
+      }
+    ]
+  }
+});
+
 module.exports = {
   start: async function() {
     await server.start();
