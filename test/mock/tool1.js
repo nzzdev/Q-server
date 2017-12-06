@@ -109,6 +109,14 @@ server.route({
 });
 
 server.route({
+  method: 'POST',
+  path: '/endpoint-returning-the-id-from-tool-in-payload',
+  handler: function(request, h) {
+    return request.payload.item._id;
+  }
+});
+
+server.route({
   method: 'GET',
   path: '/fixtures/data',
   handler: function(request, h) {
@@ -119,7 +127,7 @@ server.route({
       }
     ]
   }
-});
+})
 
 module.exports = {
   start: async function() {
