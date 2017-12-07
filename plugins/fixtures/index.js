@@ -9,9 +9,9 @@ module.exports = {
     Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function')); 
 
     // get a list of already existing (stored in db) and new fixture data
-    server.method('fixtures.get', async () => {
+    server.method('plugins.q.fixtures.get', async () => {
       const tools = server.settings.app.tools.get('');
-      let fixtures = {
+      const fixtures = {
         existing: [],
         new: []
       };

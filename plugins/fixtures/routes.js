@@ -1,7 +1,9 @@
+const Boom = require('boom');
+
 module.exports = {
   storeFixtures: {
     path: '/fixtures/data',
-    method: 'GET',
+    method: 'POST',
     options: {
       auth: 'q-auth',
       cors: {
@@ -12,7 +14,7 @@ module.exports = {
     },
     handler: async (request, h) => {
       try {
-        const fixtures = await request.server.methods.fixtures.get();
+        const fixtures = await request.server.methods.plugins.q.fixtures.get();
         let result = {
           saved: [],
           errors: []
@@ -24,7 +26,7 @@ module.exports = {
             url: `/item`,
             method: 'PUT',
             payload: item,
-            credentials: request.auth.credentials              
+            credentials: request.auth.credentials
           });
           if (updateResponse.statusCode === 200) {
             result.saved.push(item._id);
@@ -55,7 +57,7 @@ module.exports = {
     }
   },
   getExistingFixtureIds: {
-    path: '/fixtures/data/ids',
+    path: '/fixtures/data',
     method: 'GET',
     options: {
       description: 'returns all available fixture data ids',
@@ -63,9 +65,13 @@ module.exports = {
     },
     handler: async (request, h) => {
       try {
-        const fixtures = await request.server.methods.fixtures.get();
+        const fixtures = await request.server.methods.plugins.q.fixtures.get();
         if (fixtures) {
-          return fixtures.existing.map(item => item._id);
+          return fixtures.existing.map(item => {
+            return {
+              _id: item._id
+            }
+          });
         }
       } catch (e) {
         return Boom.internal(e.message);
