@@ -71,7 +71,7 @@ server.route({
   },
   handler: function(request, h) {
     return {
-      markup: `<h1>${request.payload.item.title}</h1>`,
+      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${request.payload.itemStateInDb}</h1>`,
       stylesheets: [
         {
           name: 'mockstyle'
@@ -107,6 +107,27 @@ server.route({
       .header('cache-control', `max-age=${60 * 60 * 24 * 365}, immutable`); // 1 year
   }
 });
+
+server.route({
+  method: 'POST',
+  path: '/endpoint-returning-the-id-from-tool-in-payload',
+  handler: function(request, h) {
+    return request.payload.item._id;
+  }
+});
+
+server.route({
+  method: 'GET',
+  path: '/fixtures/data',
+  handler: function(request, h) {
+    return [
+      {
+        title: "FIXTURE: mock",
+        foo: "bar"
+      }
+    ]
+  }
+})
 
 module.exports = {
   start: async function() {

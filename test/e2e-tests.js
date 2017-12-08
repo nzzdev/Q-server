@@ -192,6 +192,48 @@ lab.experiment('core tool proxy routes', () => {
     expect(response.headers['cache-control']).to.be.equal("max-age=31536000,immutable,public=true,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
   });
 
+  it('passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an active item for GET requests', async () => {
+    const response = await server.inject('/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-active');
+    expect(response.result).to.be.equal('mock-item-active');
+  });
+
+  it('passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an active item for POST requests', async () => {
+    const response = await server.inject({
+      url: '/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-active',
+      method: 'POST',
+      payload: {}
+    });
+    expect(response.result).to.be.equal('mock-item-active');
+  });
+
+  it('fails with 403 if the item id passed as appendItemToPayload is inactive for GET requests', async () => {
+    const response = await server.inject('/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive');
+    expect(response.statusCode).to.be.equal(403);
+  });
+
+  it('fails with 403 if the item id passed as appendItemToPayload is inactive for POST requests', async () => {
+    const response = await server.inject({
+      url: '/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive',
+      method: 'POST',
+      payload: {}
+    });
+    expect(response.statusCode).to.be.equal(403);
+  });
+
+  it('fails with 404 if the item id passed as appendItemToPayload is not found for GET requests', async () => {
+    const response = await server.inject('/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=some-random-id-that-does-not-exist');
+    expect(response.statusCode).to.be.equal(404);
+  });
+
+  it('fails with 404 if the item id passed as appendItemToPayload is not found for POST requests', async () => {
+    const response = await server.inject({
+      url: '/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=some-random-id-that-does-not-exist',
+      method: 'POST',
+      payload: {}
+    });
+    expect(response.statusCode).to.be.equal(404);
+  });
+
 });
 
 lab.experiment('core rendering-info', () => {
@@ -217,6 +259,26 @@ lab.experiment('core rendering-info', () => {
   it('returns an error if rendering-info tool endpoint returns one', { plan: 1 }, async () => {
     const response = await server.inject('/rendering-info/mock-item-active/fail');
     expect(response.statusCode).to.be.equal(500);
+  });
+
+  it('passes itemStateInDb to the tool rendering-info endpoint if item is coming from db', async () => {
+    const response = await server.inject('/rendering-info/mock-item-active/pub1');
+    expect(response.result.markup).to.be.equal(`<h1>title - itemStateInDb: true</h1>`);
+  });
+
+  it('passes itemStateInDb to the tool rendering-info endpoint if item is not from db', async () => {
+    const response = await server.inject({
+      url: '/rendering-info/pub1',
+      method: 'POST',
+      payload: JSON.stringify({
+        item: {
+          _id: 'mock-item-active',
+          title: 'title',
+          tool: 'tool1',
+        }
+      })
+    });
+    expect(response.result.markup).to.be.equal(`<h1>title - itemStateInDb: false</h1>`);
   });
 
 });
@@ -281,3 +343,27 @@ lab.experiment('screenshot plugin', async () => {
     expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
   });
 });
+
+lab.experiment('fixture data plugin', () => {
+  it('returns no existing fixture data id', async () => {
+    const response = await server.inject('/fixtures/data');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.length).to.be.equal(0);
+  })
+  it('returns one saved fixture data item for tool1', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/fixtures/data',
+      credentials: {username: 'user', password: 'pass'}
+    });
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.saved.length).to.be.equal(1);
+    expect(response.result.saved[0]).to.be.equal('tool1-0');
+  })
+  it('returns one existing fixture data id', async () => {
+    const response = await server.inject('/fixtures/data');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.length).to.be.equal(1);
+    expect(response.result[0]._id).to.be.equal('tool1-0');
+  })
+})

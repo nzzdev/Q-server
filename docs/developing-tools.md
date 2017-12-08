@@ -25,6 +25,8 @@ Additionally you can specify an endpoint to get rendering information for a give
           payload: {
             // item gets validated against given schema
             item: schema,
+            // true if item was read from database, false if not (useful if you want to use the appendItemToPayload query from Q servers tool-default route)
+            itemStateInDb: Joi.boolean(),
             // one can pass further runtime configuration
             toolRuntimeConfig: Joi.object()
           }
