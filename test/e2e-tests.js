@@ -323,3 +323,27 @@ lab.experiment('screenshot plugin', async () => {
     expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
   });
 });
+
+lab.experiment('fixture data plugin', () => {
+  it('returns no existing fixture data id', async () => {
+    const response = await server.inject('/fixtures/data');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.length).to.be.equal(0);
+  })
+  it('returns one saved fixture data item for tool1', async () => {
+    const response = await server.inject({
+      method: 'POST',
+      url: '/fixtures/data',
+      credentials: {username: 'user', password: 'pass'}
+    });
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.saved.length).to.be.equal(1);
+    expect(response.result.saved[0]).to.be.equal('tool1-0');
+  })
+  it('returns one existing fixture data id', async () => {
+    const response = await server.inject('/fixtures/data');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result.length).to.be.equal(1);
+    expect(response.result[0]._id).to.be.equal('tool1-0');
+  })
+})

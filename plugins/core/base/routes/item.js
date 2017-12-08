@@ -53,7 +53,7 @@ module.exports = {
     options: {
       validate: {
         payload: {
-          _id: Joi.forbidden(),
+          _id: Joi.string().optional(),
           _rev: Joi.forbidden(),
           title: Joi.string().required(),
           tool: Joi.string().required()

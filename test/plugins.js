@@ -31,6 +31,9 @@ module.exports = [
     options: require('./config/rendering-info.js')
   },
   {
+    plugin: require('../plugins/fixtures')
+  },
+  {
     plugin: require('../plugins/statistics')
   },
   {
