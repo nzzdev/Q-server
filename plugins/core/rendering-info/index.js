@@ -115,8 +115,17 @@ function getPostRenderingInfoRoute(config) {
         requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
 
+      // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
+      const itemStateInDb = false;
+
       try {
-        return await request.server.methods.renderingInfo.getRenderingInfoForItem(request.payload.item, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
+        return await request.server.methods.renderingInfo.getRenderingInfoForItem(
+          request.payload.item,
+          request.params.target,
+          requestToolRuntimeConfig,
+          request.query.ignoreInactive,
+          itemStateInDb
+        );
       } catch (err) {
         if (err.isBoom) {
           return err;
@@ -134,9 +143,9 @@ module.exports = {
   register: async function(server, options) {
     Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function'));    
 
-    server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive) => {
+    server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb) => {
       const endpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target })
-      
+
       if (!endpointConfig) {
         throw new Error(`no endpoint configured for tool: ${item.tool} and target: ${target}`);
       }
@@ -150,17 +159,21 @@ module.exports = {
 
       const baseUrl = server.settings.app.tools.get(`/${item.tool}/baseUrl`, { target: target });
 
-      return await getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig);
+      return await getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig, itemStateInDb);
     });
 
     server.method('renderingInfo.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
       const item = await server.methods.db.item.getById(id, ignoreInactive);
-      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
+      // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
+      const itemStateInDb = true;
+      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb);
     });
 
     server.method('renderingInfo.cached.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
       const item = await server.methods.db.item.getById(id, ignoreInactive);
-      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive);
+      // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
+      const itemStateInDb = true;
+      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb);
     }, {
       cache: {
         expiresIn: Number.isInteger(options.get('/cache/serverCacheTime')) ? options.get('/cache/serverCacheTime') : 1000,

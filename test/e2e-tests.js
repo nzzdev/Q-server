@@ -261,6 +261,26 @@ lab.experiment('core rendering-info', () => {
     expect(response.statusCode).to.be.equal(500);
   });
 
+  it('passes itemStateInDb to the tool rendering-info endpoint if item is coming from db', async () => {
+    const response = await server.inject('/rendering-info/mock-item-active/pub1');
+    expect(response.result.markup).to.be.equal(`<h1>title - itemStateInDb: true</h1>`);
+  });
+
+  it('passes itemStateInDb to the tool rendering-info endpoint if item is not from db', async () => {
+    const response = await server.inject({
+      url: '/rendering-info/pub1',
+      method: 'POST',
+      payload: JSON.stringify({
+        item: {
+          _id: 'mock-item-active',
+          title: 'title',
+          tool: 'tool1',
+        }
+      })
+    });
+    expect(response.result.markup).to.be.equal(`<h1>title - itemStateInDb: false</h1>`);
+  });
+
 });
 
 lab.experiment('core editor endpoints', () => {

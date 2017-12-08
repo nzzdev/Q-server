@@ -5,7 +5,7 @@ const deepmerge = require('deepmerge');
 const Boom = require('boom');
 const deleteMetaProperties = require('../../../helper/meta-properties').deleteMetaProperties;
 
-async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig) {
+async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig, itemStateInDb) {
   let requestUrl;
   if (endpointConfig.hasOwnProperty('path')) {
     requestUrl = `${baseUrl}${endpointConfig.path}`;
@@ -29,6 +29,7 @@ async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig
   // strip the meta properties before sending the item to the tool service
   const body = {
     item: deleteMetaProperties(clone(item)),
+    itemStateInDb: itemStateInDb,
     toolRuntimeConfig: toolRuntimeConfig
   }
 

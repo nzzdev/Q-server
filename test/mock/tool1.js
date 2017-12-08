@@ -71,7 +71,7 @@ server.route({
   },
   handler: function(request, h) {
     return {
-      markup: `<h1>${request.payload.item.title}</h1>`,
+      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${request.payload.itemStateInDb}</h1>`,
       stylesheets: [
         {
           name: 'mockstyle'
