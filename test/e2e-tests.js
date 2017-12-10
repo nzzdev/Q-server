@@ -404,4 +404,47 @@ lab.experiment('fixture data plugin', () => {
     expect(response.result.length).to.be.equal(1);
     expect(response.result[0]._id).to.be.equal('tool1-0');
   })
-})
+});
+
+lab.experiment('keycdn plugin', () => {
+  it('returnes with cache-tag header if there is an id in the route params and request is from keycdn', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      headers: {
+        'x-pull': 'KeyCDN'
+      },
+      url: '/rendering-info/mock-item-active/pub1'
+    });
+    expect(response.headers['cache-tag']).to.be.equal('q-item-id-mock-item-active');
+  });
+
+  it('returnes no cache-tag header if there is an id in the route params and request is not from keycdn', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      url: '/rendering-info/mock-item-active/pub1'
+    });
+    expect(response.headers['cache-tag']).to.be.undefined();
+  });
+
+  it('returnes no cache-tag header if there is no id in the route params and request is from keycdn', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      headers: {
+        'x-pull': 'KeyCDN'
+      },
+      url: '/tools/tool1/display-options-schema.json'
+    });
+    expect(response.headers['cache-tag']).to.be.undefined();
+  });
+
+  it('returnes no cache-tag header if there is an id in the route params and request is from keycdn but cache-control is no-cache', async () => {
+    const response = await server.inject({
+      method: 'GET',
+      headers: {
+        'x-pull': 'KeyCDN'
+      },
+      url: '/rendering-info/mock-item-active/pub1?noCache=true'
+    });
+    expect(response.headers['cache-tag']).to.be.undefined();
+  });
+});
