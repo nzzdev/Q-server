@@ -168,6 +168,44 @@ lab.experiment('core item', () => {
     }
   });
 
+  it('should emit item.new event if new item is saved', { plan: 1 }, async () => {
+    const id = 'fix-id-to-better-test-the-case';
+    const handler = (item) => {
+      expect(item._id).to.be.equal(id);
+    }
+    server.events.once('item.new', handler);
+    const request = {
+      method: 'POST',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: {
+        _id: 'fix-id-to-better-test-the-case',
+        title: 'some-new-item',
+        tool: 'tool1',
+        foo: 'bar'
+      }
+    };
+    const response = await server.inject(request);
+  });
+
+  it('should emit item.update event if new item is saved', { plan: 1 }, async () => {
+    const id = 'mock-item-to-test-edits';
+    const handler = (item) => {
+      expect(item._id).to.be.equal(id);
+    }
+    server.events.once('item.update', handler);
+
+    const itemResponse = await server.inject('/item/mock-item-to-test-edits');
+    const item = JSON.parse(itemResponse.payload);
+    const request = {
+      method: 'PUT',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: item
+    };
+    const response = await server.inject(request);
+  });
+
 });
 
 lab.experiment('core tool proxy routes', () => {
@@ -281,6 +319,14 @@ lab.experiment('core rendering-info', () => {
     expect(response.result.markup).to.be.equal(`<h1>title - itemStateInDb: false</h1>`);
   });
 
+  it('returnes rendering-info with correct cache-control and cache-tag headers', { timeout: 5000, plan: 3 }, async () => {
+    const itemId = 'mock-item-active';
+    const response = await server.inject('/rendering-info/mock-item-active/pub1');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.headers['cache-control']).to.be.equal('public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1');
+    expect(response.headers['cache-tag']).to.be.equal(`q.rendering-info.${itemId}`);
+  });
+
 });
 
 lab.experiment('core editor endpoints', () => {
@@ -336,11 +382,13 @@ lab.experiment('core schema endpoints', () => {
 });
 
 lab.experiment('screenshot plugin', async () => {
-  await it('returnes a screenshot with correct cache-control headers', { timeout: 5000 }, async () => {
+  await it('returnes a screenshot with correct cache-control and cache-tag headers', { timeout: 5000, plan: 4 }, async () => {
+    const itemId = 'mock-item-active';
     const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500');
     expect(response.statusCode).to.be.equal(200);
     expect(response.headers['content-type']).to.be.equal('image/png');
-    expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
+    expect(response.headers['cache-control']).to.be.equal('public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1');
+    expect(response.headers['cache-tag']).to.be.equal(`q.plugins.screenshot.${itemId}`);
   });
 });
 
