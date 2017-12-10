@@ -8,6 +8,18 @@ module.exports = {
       require('inert')
     ]);
 
+    server.method('getPublicationConfigByKey', function(publicationName) {
+      try {
+        for (let publication of options.get('/publications')) {
+          if (publication.key === publicationName) {
+            return publication;
+          }
+        }
+      } catch (err) {
+        return null;
+      }
+    })
+
     server.method('getCacheControlDirectivesFromConfig', async function(cacheControlConfig) {
       const cacheControlDirectives = [
         'public'
