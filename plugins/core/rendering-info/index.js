@@ -58,7 +58,8 @@ function getGetRenderingInfoRoute(config) {
         } else {
           const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
           return h.response(renderingInfo)
-            .header('cache-control', config.cacheControlHeader);
+            .header('cache-control', config.cacheControlHeader)
+            .header('cache-tag', `q.rendering-info.${request.params.id}`);
         }
       } catch (err) {
         if (err.stack) {
@@ -193,7 +194,7 @@ module.exports = {
 
     // calculate the cache control header from options given
     const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
-    const cacheControlHeader = cacheControlDirectives.join(', ');
+    const cacheControlHeader = cacheControlDirectives.join(',');
 
     const routesConfig = {
       cacheControlHeader: cacheControlHeader

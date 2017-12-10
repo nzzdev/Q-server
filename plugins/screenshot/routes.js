@@ -76,7 +76,8 @@ module.exports = {
           const imageResponse = h.response(screenshotBuffer);
           imageResponse
             .type('image/png')
-            .header('cache-control', cacheControlHeader);
+            .header('cache-control', cacheControlHeader)
+            .header('cache-tag', `q.plugins.screenshot.${request.params.id}`);
           return imageResponse;
         }
       },
