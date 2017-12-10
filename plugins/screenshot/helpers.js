@@ -51,7 +51,7 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate('navigator.userAgent');
 
-  const styleContent = await getConcatenatedAssets(stylesheets);  
+  const styleContent = await getConcatenatedAssets(stylesheets, userAgent);
   
   let bodyStyle = 'margin: 0; padding: 0;';
   if (config.background) {
