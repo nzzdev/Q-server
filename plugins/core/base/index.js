@@ -34,6 +34,9 @@ module.exports = {
       return cacheControlDirectives;
     });
 
+    server.event('item.new');
+    server.event('item.update');
+
     await server.route([
       require('./routes/item.js').get,
       require('./routes/item.js').post,

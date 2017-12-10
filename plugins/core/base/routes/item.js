@@ -97,7 +97,13 @@ module.exports = {
   
           docDiff._id = res.id;
           docDiff._rev = res.rev;
-  
+
+          const savedDoc = Object.assign(request.payload, {
+            _id: res.id,
+            _rev: res.rev
+          });
+          request.server.events.emit('item.new', savedDoc);
+
           return resolve(docDiff);
         })
       });
@@ -161,6 +167,11 @@ module.exports = {
           if (err) {
             return reject(new Boom(err.description, { statusCode: err.statusCode } ));
           }
+
+          const savedDoc = Object.assign(doc, {
+            _rev: res.rev
+          });
+          request.server.events.emit('item.update', savedDoc);
 
           docDiff._rev = res.rev;
           return resolve(docDiff);
