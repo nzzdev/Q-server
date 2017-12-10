@@ -2,7 +2,7 @@ const Hapi = require('hapi');
 
 function getServer() {
   let server = Hapi.server({
-    port: process.env.PORT || 3001,
+    port: process.env.PORT || 3333,
     app: {
       tools: require('./config/tools.js'),
       targets: require('./config/targets.js'),
