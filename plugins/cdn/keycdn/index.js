@@ -7,6 +7,7 @@ function getCacheTagForId(id) {
 
 module.exports = {
   name: 'q-cdn-keycdn',
+  dependencies: ['q-base'],
   register: async function(server, options) {
 
     Hoek.assert(typeof options.zoneId === 'string', 'options.zoneId must be a string');
@@ -34,13 +35,14 @@ module.exports = {
         return h.continue;
       }
 
-      // add a tag if there is an id property in the route params
-      if (request.params.hasOwnProperty('id')) {
-        return h.response(response)
-          .header('cache-tag', getCacheTagForId(request.params.id))
+      // if there is no id property in the route params: continue
+      if (!request.params.hasOwnProperty('id')) {
+        return h.continue;
       }
 
-      return h.continue;
+      // if all prerequisites are given, actually add the cache-tag header
+      return h.response(response)
+        .header('cache-tag', getCacheTagForId(request.params.id))
     });
 
     const keycdn = new KeyCDN(options.apiKey);
