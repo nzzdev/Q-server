@@ -1,3 +1,4 @@
+const now = new Date();
 module.exports = [
   {
     _id: 'mock-item-inactive',
@@ -6,6 +7,7 @@ module.exports = [
     foo: 'bar',
     editedBy: 'username',
     createdBy: 'username',
+    createdDate: now.toISOString(),
     department: 'Storytelling',
     data: {
       foo: 'bar'
@@ -17,6 +19,8 @@ module.exports = [
     title: 'title',
     tool: 'tool1',
     foo: 'bar',
+    createdDate: now.toISOString(),
+    department: 'Storytelling',
     active: true
   },
   {
@@ -24,6 +28,8 @@ module.exports = [
     title: 'title',
     tool: 'tool1',
     foo: 'bar',
+    createdDate: now.toISOString(),
+    department: 'Storytelling',
     active: true
   },
   {
@@ -31,6 +37,8 @@ module.exports = [
     title: 'title',
     tool: 'tool2',
     foo: 'bar',
+    createdDate: now.toISOString(),
+    department: 'Storytelling',
     active: true
   },
 ];
