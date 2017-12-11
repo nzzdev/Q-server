@@ -168,6 +168,44 @@ lab.experiment('core item', () => {
     }
   });
 
+  it('should emit item.new event if new item is saved', { plan: 1 }, async () => {
+    const id = 'fix-id-to-better-test-the-case';
+    const handler = (item) => {
+      expect(item._id).to.be.equal(id);
+    }
+    server.events.once('item.new', handler);
+    const request = {
+      method: 'POST',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: {
+        _id: 'fix-id-to-better-test-the-case',
+        title: 'some-new-item',
+        tool: 'tool1',
+        foo: 'bar'
+      }
+    };
+    const response = await server.inject(request);
+  });
+
+  it('should emit item.update event if new item is saved', { plan: 1 }, async () => {
+    const id = 'mock-item-to-test-edits';
+    const handler = (item) => {
+      expect(item._id).to.be.equal(id);
+    }
+    server.events.once('item.update', handler);
+
+    const itemResponse = await server.inject('/item/mock-item-to-test-edits');
+    const item = JSON.parse(itemResponse.payload);
+    const request = {
+      method: 'PUT',
+      credentials: {username: 'user', password: 'pass'},
+      url: '/item',
+      payload: item
+    };
+    const response = await server.inject(request);
+  });
+
 });
 
 lab.experiment('core tool proxy routes', () => {
@@ -335,8 +373,28 @@ lab.experiment('core schema endpoints', () => {
 
 });
 
+lab.experiment('statistics plugin', async () => {
+  it('returns correct statistics for number-of-items since 3 days', async () => {
+    const date = new Date();
+
+    const response = await server.inject('/statistics/number-of-items/3');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result).to.be.an.object();
+    expect(response.result.value).to.be.equal(3);
+  });
+
+  it('returns correct statistics for number-of-items-per-day since 7 days', async () => {
+    const date = new Date();
+
+    const response = await server.inject('/statistics/number-of-items-per-day/7');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result).to.be.an.array();
+    expect(response.result[0].value).to.be.equal(3);
+  })
+});
+
 lab.experiment('screenshot plugin', async () => {
-  await it('returnes a screenshot with correct cache-control headers', { timeout: 5000 }, async () => {
+  await it('returnes a screenshot with correct cache-control headers', { timeout: 5000, plan: 3 }, async () => {
     const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500');
     expect(response.statusCode).to.be.equal(200);
     expect(response.headers['content-type']).to.be.equal('image/png');

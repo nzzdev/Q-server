@@ -8,7 +8,7 @@ module.exports = {
     server.route({
       path: '/statistics/number-of-items/{since?}',
       method: 'GET',
-      config: {
+      options: {
         validate: {
           params: {
             since: Joi.number().optional()
@@ -47,5 +47,54 @@ module.exports = {
         return returnValue;
       }
     })
+
+    server.route({
+      path: '/statistics/number-of-items-per-day/{daysInThePast}',
+      method: 'GET',
+      options: {
+        validate: {
+          params: {
+            daysInThePast: Joi.number()
+          }
+        },
+        description: 'returns the number of items per day for n days in the past',
+        tags: ['api', 'statistics', 'non-critical']
+      },
+      handler: async (request, h) => {
+        // calculate the startkey for the db view
+        const date = new Date();
+        date.setDate(date.getDate() - request.params.daysInThePast);
+        const year = date.getFullYear();
+        const month = date.getMonth() + 1;
+        if (month < 10) {
+          month = '0' + month;
+        }
+        var day = date.getDate();
+        if (day < 10) {
+          day = '0' + day;
+        }
+
+        const options = {
+          startkey: '' + year + month + day,
+          group: true
+        }
+
+        const returnValue = await new Promise((resolve, reject) => {
+          server.app.db.view('items', 'numberOfItemsPerDay', options, (err, data) => {
+            if (err) {
+              return reject(Boom.internal(err));
+            } else {
+              if (data.rows.length === 0) {
+                return resolve({
+                  value: 0
+                });
+              }
+              return resolve(data.rows);
+            }
+          })
+        });
+        return returnValue;
+      }
+    });
   }
 }
