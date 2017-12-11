@@ -188,7 +188,7 @@ lab.experiment('core item', () => {
     const response = await server.inject(request);
   });
 
-  it('should emit item.update event if new item is saved', { plan: 1 }, async () => {
+  it('should emit item.update event if an existing itemm is updated', { plan: 1 }, async () => {
     const id = 'mock-item-to-test-edits';
     const handler = (item) => {
       expect(item._id).to.be.equal(id);
@@ -374,7 +374,7 @@ lab.experiment('core schema endpoints', () => {
 });
 
 lab.experiment('screenshot plugin', async () => {
-  await it('returnes a screenshot with correct cache-control headers', { timeout: 5000, plan: 3 }, async () => {
+  await it('returns a screenshot with correct cache-control headers', { timeout: 5000, plan: 3 }, async () => {
     const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500');
     expect(response.statusCode).to.be.equal(200);
     expect(response.headers['content-type']).to.be.equal('image/png');
@@ -407,7 +407,7 @@ lab.experiment('fixture data plugin', () => {
 });
 
 lab.experiment('keycdn plugin', () => {
-  it('returnes with cache-tag header if there is an id in the route params and request is from keycdn', async () => {
+  it('returns with cache-tag header if there is an id in the route params and request is from keycdn', async () => {
     const response = await server.inject({
       method: 'GET',
       headers: {
@@ -418,7 +418,7 @@ lab.experiment('keycdn plugin', () => {
     expect(response.headers['cache-tag']).to.be.equal('q-item-id-mock-item-active');
   });
 
-  it('returnes no cache-tag header if there is an id in the route params and request is not from keycdn', async () => {
+  it('returns no cache-tag header if there is an id in the route params and request is not from keycdn', async () => {
     const response = await server.inject({
       method: 'GET',
       url: '/rendering-info/mock-item-active/pub1'
@@ -426,7 +426,7 @@ lab.experiment('keycdn plugin', () => {
     expect(response.headers['cache-tag']).to.be.undefined();
   });
 
-  it('returnes no cache-tag header if there is no id in the route params and request is from keycdn', async () => {
+  it('returns no cache-tag header if there is no id in the route params and request is from keycdn', async () => {
     const response = await server.inject({
       method: 'GET',
       headers: {
@@ -437,7 +437,7 @@ lab.experiment('keycdn plugin', () => {
     expect(response.headers['cache-tag']).to.be.undefined();
   });
 
-  it('returnes no cache-tag header if there is an id in the route params and request is from keycdn but cache-control is no-cache', async () => {
+  it('returns no cache-tag header if there is an id in the route params and request is from keycdn but cache-control is no-cache', async () => {
     const response = await server.inject({
       method: 'GET',
       headers: {
