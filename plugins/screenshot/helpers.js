@@ -6,23 +6,30 @@ let browserPromise = puppeteer.launch({ args: ['--no-sandbox'] });
 
 // fetches assets and returns a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
-  let result = '';
+  const contentPromises = [];
   for (let asset of assets) {
     if (asset.content) {
-      result = result + asset.content;
+      contentPromises.push(Promise.resolve(asset.content));
     }
     if (asset.url) {
-      const response = await fetch(asset.url, {
-        headers: {
-          'User-Agent': userAgent
-        }
-      });
-      if (response.ok) {
-        result = result + await response.text();
-      }
+      const promise = fetch(asset.url, {
+          headers: {
+            'User-Agent': userAgent
+          }
+        })
+        .then(response => {
+          if (response.ok) {
+            return response.text();
+          } else {
+            return '';
+          }
+        });
+      contentPromises.push(promise);
     }
   }
-  return result;
+  const contents = await Promise.all(contentPromises);
+  return contents
+    .join('\n');
 }
 
 async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config) {
