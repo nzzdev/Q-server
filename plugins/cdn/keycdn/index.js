@@ -25,6 +25,11 @@ module.exports = {
         return h.continue;
       }
 
+      // if the response has no headers or response.headers is not an object with hasOwnProperty: continue
+      if (!response.headers || !response.headers.hasOwnProperty) {
+        return h.continue;
+      }
+
       // if no cache-control header is present: continue
       if (!response.headers.hasOwnProperty('cache-control')) {
         return h.continue;
