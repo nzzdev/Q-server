@@ -188,7 +188,7 @@ lab.experiment('core item', () => {
     const response = await server.inject(request);
   });
 
-  it('should emit item.update event if an existing itemm is updated', { plan: 1 }, async () => {
+  it('should emit item.update event if an existing item is updated', { plan: 1 }, async () => {
     const id = 'mock-item-to-test-edits';
     const handler = (item) => {
       expect(item._id).to.be.equal(id);
