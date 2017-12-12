@@ -375,7 +375,14 @@ lab.experiment('core schema endpoints', () => {
 
 lab.experiment('screenshot plugin', async () => {
   await it('returns a screenshot with correct cache-control headers', { timeout: 5000, plan: 3 }, async () => {
-    const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500');
+    const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500&wait=200');
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.headers['content-type']).to.be.equal('image/png');
+    expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
+  });
+
+  await it('returns a screenshot with correct cache-control headers', { timeout: 5000, plan: 3 }, async () => {
+    const response = await server.inject('/screenshot/mock-item-active.png?target=pub1&width=500&wait=h1');
     expect(response.statusCode).to.be.equal(200);
     expect(response.headers['content-type']).to.be.equal('image/png');
     expect(response.headers['cache-control']).to.be.equal("public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1");
