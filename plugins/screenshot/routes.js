@@ -20,7 +20,7 @@ module.exports = {
               dpr: Joi.number().optional(),
               background: Joi.string().optional(),
               padding: Joi.string().regex(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?){1,4}$/).optional(),
-              wait: Joi.number().optional()
+              wait: Joi.optional()
             }
           },
           tags: ['api']
