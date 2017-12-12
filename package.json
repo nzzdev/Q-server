@@ -31,6 +31,7 @@
     "inert": "^5.0.1",
     "joi": "^13.0.2",
     "json-schema-ref-parser": "^4.0.4",
+    "keycdn": "^0.2.0",
     "nano": "^6.4.2",
     "nano-promises": "^1.2.0",
     "node-fetch": "^1.7.3",
