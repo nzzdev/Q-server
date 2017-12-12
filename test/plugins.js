@@ -1,7 +1,7 @@
 // used in screenshot plugin
 function resolvePath(resource, env) {
   if (!resource.url && resource.path) {
-    resource.url = `http://localhost:3001${resource.path}`
+    resource.url = `http://localhost:3333${resource.path}`
   }
   delete resource.path;
   return resource;
@@ -76,6 +76,14 @@ module.exports = [
           staleIfError: 1
         }
       }
+    }
+  },
+  {
+    plugin: require('../plugins/cdn/keycdn'),
+    options: {
+      zoneId: 'some-zone-id',
+      apiKey: 'some-api-key',
+      dryRun: true
     }
   }
 ];
