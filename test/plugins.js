@@ -77,5 +77,13 @@ module.exports = [
         }
       }
     }
+  },
+  {
+    plugin: require('../plugins/cdn/keycdn'),
+    options: {
+      zoneId: 'some-zone-id',
+      apiKey: 'some-api-key',
+      dryRun: true
+    }
   }
 ];
