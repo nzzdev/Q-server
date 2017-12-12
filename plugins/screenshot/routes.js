@@ -68,7 +68,14 @@ module.exports = {
             dpr: request.query.dpr || 1,
             padding: request.query.padding || '0',
             background: request.query.background,
-            waitBeforeScreenshot: request.query.wait || 0
+          }
+
+          if (request.query.wait !== undefined) {
+            if (Number.isNaN(parseInt(request.query.wait))) {
+              config.waitBeforeScreenshot = request.query.wait;
+            } else {
+              config.waitBeforeScreenshot = parseInt(request.query.wait);
+            }
           }
 
           const screenshotBuffer = await getScreenshot(`${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`, renderingInfo.markup, scripts, stylesheets, config);
