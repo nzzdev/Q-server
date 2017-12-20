@@ -113,6 +113,60 @@ async function getScreenshot(emptyPageUrl, markup, scripts, stylesheets, config)
   return imageBuffer;
 }
 
+function getInnerWidth(width, padding) {
+  if (!width) {
+    return null;
+  }
+  // if padding is given, we need to know if it's in pixel to calculate with the width
+  if (padding !== undefined) {
+    // split the padding by space
+    const units = padding
+      .split(' ')
+      .map(paddingPos => {
+        return paddingPos.match(new RegExp(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?)$/));
+      })
+      .filter(match => {
+        return Array.isArray(match)
+      })
+      .map(match => {
+        if (match[3] === undefined) { // if no unit given, px is default
+          return 'px';
+        }
+        return match[3]               // the unit or undefined if no unit
+      })
+      .reduce((units, unit) => {      // unique
+        if (!units.includes(unit)) {
+          units.push(unit);
+        }
+        return units;
+      }, []);
+
+    // if we have only pixels, we can move on
+    if (units.length === 1 && units[0] === 'px') {
+      const paddingPos = padding.split(' ');
+      if (paddingPos.length === 1) {
+        // if there is one padding, this is for left and right
+        const pixelNumber = paddingPos[0].match(new RegExp(/^$|^(([0-9.]+)(.*)?)$/))[2];
+        width = width - 2 * pixelNumber;
+      }
+      if (paddingPos.length === 2 || paddingPos.length === 3) {
+        // for 2 or 3 paddings, we take the second one, as this is left and right padding
+        const pixelNumber = paddingPos[1].match(new RegExp(/^$|^(([0-9.]+)(.*)?)$/))[2];
+        width = width - 2 * pixelNumber;
+      }
+      if (paddingPos.length === 4) {
+        // if we have 4 paddings, the 2nd and 4th are left and right
+        const pixelNumberLeft = paddingPos[1].match(new RegExp(/^$|^(([0-9.]+)(.*)?)$/))[2];
+        const pixelNumberRight = paddingPos[3].match(new RegExp(/^$|^(([0-9.]+)(.*)?)$/))[2];
+        width = width - pixelNumberLeft - pixelNumberRight;
+      }
+    }
+  }
+
+  return width;
+}
+
 module.exports = {
-  getScreenshot: getScreenshot
+  getScreenshot: getScreenshot,
+  getInnerWidth: getInnerWidth
 }
