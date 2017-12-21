@@ -132,7 +132,7 @@ function getInnerWidth(width, padding) {
         if (match[3] === undefined) { // if no unit given, px is default
           return 'px';
         }
-        return match[3]               // the unit or undefined if no unit
+        return match[3]               // the original unit or px if it was undefined before
       })
       .reduce((units, unit) => {      // unique
         if (!units.includes(unit)) {
@@ -145,7 +145,7 @@ function getInnerWidth(width, padding) {
     if (units.length === 1 && units[0] === 'px') {
       const paddingPos = padding.split(' ');
       if (paddingPos.length === 1) {
-        // if there is one padding, this is for left and right
+        // if there is one padding, this is for left and right, the regex separates the number and the unit
         const pixelNumber = paddingPos[0].match(new RegExp(/^$|^(([0-9.]+)(.*)?)$/))[2];
         width = width - 2 * pixelNumber;
       }
