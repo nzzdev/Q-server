@@ -2,6 +2,7 @@ const Boom = require('boom');
 const Joi = require('joi');
 
 const getScreenshot = require('./helpers.js').getScreenshot;
+const getInnerWidth = require('./helpers.js').getInnerWidth;
 
 module.exports = {
   getRoutes: function(cacheControlHeader) {
@@ -41,8 +42,22 @@ module.exports = {
             throw Boom.badRequest('the target is not of type web');
           }
 
+          const toolRuntimeConfig = {};
+
+          // check if there is a given width, if so, send it in toolRuntimeConfig to the rendering-info endpoint
+          const width = getInnerWidth(request.query.width, request.query.padding);
+          if (width) {
+            toolRuntimeConfig.size = {
+              width: [{
+                value: width,
+                unit: 'px',
+                comparison: '='
+              }]
+            }
+          }
+
           const response = await request.server.inject({
-            url: `/rendering-info/${request.params.id}/${request.query.target}`
+            url: `/rendering-info/${request.params.id}/${request.query.target}?toolRuntimeConfig=${JSON.stringify(toolRuntimeConfig)}`
           });
           
           if (response.statusCode !== 200) {
