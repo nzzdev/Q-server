@@ -2,7 +2,7 @@
 title: Rendering Info
 ---
 
-We use the term `rendering info` to describe the HTTP response from a request to _q-server/rendering-info/{id}/{target}_. This request is typically sent by a so called Q loader. Examples of Q loaders are the preview in Q editor or the browser based loader used in the [demo](https://q-demo.st.nzz.ch). The source for this browser based loader can be found on Github: [nzzdev/Q-loader-browser](https://github.com/nzzdev/Q-loader-browser).
+We use the term `rendering info` to describe the HTTP response from a request to _q-server/rendering-info/{id}/{target}_. This request is typically sent by a so called Q loader. Examples of Q loaders are the preview in Q editor or the browser based loader used in the [demo](https://editor.q.tools). The source for this browser based loader can be found on Github: [nzzdev/Q-loader-browser](https://github.com/nzzdev/Q-loader-browser).
 
 ## Format
 The Q loader browser is our reference implementation for Q loaders. Currently the only type of `rendering info` supported by the Q editor preview is a JSON like this:

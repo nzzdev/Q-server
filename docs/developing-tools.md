@@ -22,6 +22,7 @@ while 'new-tool-name' is the name of the tool you are creating. To get a list of
 ```bash
 $ Q new-tool --help
 ```
+Now you are ready to rumble, i.e. you can change the schema in `/resources/schema.json` and the rendering in `/rendering-info/web.js`. You can get an overview about the tool routes below in the section API entpoints.
 
 To see how the rendering infomation for a tool is being displayed you can start a Q dev server by running
 ```bash
@@ -32,7 +33,7 @@ The tool itself has to be started too to be able to see anything. To get a list 
 $ Q server --help
 ```
 
-Further informationen can be found at [GitHub](https://github.com/nzzdev/Q-cli)
+Further informationen can be found on [GitHub](https://github.com/nzzdev/Q-cli).
 
 ## API Endpoints
 One endpoint to return the tool specific JSON schema is mandatory as it's used by Q editor for rendering and validation of the respective form:
