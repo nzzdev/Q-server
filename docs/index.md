@@ -5,7 +5,7 @@ __Q__ is a system that lets journalists create visual elements for stories. It i
 
 _This is the documentation for Q server. You will need to setup [Q editor](https://github.com/nzzdev/Q-editor) and at least one tool to get a working environment._
 
-Demo: [https://q-demo.st.nzz.ch](https://q-demo.st.nzz.ch)
+Demo: [https://editor.q.tools](https://editor.q.tools)
 
 # Terminology
 - __Q__ is used as the name for a complete system containing a [CouchDB](https://couchdb.apache.org/), a Q server, a [Q editor](https://github.com/nzzdev/Q-editor) and some _tools_.
