@@ -83,6 +83,7 @@ module.exports = {
         });
 
         return {
+          key: data.key,
           url: data.Location 
         };
       }
