@@ -42,7 +42,7 @@ module.exports = {
 
     server.route({
       method: 'POST',
-      path: '/file/upload',
+      path: '/file',
       options: {
         auth: 'q-auth',
         cors: {
