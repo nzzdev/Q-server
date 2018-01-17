@@ -1,15 +1,19 @@
-const Boom = require('boom');
-const Joi = require('joi');
-const Ajv = require('ajv');
-const ajv = new Ajv();
+const Boom = require("boom");
+const Joi = require("joi");
+const Ajv = require("ajv");
+const ajv = new Ajv({ schemaId: "id" });
 // add draft-04 support explicit
-ajv.addMetaSchema(require('ajv/lib/refs/json-schema-draft-04.json'));
+ajv.addMetaSchema(require("ajv/lib/refs/json-schema-draft-04.json"));
 
 function validateAgainstSchema(request, doc) {
   return new Promise(async (resolve, reject) => {
-    const response = await request.server.inject(`/tools/${doc.tool}/schema.json`);
+    const response = await request.server.inject(
+      `/tools/${doc.tool}/schema.json`
+    );
     if (response.statusCode !== 200) {
-      reject(Boom.internal(`Error occured while fetching schema of tool ${doc.tool}`));
+      reject(
+        Boom.internal(`Error occured while fetching schema of tool ${doc.tool}`)
+      );
     }
 
     const schema = JSON.parse(response.payload);
@@ -18,38 +22,43 @@ function validateAgainstSchema(request, doc) {
     if (validate(doc)) {
       resolve(true);
     } else {
-      reject(Boom.badRequest(
-        validate.errors
-          .map(error => {
-            return JSON.stringify(error);
-          })
-          .join('\n')
-      ));
+      reject(
+        Boom.badRequest(
+          validate.errors
+            .map(error => {
+              return JSON.stringify(error);
+            })
+            .join("\n")
+        )
+      );
     }
   });
 }
 
 module.exports = {
   get: {
-    path: '/item/{id}',
-    method: 'GET',
+    path: "/item/{id}",
+    method: "GET",
     options: {
       validate: {
         params: {
-          id: Joi.string().required(),
+          id: Joi.string().required()
         }
       },
-      description: 'gets the item with the given id from the database',
-      tags: ['api', 'editor']
+      description: "gets the item with the given id from the database",
+      tags: ["api", "editor"]
     },
-    handler: async function (request, h) {
+    handler: async function(request, h) {
       const ignoreInactive = true;
-      return request.server.methods.db.item.getById(request.params.id, ignoreInactive);
+      return request.server.methods.db.item.getById(
+        request.params.id,
+        ignoreInactive
+      );
     }
   },
   post: {
-    path: '/item',
-    method: 'POST',
+    path: "/item",
+    method: "POST",
     options: {
       validate: {
         payload: {
@@ -62,14 +71,15 @@ module.exports = {
           allowUnknown: true
         }
       },
-      auth: 'q-auth',
+      auth: "q-auth",
       cors: {
         credentials: true
       },
-      description: 'stores a new item to the database and returns the id among other things',
-      tags: ['api', 'editor']
+      description:
+        "stores a new item to the database and returns the id among other things",
+      tags: ["api", "editor"]
     },
-    handler: async function (request, h) {
+    handler: async function(request, h) {
       let doc = request.payload;
       let now = new Date();
 
@@ -82,7 +92,7 @@ module.exports = {
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
       // the existing item state
-      let docDiff = {}
+      let docDiff = {};
 
       doc.createdDate = now.toISOString();
       docDiff.createdDate = doc.createdDate;
@@ -92,9 +102,11 @@ module.exports = {
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(request.payload, (err, res) => {
           if (err) {
-            return reject(new Boom(err.description, { statusCode: err.statusCode } ));
+            return reject(
+              new Boom(err.description, { statusCode: err.statusCode })
+            );
           }
-  
+
           docDiff._id = res.id;
           docDiff._rev = res.rev;
 
@@ -102,16 +114,16 @@ module.exports = {
             _id: res.id,
             _rev: res.rev
           });
-          request.server.events.emit('item.new', savedDoc);
+          request.server.events.emit("item.new", savedDoc);
 
           return resolve(docDiff);
-        })
+        });
       });
     }
   },
   put: {
-    path: '/item',
-    method: 'PUT',
+    path: "/item",
+    method: "PUT",
     options: {
       validate: {
         payload: {
@@ -124,14 +136,15 @@ module.exports = {
           allowUnknown: true
         }
       },
-      auth: 'q-auth',
+      auth: "q-auth",
       cors: {
         credentials: true
       },
-      description: 'updates an existing item to the database and returns the new revision number among other things',
-      tags: ['api', 'editor']
+      description:
+        "updates an existing item to the database and returns the new revision number among other things",
+      tags: ["api", "editor"]
     },
-    handler: async function (request, h) {
+    handler: async function(request, h) {
       let doc = request.payload;
       let now = new Date();
       try {
@@ -143,13 +156,16 @@ module.exports = {
       // docDiff is used to store all the changed properties
       // to send them back to Q Editor for it to merge it with
       // the existing item state
-      let docDiff = {}
+      let docDiff = {};
 
       doc.updatedDate = now.toISOString();
       doc.updatedBy = request.auth.credentials.name;
 
       const ignoreInactive = true;
-      const oldDoc = await request.server.methods.db.item.getById(request.payload._id, ignoreInactive);
+      const oldDoc = await request.server.methods.db.item.getById(
+        request.payload._id,
+        ignoreInactive
+      );
 
       // if the active state change to true, we set activateDate
       if (doc.active === true && oldDoc.active === false) {
@@ -165,17 +181,19 @@ module.exports = {
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(doc, (err, res) => {
           if (err) {
-            return reject(new Boom(err.description, { statusCode: err.statusCode } ));
+            return reject(
+              new Boom(err.description, { statusCode: err.statusCode })
+            );
           }
 
           const savedDoc = Object.assign(doc, {
             _rev: res.rev
           });
-          request.server.events.emit('item.update', savedDoc);
+          request.server.events.emit("item.update", savedDoc);
 
           docDiff._rev = res.rev;
           return resolve(docDiff);
-        })
+        });
       });
     }
   }
