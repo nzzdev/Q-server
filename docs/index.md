@@ -23,4 +23,4 @@ Demo: [https://editor.q.tools](https://editor.q.tools)
 This should give you an overview of Q's architecture. The Q editor is not part of this diagram, it only shows the delivery part of Q.
 
 ![Q architecture](images/Q-server.png)
-![Q rendering-info request](images/Q-rendering-info-request.svg)
+![Q rendering-info request](images/Q-rendering-info-request.png)

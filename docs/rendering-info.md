@@ -4,7 +4,7 @@ title: Rendering Info
 
 We use the term `rendering info` to describe the HTTP response from a request to _q-server/rendering-info/{id}/{target}_. This request is typically sent by a so called Q loader. Examples of Q loaders are the preview in Q editor or the browser based loader used in the [demo](https://editor.q.tools). The source for this browser based loader can be found on Github: [nzzdev/Q-loader-browser](https://github.com/nzzdev/Q-loader-browser).
 
-![Q rendering-info request](images/Q-rendering-info-request.svg)
+![Q rendering-info request](images/Q-rendering-info-request.png)
 
 ## Format
 
