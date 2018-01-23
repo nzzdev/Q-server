@@ -5,7 +5,7 @@ const getScreenshot = require("./helpers.js").getScreenshot;
 const getInnerWidth = require("./helpers.js").getInnerWidth;
 
 module.exports = {
-  getRoutes: function(cacheControlHeader) {
+  getRoutes: function (cacheControlHeader) {
     return [
       {
         path: "/screenshot/{id}.png",
@@ -21,11 +21,13 @@ module.exports = {
               dpr: Joi.number().optional(),
               background: Joi.string().optional(),
               padding: Joi.string()
-                .regex(
-                  /^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?){1,4}$/
-                )
+                .regex(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?){1,4}$/)
                 .optional(),
-              wait: Joi.optional()
+              wait: Joi.optional(),
+              toolRuntimeConfig: Joi.object().optional()
+            },
+            options: {
+              allowUnknown: true
             }
           },
           tags: ["api"]
@@ -47,7 +49,7 @@ module.exports = {
             throw Boom.badRequest("the target is not of type web");
           }
 
-          const toolRuntimeConfig = {};
+          const toolRuntimeConfig = request.query.toolRuntimeConfig || {};
 
           // check if there is a given width, if so, send it in toolRuntimeConfig to the rendering-info endpoint
           const width = getInnerWidth(
@@ -69,7 +71,7 @@ module.exports = {
           const response = await request.server.inject({
             url: `/rendering-info/${request.params.id}/${
               request.query.target
-            }?toolRuntimeConfig=${JSON.stringify(toolRuntimeConfig)}`
+              }?toolRuntimeConfig=${JSON.stringify(toolRuntimeConfig)}`
           });
 
           if (response.statusCode !== 200) {
@@ -113,7 +115,7 @@ module.exports = {
 
           const screenshotBuffer = await getScreenshot(
             `${server.info.protocol}://localhost:${
-              server.info.port
+            server.info.port
             }/screenshot/empty-page.html`,
             renderingInfo.markup,
             scripts,
