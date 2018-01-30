@@ -83,7 +83,11 @@ module.exports = {
         const extension = type.extensions[0] || "";
         const filename = `${uuid.v4()}.${extension}`;
 
-        const fileKey = `${getDateString()}/${filename}`;
+        let fileKey = `${getDateString()}/${filename}`;
+
+        if (options.keyPrefix) {
+          fileKey = `${options.keyPrefix}${fileKey}`;
+        }
 
         const params = {
           Bucket: options.s3Bucket,
