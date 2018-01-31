@@ -77,7 +77,7 @@ async function getFinishedPage(
       </head>
       <body style="${bodyStyle}">
         <div id="q-screenshot-service-container"
-             style="padding: ${config.padding};">
+             style="padding: ${config.padding}; width: ${config.width}px;">
           ${markup}
         </div>
       </body>
