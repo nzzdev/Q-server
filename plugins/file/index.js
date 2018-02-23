@@ -103,7 +103,7 @@ module.exports = {
         const data = await upload(s3, params);
 
         return {
-          key: data.key,
+          key: data.Key,
           url: data.Location
         };
       }
