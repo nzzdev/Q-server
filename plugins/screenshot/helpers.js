@@ -84,7 +84,7 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: ["load", "networkidle0"]
+    waitUntil: "load"
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
