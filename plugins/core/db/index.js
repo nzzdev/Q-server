@@ -1,6 +1,38 @@
 const nano = require("nano");
 const Boom = require("boom");
 
+function getFilter(queryParameters) {
+  let filters = [];
+  for (let parameter in queryParameters) {
+    if (
+      queryParameters[parameter] &&
+      parameter !== searchString &&
+      parameter !== bookmark &&
+      parameter !== limit
+    ) {
+      let fieldFilter = {};
+      fieldFilter[parameter] = {
+        $eq: queryParameters[parameter]
+      };
+      filters.push(fieldFilter);
+    } else if (queryParameters[parameter] && parameter === searchString) {
+      const searchFields = ["id", "title", "subtitle", "annotations"];
+      let searchFieldFilter = {
+        $or: []
+      };
+      for (let searchField of searchFields) {
+        let searchStringFilter = {};
+        searchStringFilter[searchField] = {
+          $regex: queryParameters[parameter] + "*"
+        };
+        searchFieldFilter.$or.push(searchStringFilter);
+      }
+      filters.push(searchFieldFilter);
+    }
+  }
+  return filters;
+}
+
 module.exports = {
   name: "q-db",
   register: async function(server, options) {
@@ -64,6 +96,41 @@ module.exports = {
     server.method("db.item.search", function(payload) {
       return new Promise((resolve, reject) => {
         server.app.db.search("items", "search", payload, (err, data) => {
+          if (err) {
+            return reject(Boom.internal(err));
+          } else {
+            return resolve(data);
+          }
+        });
+      });
+    });
+
+    server.method("db.item.newSearch", function(queryParameters) {
+      return new Promise((resolve, reject) => {
+        const selector = {
+          $and: getFilters()
+        };
+
+        const requestOptions = {
+          db: options.database,
+          path: "_find",
+          method: "POST",
+          body: {
+            selector: selector,
+            sort: [
+              {
+                updatedDate: "desc"
+              },
+              {
+                createdDate: "desc"
+              }
+            ],
+            limit: queryParameters.limit || 18,
+            bookmark: queryParameters.bookmark || null
+          }
+        };
+
+        server.app.db.request(requestOptions, (err, data) => {
           if (err) {
             return reject(Boom.internal(err));
           } else {
