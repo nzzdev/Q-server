@@ -1,21 +1,21 @@
 const nano = require("nano");
 const Boom = require("boom");
 
-function getFilter(queryParameters) {
+function getFilters(queryParameters) {
   let filters = [];
   for (let parameter in queryParameters) {
     if (
       queryParameters[parameter] &&
-      parameter !== searchString &&
-      parameter !== bookmark &&
-      parameter !== limit
+      parameter !== "searchString" &&
+      parameter !== "bookmark" &&
+      parameter !== "limit"
     ) {
       let fieldFilter = {};
       fieldFilter[parameter] = {
         $eq: queryParameters[parameter]
       };
       filters.push(fieldFilter);
-    } else if (queryParameters[parameter] && parameter === searchString) {
+    } else if (queryParameters[parameter] && parameter === "searchString") {
       const searchFields = ["id", "title", "subtitle", "annotations"];
       let searchFieldFilter = {
         $or: []
@@ -108,7 +108,7 @@ module.exports = {
     server.method("db.item.newSearch", function(queryParameters) {
       return new Promise((resolve, reject) => {
         const selector = {
-          $and: getFilters()
+          $and: getFilters(queryParameters)
         };
 
         const requestOptions = {
@@ -130,7 +130,7 @@ module.exports = {
           }
         };
 
-        server.app.db.request(requestOptions, (err, data) => {
+        server.app.db.server.request(requestOptions, (err, data) => {
           if (err) {
             return reject(Boom.internal(err));
           } else {
