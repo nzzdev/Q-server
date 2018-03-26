@@ -120,9 +120,6 @@ module.exports = {
             sort: [
               {
                 updatedDate: "desc"
-              },
-              {
-                createdDate: "desc"
               }
             ],
             limit: queryParameters.limit || 18,
