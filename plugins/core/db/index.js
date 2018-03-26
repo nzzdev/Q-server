@@ -6,6 +6,7 @@ function getFilters(queryParameters) {
   for (let parameter in queryParameters) {
     if (
       queryParameters[parameter] &&
+      !Array.isArray(queryParameters[parameter]) &&
       parameter !== "searchString" &&
       parameter !== "bookmark" &&
       parameter !== "limit"
@@ -15,6 +16,23 @@ function getFilters(queryParameters) {
         $eq: queryParameters[parameter]
       };
       filters.push(fieldFilter);
+    } else if (
+      Array.isArray(queryParameters[parameter]) &&
+      parameter === "tool"
+    ) {
+      let toolsFieldFilter = {
+        $or: []
+      };
+      const tools = queryParameters[parameter];
+      for (let tool of tools) {
+        const toolFilter = {
+          tool: {
+            $eq: tool
+          }
+        };
+        toolsFieldFilter.$or.push(toolFilter);
+      }
+      filters.push(toolsFieldFilter);
     } else if (queryParameters[parameter] && parameter === "searchString") {
       const searchFields = ["id", "title", "subtitle", "annotations"];
       let searchFieldFilter = {

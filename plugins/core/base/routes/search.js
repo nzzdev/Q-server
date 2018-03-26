@@ -10,7 +10,7 @@ module.exports = {
         query: {
           limit: Joi.number().optional(),
           bookmark: Joi.string().optional(),
-          tool: Joi.string().optional(),
+          tool: Joi.alternatives([Joi.string(), Joi.array()]).optional(),
           createdBy: Joi.string().optional(),
           department: Joi.string().optional(),
           publication: Joi.string().optional(),
