@@ -1,54 +1,46 @@
 const nano = require("nano");
 const Boom = require("boom");
 
-function getFilters(queryParameters) {
-  let filters = [];
-  for (let parameter in queryParameters) {
-    if (
-      queryParameters[parameter] &&
-      !Array.isArray(queryParameters[parameter]) &&
-      parameter !== "searchString" &&
-      parameter !== "bookmark" &&
-      parameter !== "limit"
-    ) {
-      let fieldFilter = {};
-      fieldFilter[parameter] = {
-        $eq: queryParameters[parameter]
-      };
-      filters.push(fieldFilter);
-    } else if (
-      Array.isArray(queryParameters[parameter]) &&
-      parameter === "tool"
-    ) {
-      let toolsFieldFilter = {
-        $or: []
-      };
-      const tools = queryParameters[parameter];
-      for (let tool of tools) {
-        const toolFilter = {
-          tool: {
-            $eq: tool
-          }
-        };
-        toolsFieldFilter.$or.push(toolFilter);
-      }
-      filters.push(toolsFieldFilter);
-    } else if (queryParameters[parameter] && parameter === "searchString") {
+function getSearchFilters(queryParameters) {
+  // Remove query parameters which are not used in filters
+  delete queryParameters.limit;
+  delete queryParameters.bookmark;
+  return Object.keys(queryParameters).map(parameterName => {
+    const parameterValue = queryParameters[parameterName];
+    if (parameterName === "searchString") {
       const searchFields = ["id", "title", "subtitle", "annotations"];
-      let searchFieldFilter = {
+      const filter = {
         $or: []
       };
       for (let searchField of searchFields) {
         let searchStringFilter = {};
         searchStringFilter[searchField] = {
-          $regex: queryParameters[parameter] + "*"
+          $regex: parameterValue + "*"
         };
-        searchFieldFilter.$or.push(searchStringFilter);
+        filter.$or.push(searchStringFilter);
       }
-      filters.push(searchFieldFilter);
+      return filter;
     }
-  }
-  return filters;
+    if (parameterName === "tool" && Array.isArray(parameterValue)) {
+      const filter = {
+        $or: []
+      };
+      for (const tool of parameterValue) {
+        const toolFilter = {
+          tool: {
+            $eq: tool
+          }
+        };
+        filter.$or.push(toolFilter);
+      }
+      return filter;
+    }
+    const filter = {};
+    filter[parameterName] = {
+      $eq: parameterValue
+    };
+    return filter;
+  });
 }
 
 module.exports = {
@@ -125,16 +117,14 @@ module.exports = {
 
     server.method("db.item.newSearch", function(queryParameters) {
       return new Promise((resolve, reject) => {
-        const selector = {
-          $and: getFilters(queryParameters)
-        };
-
         const requestOptions = {
           db: options.database,
           path: "_find",
           method: "POST",
           body: {
-            selector: selector,
+            selector: {
+              $and: getSearchFilters(queryParameters)
+            },
             sort: [
               {
                 updatedDate: "desc"
