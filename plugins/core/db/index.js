@@ -9,31 +9,26 @@ function getSearchFilters(queryParameters) {
     const parameterValue = queryParameters[parameterName];
     if (parameterName === "searchString") {
       const searchFields = ["id", "title", "subtitle", "annotations"];
-      const filter = {
-        $or: []
+      return {
+        $or: searchFields.map(searchField => {
+          const searchStringFilter = {};
+          searchStringFilter[searchField] = {
+            $regex: parameterValue + "*"
+          };
+          return searchStringFilter;
+        })
       };
-      for (const searchField of searchFields) {
-        const searchStringFilter = {};
-        searchStringFilter[searchField] = {
-          $regex: parameterValue + "*"
-        };
-        filter.$or.push(searchStringFilter);
-      }
-      return filter;
     }
     if (parameterName === "tool" && Array.isArray(parameterValue)) {
-      const filter = {
-        $or: []
+      return {
+        $or: parameterValue.map(tool => {
+          return {
+            tool: {
+              $eq: tool
+            }
+          };
+        })
       };
-      for (const tool of parameterValue) {
-        const toolFilter = {
-          tool: {
-            $eq: tool
-          }
-        };
-        filter.$or.push(toolFilter);
-      }
-      return filter;
     }
     const filter = {};
     filter[parameterName] = {
