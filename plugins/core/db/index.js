@@ -12,8 +12,8 @@ function getSearchFilters(queryParameters) {
       const filter = {
         $or: []
       };
-      for (let searchField of searchFields) {
-        let searchStringFilter = {};
+      for (const searchField of searchFields) {
+        const searchStringFilter = {};
         searchStringFilter[searchField] = {
           $regex: parameterValue + "*"
         };
