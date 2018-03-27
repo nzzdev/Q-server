@@ -103,19 +103,7 @@ module.exports = {
       });
     });
 
-    server.method("db.item.search", function(payload) {
-      return new Promise((resolve, reject) => {
-        server.app.db.search("items", "search", payload, (err, data) => {
-          if (err) {
-            return reject(Boom.internal(err));
-          } else {
-            return resolve(data);
-          }
-        });
-      });
-    });
-
-    server.method("db.item.newSearch", function(queryParameters) {
+    server.method("db.item.search", function(queryParameters) {
       return new Promise((resolve, reject) => {
         const requestOptions = {
           db: options.database,
