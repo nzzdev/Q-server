@@ -26,8 +26,8 @@ module.exports = {
     const { bookmark, limit, ...filterProperties } = request.query;
     return request.server.methods.db.item.search(
       filterProperties,
-      request.query.limit,
-      request.query.bookmark
+      limit,
+      bookmark
     );
   }
 };
