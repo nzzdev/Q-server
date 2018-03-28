@@ -22,6 +22,12 @@ module.exports = {
     tags: ["api", "editor"]
   },
   handler: async (request, h) => {
-    return request.server.methods.db.item.search(request.query);
+    // Creates new object filterProperties which contains all properties but bookmark and limit
+    const { bookmark, limit, ...filterProperties } = request.query;
+    return request.server.methods.db.item.search(
+      filterProperties,
+      request.query.limit,
+      request.query.bookmark
+    );
   }
 };

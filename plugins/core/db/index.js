@@ -1,9 +1,9 @@
 const nano = require("nano");
 const Boom = require("boom");
 
-function getSearchFilters(filterParameters) {
-  return Object.keys(filterParameters).map(parameterName => {
-    const parameterValue = filterParameters[parameterName];
+function getSearchFilters(filterProperties) {
+  return Object.keys(filterProperties).map(parameterName => {
+    const parameterValue = filterProperties[parameterName];
     if (parameterName === "searchString") {
       const searchFields = ["id", "title", "subtitle", "annotations"];
       return {
@@ -95,9 +95,11 @@ module.exports = {
       });
     });
 
-    server.method("db.item.search", function(queryParameters) {
-      // Created new object filter parameters which contains all properties but bookmark and limit
-      const { bookmark, limit, ...filterParameters } = queryParameters;
+    server.method("db.item.search", function(
+      filterProperties,
+      limit,
+      bookmark
+    ) {
       return new Promise((resolve, reject) => {
         const requestOptions = {
           db: options.database,
@@ -105,15 +107,15 @@ module.exports = {
           method: "POST",
           body: {
             selector: {
-              $and: getSearchFilters(filterParameters)
+              $and: getSearchFilters(filterProperties)
             },
             sort: [
               {
                 updatedDate: "desc"
               }
             ],
-            limit: queryParameters.limit || 18,
-            bookmark: queryParameters.bookmark || null
+            limit: limit || 18,
+            bookmark: bookmark || null
           }
         };
 
