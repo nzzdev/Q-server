@@ -10,7 +10,7 @@ function getSearchFilters(filterProperties) {
         $or: searchFields.map(searchField => {
           const searchStringFilter = {};
           searchStringFilter[searchField] = {
-            $regex: parameterValue + "*"
+            $regex: `(?i)${parameterValue}`
           };
           return searchStringFilter;
         })
@@ -31,6 +31,7 @@ function getSearchFilters(filterProperties) {
     filter[parameterName] = {
       $eq: parameterValue
     };
+    debugger;
     return filter;
   });
 }
