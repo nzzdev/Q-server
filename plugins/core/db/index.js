@@ -5,7 +5,7 @@ function getSearchFilters(filterProperties) {
   return Object.keys(filterProperties).map(parameterName => {
     const parameterValue = filterProperties[parameterName];
     if (parameterName === "searchString") {
-      const searchFields = ["id", "title", "subtitle", "annotations"];
+      const searchFields = ["_id", "title", "subtitle", "annotations"];
       return {
         $or: searchFields.map(searchField => {
           const searchStringFilter = {};
