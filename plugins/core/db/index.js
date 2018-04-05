@@ -31,7 +31,6 @@ function getSearchFilters(filterProperties) {
     filter[parameterName] = {
       $eq: parameterValue
     };
-    debugger;
     return filter;
   });
 }
