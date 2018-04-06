@@ -99,6 +99,11 @@ module.exports = {
       doc.createdBy = request.auth.credentials.name;
       docDiff.createdBy = doc.createdBy;
 
+      doc.updatedDate = now.toISOString();
+      docDiff.updatedDate = doc.updatedDate;
+      doc.updatedBy = request.auth.credentials.name;
+      docDiff.updatedBy = doc.updatedBy;
+
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(request.payload, (err, res) => {
           if (err) {
