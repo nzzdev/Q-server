@@ -7,7 +7,7 @@ title: Installation
 1. Get [CouchDB](https://couchdb.apache.org) up an running. At NZZ we use [Cloudant on IBM Bluemix](https://console.ng.bluemix.net/catalog/services/cloudant-nosql-db). But there are other providers or you can host it yourself. You have to get a little bit familiar with CouchDB.
 2. Create a new database to hold all the _item_ documents. Lets call it _items-db_ for now.
 3. Implement an authentication scheme: q-server version >3 does not implement an authentication scheme, instead you need to configure a hapi auth scheme called q-auth on your own. At NZZ, we use a scheme letting users log in using the same credentials as the CMS, but you can also use https://github.com/ubilabs/hapi-auth-couchdb-cookie (if updated to support hapi 17) or some other hapi auth plugin or even roll your own. How exactly this works is out of scope for this howto, please find information in the hapi documentation: https://hapijs.com/api
-4. Add this document as _items-db/\_design/items_ to get the neccessary views in place
+4. Add these design documents to your couchdb
 
 ```json
 {
@@ -28,12 +28,31 @@ title: Installation
         "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}",
       "reduce": "_count"
     }
-  },
-  "indexes": {
-    "search": {
-      "analyzer": "standard",
-      "index":
-        "function (doc) {\n  if (doc._id.indexOf('_design/') === 0) {\n    return;\n  }\n  index(\"id\", doc._id);\n  if (doc.title) {\n    index(\"title\", doc.title);\n  }\n  if (doc.annotations) {\n    index(\"annotations\", doc.annotations);\n  }\n  if (doc.createdBy) {\n    index(\"createdBy\", doc.createdBy);\n  }\n  if (doc.department) {\n    index(\"department\", doc.department);\n  }\n  if (doc.tool) {\n    index(\"tool\", doc.tool)\n  }\n  if (doc.active !== undefined) {\n    index(\"active\", doc.active);\n  } else {\n    index(\"active\", false);\n  }\n  if (doc.updatedDate || doc.createdDate) {\n    var date;\n    if (doc.updatedDate) {\n      date = new Date(doc.updatedDate);\n    } else if (doc.createdDate) {\n      date = new Date(doc.createdDate);\n    }\n    if (date) {\n      index(\"orderDate\", date.valueOf());\n    }\n  }\n}"
+  }
+}
+```
+```json
+{
+  "_id": "_design/query-index",
+  "language": "query",
+  "views": {
+    "search-simple-index": {
+      "map": {
+        "fields": {
+          "updatedDate": "desc"
+        },
+        "partial_filter_selector": {}
+      },
+      "reduce": "_count",
+      "options": {
+        "def": {
+          "fields": [
+            {
+              "updatedDate": "desc"
+            }
+          ]
+        }
+      }
     }
   }
 }
