@@ -1,23 +1,62 @@
-const querystring = require('querystring');
-const fetch = require('node-fetch');
-const clone = require('clone');
-const deepmerge = require('deepmerge');
-const Boom = require('boom');
-const deleteMetaProperties = require('../../../helper/meta-properties').deleteMetaProperties;
+const querystring = require("querystring");
+const fetch = require("node-fetch");
+const clone = require("clone");
+const deepmerge = require("deepmerge");
+const Boom = require("boom");
+const deleteMetaProperties = require("../../../helper/meta-properties")
+  .deleteMetaProperties;
 
-async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig, itemStateInDb) {
+async function getWithResolvedFunction(
+  renderingInfoPart,
+  item,
+  toolRuntimeConfig
+) {
+  const promises = renderingInfoPart.map(async renderingInfoPartItem => {
+    if (renderingInfoPartItem instanceof Function) {
+      return await renderingInfoPartItem.apply(
+        this, [item, toolRuntimeConfig]
+      );
+    }
+    return renderingInfoPartItem;
+  });
+
+  return Promise.all(promises);
+}
+
+function getWithResolvedNameProperty(
+  renderingInfoPart,
+  item,
+  toolRuntimeConfig
+) {
+  return renderingInfoPart.map(renderingInfoPartItem => {
+    if (renderingInfoPartItem.name !== undefined) {
+      renderingInfoPartItem.path = `/tools/${item.tool}/stylesheet/${
+        renderingInfoPartItem.name
+        }`;
+    }
+    return renderingInfoPartItem;
+  });
+}
+
+async function getRenderingInfo(
+  item,
+  baseUrl,
+  endpointConfig,
+  toolRuntimeConfig,
+  itemStateInDb
+) {
   let requestUrl;
-  if (endpointConfig.hasOwnProperty('path')) {
+  if (endpointConfig.hasOwnProperty("path")) {
     requestUrl = `${baseUrl}${endpointConfig.path}`;
-  } else if (endpointConfig.hasOwnProperty('url')) {
+  } else if (endpointConfig.hasOwnProperty("url")) {
     requestUrl = endpointConfig.url;
   } else {
-    throw new Error('Endpoint has no path nor url configured');
+    throw new Error("Endpoint has no path nor url configured");
   }
 
   // add _id, createdDate and updatedDate as query params to rendering info request
   // todo: the tool could provide the needed query parameters in the config in a future version
-  let queryParams = ['_id', 'createdDate', 'updatedDate'];
+  let queryParams = ["_id", "createdDate", "updatedDate"];
   let query = {};
   for (let queryParam of queryParams) {
     if (item.hasOwnProperty(queryParam) && item[queryParam]) {
@@ -31,13 +70,13 @@ async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig
     item: deleteMetaProperties(clone(item)),
     itemStateInDb: itemStateInDb,
     toolRuntimeConfig: toolRuntimeConfig
-  }
+  };
 
   const response = await fetch(`${requestUrl}?${queryString}`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(body),
     headers: {
-      'Content-Type': 'application/json'
+      "Content-Type": "application/json"
     }
   });
 
@@ -54,42 +93,49 @@ async function getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig
 
   // check if the tool config has additional renderingInfo and apply it if so
   if (endpointConfig.additionalRenderingInfo) {
-    renderingInfo = deepmerge(renderingInfo, endpointConfig.additionalRenderingInfo, {
-      arrayMerge: (destArr, srcArr) => {
-        return srcArr.concat(destArr);
+    renderingInfo = deepmerge(
+      renderingInfo,
+      endpointConfig.additionalRenderingInfo,
+      {
+        arrayMerge: (destArr, srcArr) => {
+          return srcArr.concat(destArr);
+        }
       }
-    });
+    );
   }
 
-  // add the path to the stylesheets returned from rendering service if they have a name property
-  if (renderingInfo.stylesheets !== undefined && renderingInfo.stylesheets.length > 0) {
-    for (var i = 0; i < renderingInfo.stylesheets.length; i++) {
-      let stylesheet = renderingInfo.stylesheets[i];
-      if (stylesheet.name !== undefined) {
-        stylesheet.path = `/tools/${item.tool}/stylesheet/${stylesheet.name}`;
-      }
-    }
-  }
+  const renderingInfoTypesToResolve = ["stylesheets", "scripts"];
+  for (const type of renderingInfoTypesToResolve) {
+    if (renderingInfo[type] !== undefined && renderingInfo[type].length > 0) {
+      renderingInfo[type] = await getWithResolvedFunction(
+        renderingInfo[type],
+        item,
+        toolRuntimeConfig
+      );
 
-  // add the path to the scripts returned from rendering service if they have a name property
-  if (renderingInfo.scripts !== undefined && renderingInfo.scripts.length > 0) {
-    for (var i = 0; i < renderingInfo.scripts.length; i++) {
-      let script = renderingInfo.scripts[i];
-      if (script.name !== undefined) {
-        script.path = `/tools/${item.tool}/script/${script.name}`;
-      }
+      renderingInfo[type] = getWithResolvedNameProperty(
+        renderingInfo[type],
+        item,
+        toolRuntimeConfig
+      );
     }
   }
   return renderingInfo;
 }
 
-function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }) {
+function getCompiledToolRuntimeConfig(
+  item,
+  { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }
+) {
   const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
-  
+
   // simplify the toolBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
-  if (typeof overallToolRuntimeConfig.toolBaseUrl === 'object' && overallToolRuntimeConfig.toolBaseUrl.host) {
+  if (
+    typeof overallToolRuntimeConfig.toolBaseUrl === "object" &&
+    overallToolRuntimeConfig.toolBaseUrl.host
+  ) {
     // the default protocol is https
-    let protocol = 'https';
+    let protocol = "https";
     if (overallToolRuntimeConfig.toolBaseUrl.protocol) {
       protocol = overallToolRuntimeConfig.toolBaseUrl.protocol;
     }
@@ -98,24 +144,32 @@ function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolE
     if (overallToolRuntimeConfig.toolBaseUrl.path) {
       path = overallToolRuntimeConfig.toolBaseUrl.path;
     }
-    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}${path}`;
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${
+      overallToolRuntimeConfig.toolBaseUrl.host
+      }${path}`;
   }
 
   // default to the overall config
   let toolRuntimeConfig = overallToolRuntimeConfig;
 
   // add the item id if given
-  if (item.hasOwnProperty('_id')) {
+  if (item.hasOwnProperty("_id")) {
     toolRuntimeConfig.id = item._id;
   }
 
   // if endpoint defines tool runtime config, apply it
   if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
-    toolRuntimeConfig = Object.assign(toolRuntimeConfig, toolEndpointConfig.toolRuntimeConfig);
+    toolRuntimeConfig = Object.assign(
+      toolRuntimeConfig,
+      toolEndpointConfig.toolRuntimeConfig
+    );
   }
 
   // apply to runtime config from the request
-  toolRuntimeConfig = Object.assign(toolRuntimeConfig, requestToolRuntimeConfig);
+  toolRuntimeConfig = Object.assign(
+    toolRuntimeConfig,
+    requestToolRuntimeConfig
+  );
 
   return toolRuntimeConfig;
 }
@@ -123,4 +177,4 @@ function getCompiledToolRuntimeConfig(item, { serverWideToolRuntimeConfig, toolE
 module.exports = {
   getRenderingInfo: getRenderingInfo,
   getCompiledToolRuntimeConfig: getCompiledToolRuntimeConfig
-}
+};
