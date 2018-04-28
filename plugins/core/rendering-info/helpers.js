@@ -22,14 +22,14 @@ async function getWithResolvedFunction(
 }
 
 function getWithResolvedNameProperty(
-  type,
+  typePath,
   renderingInfoPart,
   item,
   toolRuntimeConfig
 ) {
   return renderingInfoPart.map(renderingInfoPartItem => {
     if (renderingInfoPartItem.name !== undefined) {
-      renderingInfoPartItem.path = `/tools/${item.tool}/${type}/${
+      renderingInfoPartItem.path = `/tools/${item.tool}/${typePath}/${
         renderingInfoPartItem.name
       }`;
     }
@@ -103,18 +103,30 @@ async function getRenderingInfo(
     );
   }
 
-  const renderingInfoTypesToResolve = ["stylesheets", "scripts"];
+  const renderingInfoTypesToResolve = [
+    {
+      name: "stylesheets",
+      path: "stylesheet"
+    },
+    {
+      name: "scripts",
+      path: "script"
+    }
+  ];
   for (const type of renderingInfoTypesToResolve) {
-    if (renderingInfo[type] !== undefined && renderingInfo[type].length > 0) {
-      renderingInfo[type] = await getWithResolvedFunction(
-        renderingInfo[type],
+    if (
+      renderingInfo[type.name] !== undefined &&
+      renderingInfo[type.name].length > 0
+    ) {
+      renderingInfo[type.name] = await getWithResolvedFunction(
+        renderingInfo[type.name],
         item,
         toolRuntimeConfig
       );
 
-      renderingInfo[type] = getWithResolvedNameProperty(
-        type,
-        renderingInfo[type],
+      renderingInfo[type.name] = getWithResolvedNameProperty(
+        type.path,
+        renderingInfo[type.name],
         item,
         toolRuntimeConfig
       );
