@@ -13,9 +13,7 @@ async function getWithResolvedFunction(
 ) {
   const promises = renderingInfoPart.map(async renderingInfoPartItem => {
     if (renderingInfoPartItem instanceof Function) {
-      return await renderingInfoPartItem.apply(
-        this, [item, toolRuntimeConfig]
-      );
+      return await renderingInfoPartItem.apply(this, [item, toolRuntimeConfig]);
     }
     return renderingInfoPartItem;
   });
@@ -24,15 +22,16 @@ async function getWithResolvedFunction(
 }
 
 function getWithResolvedNameProperty(
+  type,
   renderingInfoPart,
   item,
   toolRuntimeConfig
 ) {
   return renderingInfoPart.map(renderingInfoPartItem => {
     if (renderingInfoPartItem.name !== undefined) {
-      renderingInfoPartItem.path = `/tools/${item.tool}/stylesheet/${
+      renderingInfoPartItem.path = `/tools/${item.tool}/${type}/${
         renderingInfoPartItem.name
-        }`;
+      }`;
     }
     return renderingInfoPartItem;
   });
@@ -114,6 +113,7 @@ async function getRenderingInfo(
       );
 
       renderingInfo[type] = getWithResolvedNameProperty(
+        type,
         renderingInfo[type],
         item,
         toolRuntimeConfig
@@ -146,7 +146,7 @@ function getCompiledToolRuntimeConfig(
     }
     overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${
       overallToolRuntimeConfig.toolBaseUrl.host
-      }${path}`;
+    }${path}`;
   }
 
   // default to the overall config
