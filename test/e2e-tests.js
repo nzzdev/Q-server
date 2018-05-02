@@ -391,6 +391,38 @@ lab.experiment("core rendering-info", () => {
       `<h1>title - itemStateInDb: false</h1>`
     );
   });
+
+  it(
+    "correctly resolves name properties in toolRuntimeConfig to path properties",
+    { plan: 1 },
+    async () => {
+      const response = await server.inject(
+        "/rendering-info/mock-item-active/pub1"
+      );
+
+      expect(response.result.stylesheets[2].path).to.be.equal(
+        "/tools/tool1/stylesheet/mockstyle"
+      );
+    }
+  );
+
+  it(
+    "correctly calls functions in additionalRenderingInfo configured in Q server before resolving any name properties in the result",
+    { plan: 2 },
+    async () => {
+      const response = await server.inject(
+        "/rendering-info/mock-item-active/pub1"
+      );
+
+      expect(response.result.stylesheets[1].path).to.be.equal(
+        "/tools/tool1/stylesheet/functionGeneratedStylesheetName.css"
+      );
+
+      expect(response.result.scripts[0].content).to.be.equal(
+        'console.log("functionGeneratedScriptContent");'
+      );
+    }
+  );
 });
 
 lab.experiment("core editor endpoints", () => {
