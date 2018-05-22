@@ -29,6 +29,18 @@ const tools = {
             },
             {
               content: '.q-item { color: #f5f5f5; background-color: #f5f5f5; }'
+            },
+            function(item, toolRuntimeConfig) {
+              return {
+                content: '.q-item { some styles generated at runtime }'
+              }
+            }
+          ],
+          scripts: [
+            function(item, toolRuntimeConfig) {
+              return {
+                content: `console.log(${JSON.stringify(item)}`
+              }
             }
           ]
         }
