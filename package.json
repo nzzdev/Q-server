@@ -1,10 +1,10 @@
 {
   "name": "@nzz/q-server",
-  "version": "4.0.1",
+  "version": "4.1.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "lab -a code -t 86 -c -P tests -m 3000 --verbose --leaks",
+    "test": "lab -a code -t 87 -c -P tests -m 3000 --verbose --leaks",
     "start:prod": "APP_ENV=prod node index.js",
     "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
