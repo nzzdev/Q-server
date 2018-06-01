@@ -1,33 +1,29 @@
-const Hoek = require('hoek');
-
-const routes = [
-  require('./routes/targets'),
-  require('./routes/tools'),
-  require('./routes/locales')
-]
+const Hoek = require("hoek");
 
 const defaults = {
-  editorConfig: {
-
-  }
-}
+  editorConfig: {}
+};
 
 module.exports = {
-  name: 'q-editor-api',
-  register: async function (server, options) {
+  name: "q-editor-api",
+  register: async function(server, options) {
     const settings = Hoek.applyToDefaults(defaults, options);
-    server.route(routes);
+    server.route([
+      require("./routes/targets"),
+      require("./routes/tools"),
+      require("./routes/locales").getGetRoute(settings)
+    ]);
 
     server.route({
-      path: '/editor/config',
-      method: 'GET',
+      path: "/editor/config",
+      method: "GET",
       options: {
-        description: 'Returns configuration for Q Editor',
-        tags: ['api', 'editor'],
+        description: "Returns configuration for Q Editor",
+        tags: ["api", "editor"]
       },
       handler: (request, h) => {
         return settings.editorConfig;
       }
-    })
+    });
   }
 };
