@@ -29,7 +29,7 @@ module.exports = {
       translations[toolName] = tool.editor.label_locales[request.params.lng];
     }
 
-    const editorConfig = request.server.settings.app.editor.get("");
+    const editorConfig = request.server.settings.app.editorConfig.get("");
     if (editorConfig.previewSizes) {
       translations.preview = {};
       for (let previewSize of previewSizes) {
