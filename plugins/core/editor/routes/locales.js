@@ -32,11 +32,11 @@ module.exports = {
             tool.editor.label_locales[request.params.lng];
         }
 
-        const previewSize = options.editorConfig.previewSizes;
-        if (previewSize) {
+        const previewSizes = options.editorConfig.previewSizes;
+        if (previewSizes) {
           translations.preview = {};
-          for (let previewSizeName in previewSize) {
-            const previewSize = previewSize[previewSizeName];
+          for (let previewSizeName in previewSizes) {
+            const previewSize = previewSizes[previewSizeName];
             if (
               previewSize.hasOwnProperty("label_locales") &&
               previewSize.label_locales.hasOwnProperty(request.params.lng)
