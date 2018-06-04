@@ -455,24 +455,6 @@ lab.experiment("core editor endpoints", () => {
     expect(responseInexistingLanguage.result.tool1).to.be.undefined();
   });
 
-  it("returns correctly generated editor translation file for given locale", async () => {
-    const responseDe = await server.inject(
-      "/editor/locales/de/translation.json"
-    );
-    expect(responseDe.result.tool1).to.be.equal("tool1_de");
-    expect(responseDe.result.tool2).to.be.undefined();
-
-    const responseEn = await server.inject(
-      "/editor/locales/en/translation.json"
-    );
-    expect(responseEn.result.tool1).to.be.equal("tool1_en");
-
-    const responseInexistingLanguage = await server.inject(
-      "/editor/locales/inexistingLanguage/translation.json"
-    );
-    expect(responseInexistingLanguage.result.tool1).to.be.undefined();
-  });
-
   it("returns the tool editor configs", async () => {
     const response = await server.inject("/editor/tools");
     expect(response.result[0].name).to.be.equal("tool1");
