@@ -1,9 +1,9 @@
 const Joi = require("joi");
 
 module.exports = {
-  getGetRoute: function(options) {
+  getGetToolsRoute: function() {
     return {
-      path: "/editor/locales/{lng}/translation.json",
+      path: "/editor/tools/locales/{lng}/translation.json",
       method: "GET",
       options: {
         description: "Returns translations for given language",
@@ -31,6 +31,29 @@ module.exports = {
           translations[toolName] =
             tool.editor.label_locales[request.params.lng];
         }
+
+        return translations;
+      }
+    };
+  },
+  getGetEditorConfigRoute: function(options) {
+    return {
+      path: "/editor/locales/{lng}/translation.json",
+      method: "GET",
+      options: {
+        description: "Returns translations for given language",
+        tags: ["api", "editor", "non-critical"],
+        validate: {
+          params: {
+            lng: Joi.string().required()
+          }
+        }
+      },
+      handler: (request, h) => {
+        const tools = request.server.settings.app.tools.get("");
+
+        // compute a translation.json file for use by i18next for the given language
+        let translations = {};
 
         const previewSizes = options.editorConfig.previewSizes;
         if (previewSizes) {
