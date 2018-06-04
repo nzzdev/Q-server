@@ -6,7 +6,7 @@ module.exports = {
       path: "/editor/tools/locales/{lng}/translation.json",
       method: "GET",
       options: {
-        description: "Returns translations for given language",
+        description: "Returns tool name translations for given language",
         tags: ["api", "editor", "non-critical"],
         validate: {
           params: {
@@ -41,7 +41,7 @@ module.exports = {
       path: "/editor/locales/{lng}/translation.json",
       method: "GET",
       options: {
-        description: "Returns translations for given language",
+        description: "Returns editor translations for given language",
         tags: ["api", "editor", "non-critical"],
         validate: {
           params: {
@@ -50,8 +50,6 @@ module.exports = {
         }
       },
       handler: (request, h) => {
-        const tools = request.server.settings.app.tools.get("");
-
         // compute a translation.json file for use by i18next for the given language
         let translations = {};
 
