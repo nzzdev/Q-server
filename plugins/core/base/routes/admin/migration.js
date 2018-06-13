@@ -42,7 +42,7 @@ module.exports = {
       const migrationStatus = await migrateItem(
         item,
         toolBaseUrl,
-        server.app.db
+        request.server.app.db
       );
       return {
         status: migrationStatus.status
