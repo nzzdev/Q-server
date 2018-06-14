@@ -30,7 +30,7 @@ module.exports = {
     if (request.params.id) {
       const ignoreInactive = true;
       try {
-        const item = await request.methods.db.item.getById(
+        const item = await request.server.methods.db.item.getById(
           request.params.id,
           ignoreInactive
         );
