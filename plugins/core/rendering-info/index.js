@@ -22,7 +22,6 @@ function getGetRenderingInfoRoute(config) {
           toolRuntimeConfig: Joi.object({
             size: Joi.object(sizeValidationObject).optional()
           }),
-          noCache: Joi.boolean().optional(),
           ignoreInactive: Joi.boolean().optional()
         },
         options: {
@@ -53,25 +52,13 @@ function getGetRenderingInfoRoute(config) {
       }
 
       try {
-        if (request.query.noCache) {
-          const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(
-            request.params.id,
-            request.params.target,
-            requestToolRuntimeConfig,
-            request.query.ignoreInactive
-          );
-          return h.response(renderingInfo).header("cache-control", "no-cache");
-        } else {
-          const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(
-            request.params.id,
-            request.params.target,
-            requestToolRuntimeConfig,
-            request.query.ignoreInactive
-          );
-          return h
-            .response(renderingInfo)
-            .header("cache-control", config.cacheControlHeader);
-        }
+        const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(
+          request.params.id,
+          request.params.target,
+          requestToolRuntimeConfig,
+          request.query.ignoreInactive
+        );
+        return h.response(renderingInfo).header("cache-control", "no-cache");
       } catch (err) {
         if (err.stack) {
           request.server.log(["error"], err.stack);
@@ -219,39 +206,6 @@ module.exports = {
           ignoreInactive,
           itemStateInDb
         );
-      }
-    );
-
-    server.method(
-      "renderingInfo.cached.getRenderingInfoForId",
-      async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
-        const item = await server.methods.db.item.getById(id, ignoreInactive);
-        // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
-        const itemStateInDb = true;
-        return server.methods.renderingInfo.getRenderingInfoForItem(
-          item,
-          target,
-          requestToolRuntimeConfig,
-          ignoreInactive,
-          itemStateInDb
-        );
-      },
-      {
-        cache: {
-          expiresIn: Number.isInteger(options.get("/cache/serverCacheTime"))
-            ? options.get("/cache/serverCacheTime")
-            : 1000,
-          generateTimeout: 10000
-        },
-        generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
-          let toolRuntimeConfigKey = JSON.stringify(toolRuntimeConfig)
-            .replace(new RegExp("{", "g"), "")
-            .replace(new RegExp("}", "g"), "")
-            .replace(new RegExp('"', "g"), "")
-            .replace(new RegExp(":", "g"), "-");
-          let key = `${id}-${target}-${toolRuntimeConfigKey}-${ignoreInactive}`;
-          return key;
-        }
       }
     );
 
