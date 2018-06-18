@@ -51,7 +51,7 @@ module.exports = {
       const items = await request.server.methods.db.item.getAllByTool(tool);
 
       let migrationStatuses = items.map(async item => {
-        return await migrateItem(item, toolBaseUrl, server.app.db);
+        return await migrateItem(item, toolBaseUrl, request.server.app.db);
       });
 
       migrationStatuses = await Promise.all(migrationStatuses);
