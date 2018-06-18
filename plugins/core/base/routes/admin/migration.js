@@ -1,22 +1,22 @@
-const Boom = require('boom');
-const Bounce = require('bounce');
-const fetch = require('node-fetch');
+const Boom = require("boom");
+const Bounce = require("bounce");
+const fetch = require("node-fetch");
 
-const statusUpdated = 'updated';
-const statusNotUpdated = 'not updated';
-const statusFailed = 'failed';
-
+const statusUpdated = "updated";
+const statusNotUpdated = "not updated";
+const statusFailed = "failed";
 
 module.exports = {
-  path: '/admin/migration/{tool}/{id?}',
-  method: 'GET',
-  config: {      
-    auth: 'q-auth',
+  path: "/admin/migration/{tool}/{id?}",
+  method: "GET",
+  config: {
+    auth: "q-auth",
     cors: {
       credentials: true
     },
-    description: 'Executes migration of items in database for specified tool or for a single item with the specified id respectively',
-    tags: ['api']
+    description:
+      "Executes migration of items in database for specified tool or for a single item with the specified id respectively",
+    tags: ["api"]
   },
   handler: async (request, h) => {
     const tool = request.params.tool;
@@ -30,13 +30,20 @@ module.exports = {
     if (request.params.id) {
       const ignoreInactive = true;
       try {
-        const item = await request.methods.db.item.getById(request.params.id, ignoreInactive);
+        const item = await request.server.methods.db.item.getById(
+          request.params.id,
+          ignoreInactive
+        );
       } catch (err) {
-        Bounce.rethrow(err, 'system');
+        Bounce.rethrow(err, "system");
         return err;
       }
 
-      const migrationStatus = await migrateItem(item, toolBaseUrl, server.app.db);
+      const migrationStatus = await migrateItem(
+        item,
+        toolBaseUrl,
+        request.server.app.db
+      );
       return {
         status: migrationStatus.status
       };
@@ -44,39 +51,42 @@ module.exports = {
       const items = await request.server.methods.db.item.getAllByTool(tool);
 
       let migrationStatuses = items.map(async item => {
-        return await migrateItem(item, toolBaseUrl, server.app.db);
-      })
+        return await migrateItem(item, toolBaseUrl, request.server.app.db);
+      });
 
       migrationStatuses = await Promise.all(migrationStatuses);
-      
-      const stats = migrationStatuses.reduce((groupedStats, migrationStatus) => {
-        const status = migrationStatus.status;
-        if(!groupedStats[status]) {
-          groupedStats[status] = [];
-        }
-        groupedStats[status].push(migrationStatus.id);
-        return groupedStats;
-      }, {});
+
+      const stats = migrationStatuses.reduce(
+        (groupedStats, migrationStatus) => {
+          const status = migrationStatus.status;
+          if (!groupedStats[status]) {
+            groupedStats[status] = [];
+          }
+          groupedStats[status].push(migrationStatus.id);
+          return groupedStats;
+        },
+        {}
+      );
 
       return stats;
     }
   }
-}
+};
 
 function migrateItem(item, toolBaseUrl, db) {
   return new Promise(async (resolve, reject) => {
     const body = {
       item: item
-    }
+    };
 
     try {
       const response = await fetch(`${toolBaseUrl}/migration`, {
-        method: 'POST',
+        method: "POST",
         body: JSON.stringify(body),
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json"
         }
-      })
+      });
 
       if (response.status === 200) {
         const json = await response.json();
@@ -84,7 +94,7 @@ function migrateItem(item, toolBaseUrl, db) {
         return resolve({
           id: item._id,
           status: statusUpdated
-        }); 
+        });
       }
 
       if (response.status === 304) {
@@ -95,7 +105,6 @@ function migrateItem(item, toolBaseUrl, db) {
       }
 
       throw new Error(`item ${item._id} could not be migrated`);
-
     } catch (e) {
       resolve({
         id: item._id,
