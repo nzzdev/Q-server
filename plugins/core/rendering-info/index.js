@@ -22,7 +22,8 @@ function getGetRenderingInfoRoute(config) {
           toolRuntimeConfig: Joi.object({
             size: Joi.object(sizeValidationObject).optional()
           }),
-          ignoreInactive: Joi.boolean().optional()
+          ignoreInactive: Joi.boolean().optional(),
+          noCache: Joi.boolean().optional()
         },
         options: {
           allowUnknown: true
@@ -58,7 +59,14 @@ function getGetRenderingInfoRoute(config) {
           requestToolRuntimeConfig,
           request.query.ignoreInactive
         );
-        return h.response(renderingInfo).header("cache-control", "no-cache");
+        return h
+          .response(renderingInfo)
+          .header(
+            "cache-control",
+            request.query.noCache === true
+              ? "no-cache"
+              : config.cacheControlHeader
+          );
       } catch (err) {
         if (err.stack) {
           request.server.log(["error"], err.stack);
