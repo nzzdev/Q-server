@@ -1,16 +1,17 @@
-const Boom = require('boom');
-const Joi = require('joi');
-const Hoek = require('hoek');
+const Boom = require("boom");
+const Joi = require("joi");
+const Hoek = require("hoek");
 
-const getRenderingInfo = require('./helpers.js').getRenderingInfo;
-const getCompiledToolRuntimeConfig = require('./helpers.js').getCompiledToolRuntimeConfig;
-const sizeValidationObject = require('./size-helpers.js').sizeValidationObject;
-const validateSize = require('./size-helpers.js').validateSize;
+const getRenderingInfo = require("./helpers.js").getRenderingInfo;
+const getCompiledToolRuntimeConfig = require("./helpers.js")
+  .getCompiledToolRuntimeConfig;
+const sizeValidationObject = require("./size-helpers.js").sizeValidationObject;
+const validateSize = require("./size-helpers.js").validateSize;
 
 function getGetRenderingInfoRoute(config) {
   return {
-    method: 'GET',
-    path: '/rendering-info/{id}/{target}',
+    method: "GET",
+    path: "/rendering-info/{id}/{target}",
     options: {
       validate: {
         params: {
@@ -21,15 +22,16 @@ function getGetRenderingInfoRoute(config) {
           toolRuntimeConfig: Joi.object({
             size: Joi.object(sizeValidationObject).optional()
           }),
-          noCache: Joi.boolean().optional(),
-          ignoreInactive: Joi.boolean().optional()
+          ignoreInactive: Joi.boolean().optional(),
+          noCache: Joi.boolean().optional()
         },
         options: {
           allowUnknown: true
         }
       },
-      description: 'Returns rendering information for the given graphic id and target (as configured in the environment).',
-      tags: ['api', 'reader-facing']
+      description:
+        "Returns rendering information for the given graphic id and target (as configured in the environment).",
+      tags: ["api", "reader-facing"]
     },
     handler: async function(request, h) {
       let requestToolRuntimeConfig = {};
@@ -37,7 +39,7 @@ function getGetRenderingInfoRoute(config) {
       if (request.query.toolRuntimeConfig) {
         if (request.query.toolRuntimeConfig.size) {
           try {
-            validateSize(request.query.toolRuntimeConfig.size)
+            validateSize(request.query.toolRuntimeConfig.size);
           } catch (err) {
             if (err.isBoom) {
               throw err;
@@ -51,18 +53,23 @@ function getGetRenderingInfoRoute(config) {
       }
 
       try {
-        if (request.query.noCache) {
-          const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
-          return h.response(renderingInfo)
-            .header('cache-control', 'no-cache');
-        } else {
-          const renderingInfo = await request.server.methods.renderingInfo.cached.getRenderingInfoForId(request.params.id, request.params.target, requestToolRuntimeConfig, request.query.ignoreInactive);
-          return h.response(renderingInfo)
-            .header('cache-control', config.cacheControlHeader);
-        }
+        const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(
+          request.params.id,
+          request.params.target,
+          requestToolRuntimeConfig,
+          request.query.ignoreInactive
+        );
+        return h
+          .response(renderingInfo)
+          .header(
+            "cache-control",
+            request.query.noCache === true
+              ? "no-cache"
+              : config.cacheControlHeader
+          );
       } catch (err) {
         if (err.stack) {
-          request.server.log(['error'], err.stack);
+          request.server.log(["error"], err.stack);
         }
         if (err.isBoom) {
           return err;
@@ -76,8 +83,8 @@ function getGetRenderingInfoRoute(config) {
 
 function getPostRenderingInfoRoute(config) {
   return {
-    method: 'POST',
-    path: '/rendering-info/{target}',
+    method: "POST",
+    path: "/rendering-info/{target}",
     options: {
       cache: false,
       validate: {
@@ -92,10 +99,11 @@ function getPostRenderingInfoRoute(config) {
         },
         options: {
           allowUnknown: true
-        },
+        }
       },
-      description: 'Returns rendering information for the given data and target (as configured in the environment).',
-      tags: ['api', 'editor']
+      description:
+        "Returns rendering information for the given data and target (as configured in the environment).",
+      tags: ["api", "editor"]
     },
     handler: async function(request, h) {
       let requestToolRuntimeConfig = {};
@@ -103,7 +111,7 @@ function getPostRenderingInfoRoute(config) {
       if (request.query.toolRuntimeConfig) {
         if (request.query.toolRuntimeConfig.size) {
           try {
-            validateSize(request.query.toolRuntimeConfig.size)
+            validateSize(request.query.toolRuntimeConfig.size);
           } catch (err) {
             if (err.isBoom) {
               throw err;
@@ -138,70 +146,90 @@ function getPostRenderingInfoRoute(config) {
 }
 
 module.exports = {
-  name: 'q-rendering-info',
-  dependencies: 'q-base',
+  name: "q-rendering-info",
+  dependencies: "q-base",
   register: async function(server, options) {
-    Hoek.assert(server.settings.app.tools && typeof server.settings.app.tools.get === 'function', new Error('server.settings.app.tools.get needs to be a function'));    
+    Hoek.assert(
+      server.settings.app.tools &&
+        typeof server.settings.app.tools.get === "function",
+      new Error("server.settings.app.tools.get needs to be a function")
+    );
 
-    server.method('renderingInfo.getRenderingInfoForItem', async(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb) => {
-      const endpointConfig = server.settings.app.tools.get(`/${item.tool}/endpoint`, { target: target })
+    server.method(
+      "renderingInfo.getRenderingInfoForItem",
+      async (
+        item,
+        target,
+        requestToolRuntimeConfig,
+        ignoreInactive,
+        itemStateInDb
+      ) => {
+        const endpointConfig = server.settings.app.tools.get(
+          `/${item.tool}/endpoint`,
+          { target: target }
+        );
 
-      if (!endpointConfig) {
-        throw new Error(`no endpoint configured for tool: ${item.tool} and target: ${target}`);
+        if (!endpointConfig) {
+          throw new Error(
+            `no endpoint configured for tool: ${
+              item.tool
+            } and target: ${target}`
+          );
+        }
+
+        // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
+        const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
+          serverWideToolRuntimeConfig: options.get("/toolRuntimeConfig", {
+            target: target,
+            tool: item.tool
+          }),
+          toolEndpointConfig: endpointConfig,
+          requestToolRuntimeConfig: requestToolRuntimeConfig
+        });
+
+        const baseUrl = server.settings.app.tools.get(`/${item.tool}/baseUrl`, {
+          target: target
+        });
+
+        return await getRenderingInfo(
+          item,
+          baseUrl,
+          endpointConfig,
+          toolRuntimeConfig,
+          itemStateInDb
+        );
       }
+    );
 
-      // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
-      const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
-        serverWideToolRuntimeConfig: options.get('/toolRuntimeConfig', { target: target, tool: item.tool }),
-        toolEndpointConfig:          endpointConfig,
-        requestToolRuntimeConfig:    requestToolRuntimeConfig
-      });
-
-      const baseUrl = server.settings.app.tools.get(`/${item.tool}/baseUrl`, { target: target });
-
-      return await getRenderingInfo(item, baseUrl, endpointConfig, toolRuntimeConfig, itemStateInDb);
-    });
-
-    server.method('renderingInfo.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
-      const item = await server.methods.db.item.getById(id, ignoreInactive);
-      // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
-      const itemStateInDb = true;
-      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb);
-    });
-
-    server.method('renderingInfo.cached.getRenderingInfoForId', async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
-      const item = await server.methods.db.item.getById(id, ignoreInactive);
-      // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
-      const itemStateInDb = true;
-      return server.methods.renderingInfo.getRenderingInfoForItem(item, target, requestToolRuntimeConfig, ignoreInactive, itemStateInDb);
-    }, {
-      cache: {
-        expiresIn: Number.isInteger(options.get('/cache/serverCacheTime')) ? options.get('/cache/serverCacheTime') : 1000,
-        generateTimeout: 10000
-      },
-      generateKey: (id, target, toolRuntimeConfig, ignoreInactive) => {
-        let toolRuntimeConfigKey = JSON
-          .stringify(toolRuntimeConfig)
-          .replace(new RegExp('{', 'g'), '')
-          .replace(new RegExp('}', 'g'), '')
-          .replace(new RegExp('"', 'g'), '')
-          .replace(new RegExp(':', 'g'), '-');
-        let key = `${id}-${target}-${toolRuntimeConfigKey}-${ignoreInactive}`;
-        return key;
+    server.method(
+      "renderingInfo.getRenderingInfoForId",
+      async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
+        const item = await server.methods.db.item.getById(id, ignoreInactive);
+        // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
+        const itemStateInDb = true;
+        return server.methods.renderingInfo.getRenderingInfoForItem(
+          item,
+          target,
+          requestToolRuntimeConfig,
+          ignoreInactive,
+          itemStateInDb
+        );
       }
-    });
+    );
 
     // calculate the cache control header from options given
-    const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(options.get('/cache/cacheControl'));
-    const cacheControlHeader = cacheControlDirectives.join(', ');
+    const cacheControlDirectives = await server.methods.getCacheControlDirectivesFromConfig(
+      options.get("/cache/cacheControl")
+    );
+    const cacheControlHeader = cacheControlDirectives.join(", ");
 
     const routesConfig = {
       cacheControlHeader: cacheControlHeader
-    }
+    };
 
     server.route([
       getGetRenderingInfoRoute(routesConfig),
       getPostRenderingInfoRoute(routesConfig)
-    ])
+    ]);
   }
-}
+};
