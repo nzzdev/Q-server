@@ -128,5 +128,34 @@ module.exports = {
         });
       });
     });
+
+    server.method("db.tools.getWithUserUsage", function(username) {
+      const options = {
+        startkey: [username],
+        endkey: [username, {}],
+        reduce: true,
+        group: true
+      };
+      return new Promise((resolve, reject) => {
+        server.app.db.view(
+          "tools",
+          "usagePerUser",
+          options,
+          async (err, data) => {
+            if (err) {
+              return reject(Boom.internal(err));
+            } else {
+              const toolsWithUsage = data.rows.map(row => {
+                return {
+                  tool: row.key[1],
+                  usage: row.value
+                };
+              });
+              return resolve(toolsWithUsage);
+            }
+          }
+        );
+      });
+    });
   }
 };

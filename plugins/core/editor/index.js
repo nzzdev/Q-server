@@ -11,6 +11,7 @@ module.exports = {
     server.route([
       require("./routes/targets"),
       require("./routes/tools"),
+      require("./routes/tools-ordered-by-user-usage"),
       require("./routes/locales").getGetToolsRoute(),
       require("./routes/locales").getGetEditorConfigRoute(settings)
     ]);
