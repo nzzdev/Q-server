@@ -164,7 +164,10 @@ module.exports = {
       let docDiff = {};
 
       doc.updatedDate = now.toISOString();
+      docDiff.updatedDate = doc.updatedDate;
+
       doc.updatedBy = request.auth.credentials.name;
+      docDiff.updatedBy = doc.updatedBy;
 
       const ignoreInactive = true;
       const oldDoc = await request.server.methods.db.item.getById(
