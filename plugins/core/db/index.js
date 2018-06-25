@@ -32,7 +32,7 @@ function getSearchFilters(filterProperties) {
         ]
       };
     }
-    if (parameterName === "byMe") {
+    if (parameterName === "createdBy") {
       return {
         $or: [
           {

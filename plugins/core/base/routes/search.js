@@ -12,7 +12,7 @@ module.exports = {
         tool: Joi.alternatives()
           .try(Joi.array().items(Joi.string()), Joi.string())
           .optional(),
-        byMe: Joi.string().optional(),
+        createdBy: Joi.string().optional(),
         department: Joi.string().optional(),
         publication: Joi.string().optional(),
         active: Joi.boolean().optional(),
