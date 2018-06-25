@@ -16,6 +16,22 @@ function getSearchFilters(filterProperties) {
         })
       };
     }
+    if (parameterName === "active" && parameterValue === false) {
+      return {
+        $or: [
+          {
+            active: {
+              $eq: false
+            }
+          },
+          {
+            active: {
+              $exists: false
+            }
+          }
+        ]
+      };
+    }
     if (parameterName === "tool" && Array.isArray(parameterValue)) {
       return {
         $or: parameterValue.map(tool => {
