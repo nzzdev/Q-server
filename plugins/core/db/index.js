@@ -32,6 +32,22 @@ function getSearchFilters(filterProperties) {
         ]
       };
     }
+    if (parameterName === "byMe") {
+      return {
+        $or: [
+          {
+            createdBy: {
+              $eq: parameterValue
+            }
+          },
+          {
+            updatedBy: {
+              $eq: parameterValue
+            }
+          }
+        ]
+      };
+    }
     if (parameterName === "tool" && Array.isArray(parameterValue)) {
       return {
         $or: parameterValue.map(tool => {
