@@ -33,6 +33,18 @@ title: Installation
 ```
 ```json
 {
+  "_id": "_design/tools",
+  "views": {
+    "usagePerUser": {
+      "reduce": "_sum",
+      "map": "function (doc) {\n  if (doc.tool && doc.createdBy) {\n    emit([doc.createdBy, doc.tool], 1);\n  }\n  if (doc.tool && doc.updatedBy) {\n    emit([doc.updatedBy, doc.tool], 1);\n  }\n}"
+    }
+  },
+  "language": "javascript"
+}
+```
+```json
+{
   "_id": "_design/query-index",
   "language": "query",
   "views": {

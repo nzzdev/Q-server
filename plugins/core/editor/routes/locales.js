@@ -1,31 +1,75 @@
-const Joi = require('joi');
+const Joi = require("joi");
 
 module.exports = {
-  path: '/editor/locales/{lng}/translation.json',
-  method: 'GET',
-  options: {
-    description: 'Returns translations for given language',
-    tags: ['api', 'editor', 'non-critical'],
-    validate: {
-      params: {
-        lng: Joi.string().required()
+  getGetToolsRoute: function() {
+    return {
+      path: "/editor/tools/locales/{lng}/translation.json",
+      method: "GET",
+      options: {
+        description: "Returns tool name translations for given language",
+        tags: ["api", "editor", "non-critical"],
+        validate: {
+          params: {
+            lng: Joi.string().required()
+          }
+        }
+      },
+      handler: (request, h) => {
+        const tools = request.server.settings.app.tools.get("");
+
+        // compute a translation.json file for use by i18next for the given language
+        // containing the tool name and it's localized label.
+        let translations = {};
+        for (let toolName in tools) {
+          const tool = tools[toolName];
+          if (
+            !tool.editor.hasOwnProperty("label_locales") ||
+            !tool.editor.label_locales.hasOwnProperty(request.params.lng)
+          ) {
+            continue;
+          }
+          translations[toolName] =
+            tool.editor.label_locales[request.params.lng];
+        }
+
+        return translations;
       }
-    }
+    };
   },
-  handler: (request, h) => {
-    const tools = request.server.settings.app.tools.get('');
+  getGetEditorConfigRoute: function(options) {
+    return {
+      path: "/editor/locales/{lng}/translation.json",
+      method: "GET",
+      options: {
+        description: "Returns editor translations for given language",
+        tags: ["api", "editor", "non-critical"],
+        validate: {
+          params: {
+            lng: Joi.string().required()
+          }
+        }
+      },
+      handler: (request, h) => {
+        // compute a translation.json file for use by i18next for the given language
+        let translations = {};
 
-    // compute a translation.json file for use by i18next for the given language
-    // containing the tool name and it's localized label.
-    let translations = {};
-    for (let toolName in tools) {
-      const tool = tools[toolName];
-      if (!tool.editor.hasOwnProperty('label_locales') || !tool.editor.label_locales.hasOwnProperty(request.params.lng)) {
-        continue;
+        const previewSizes = options.editorConfig.previewSizes;
+        if (previewSizes) {
+          translations.preview = {};
+          for (let previewSizeName in previewSizes) {
+            const previewSize = previewSizes[previewSizeName];
+            if (
+              previewSize.hasOwnProperty("label_locales") &&
+              previewSize.label_locales.hasOwnProperty(request.params.lng)
+            ) {
+              translations.preview[previewSizeName] =
+                previewSize.label_locales[request.params.lng];
+            }
+          }
+        }
+
+        return translations;
       }
-      translations[toolName] = tool.editor.label_locales[request.params.lng];
-    }
-
-    return translations;
+    };
   }
-}
+};

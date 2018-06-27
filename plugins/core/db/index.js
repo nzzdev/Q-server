@@ -16,6 +16,38 @@ function getSearchFilters(filterProperties) {
         })
       };
     }
+    if (parameterName === "active" && parameterValue === false) {
+      return {
+        $or: [
+          {
+            active: {
+              $eq: false
+            }
+          },
+          {
+            active: {
+              $exists: false
+            }
+          }
+        ]
+      };
+    }
+    if (parameterName === "createdBy") {
+      return {
+        $or: [
+          {
+            createdBy: {
+              $eq: parameterValue
+            }
+          },
+          {
+            updatedBy: {
+              $eq: parameterValue
+            }
+          }
+        ]
+      };
+    }
     if (parameterName === "tool" && Array.isArray(parameterValue)) {
       return {
         $or: parameterValue.map(tool => {
@@ -126,6 +158,35 @@ module.exports = {
             return resolve(data);
           }
         });
+      });
+    });
+
+    server.method("db.tools.getWithUserUsage", function(username) {
+      const options = {
+        startkey: [username],
+        endkey: [username, {}],
+        reduce: true,
+        group: true
+      };
+      return new Promise((resolve, reject) => {
+        server.app.db.view(
+          "tools",
+          "usagePerUser",
+          options,
+          async (err, data) => {
+            if (err) {
+              return reject(Boom.internal(err));
+            } else {
+              const toolsWithUsage = data.rows.map(row => {
+                return {
+                  tool: row.key[1],
+                  usage: row.value
+                };
+              });
+              return resolve(toolsWithUsage);
+            }
+          }
+        );
       });
     });
   }

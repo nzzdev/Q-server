@@ -7,13 +7,16 @@ module.exports = {
     server.method("getCacheControlDirectivesFromConfig", async function(
       cacheControlConfig
     ) {
-      const cacheControlDirectives = ["public"];
-
-      // return early if no config given
+      // return early if no config given, default is 'no-cache'
       if (!cacheControlConfig) {
-        return cacheControlDirectives;
+        return ["no-cache"];
       }
 
+      const cacheControlDirectives = [];
+
+      if (cacheControlConfig.public) {
+        cacheControlDirectives.push("public");
+      }
       if (cacheControlConfig.maxAge) {
         cacheControlDirectives.push(`max-age=${cacheControlConfig.maxAge}`);
       }
