@@ -176,16 +176,26 @@ module.exports = {
       );
 
       // if the active state change to true, we set activateDate
+      let isNewActive = false;
       if (doc.active === true && oldDoc.active === false) {
         doc.activateDate = now.toISOString();
         docDiff.activateDate = doc.activateDate;
+        isNewActive = true;
       }
 
       // if the active state change to false, we set activateDate
+      let isNewInactive = false;
       if (doc.active === false && oldDoc.active === true) {
         doc.deactivateDate = now.toISOString();
         docDiff.deactivateDate = doc.deactivateDate;
+        isNewInactive = true;
       }
+
+      let isDeleted = false;
+      if (doc._deleted === true) {
+        isDeleted = true;
+      }
+
       return new Promise((resolve, reject) => {
         request.server.app.db.insert(doc, (err, res) => {
           if (err) {
@@ -197,6 +207,17 @@ module.exports = {
           const savedDoc = Object.assign(doc, {
             _rev: res.rev
           });
+
+          if (isNewActive) {
+            request.server.events.emit("item.activate", savedDoc);
+          }
+          if (isNewInactive) {
+            request.server.events.emit("item.deactivate", savedDoc);
+          }
+          if (isDeleted) {
+            request.server.events.emit("item.delete", savedDoc);
+          }
+
           request.server.events.emit("item.update", savedDoc);
 
           docDiff._rev = res.rev;

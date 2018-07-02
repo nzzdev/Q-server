@@ -39,6 +39,9 @@ module.exports = {
 
     server.event("item.new");
     server.event("item.update");
+    server.event("item.activate");
+    server.event("item.deactivate");
+    server.event("item.delete");
 
     await server.route([
       require("./routes/item.js").get,

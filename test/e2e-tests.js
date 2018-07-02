@@ -219,6 +219,87 @@ lab.experiment("core item", () => {
       const response = await server.inject(request);
     }
   );
+
+  it(
+    "should emit item.activate event if an existing item is activated",
+    { plan: 2 },
+    async () => {
+      const id = "mock-item-to-test-edits";
+      const handlerActivate = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.activate", handlerActivate);
+      server.events.once("item.update", handlerUpdated);
+
+      const itemResponse = await server.inject("/item/mock-item-to-test-edits");
+      const item = JSON.parse(itemResponse.payload);
+      item.active = true;
+      const request = {
+        method: "PUT",
+        credentials: { username: "user", password: "pass" },
+        url: "/item",
+        payload: item
+      };
+      const response = await server.inject(request);
+    }
+  );
+
+  it(
+    "should emit item.deactivate event if an existing active item is deactivated",
+    { plan: 2 },
+    async () => {
+      const id = "mock-item-to-test-edits";
+      const handlerDeactivate = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.deactivate", handlerDeactivate);
+      server.events.once("item.update", handlerUpdated);
+
+      const itemResponse = await server.inject("/item/mock-item-to-test-edits");
+      const item = JSON.parse(itemResponse.payload);
+      item.active = false;
+      const request = {
+        method: "PUT",
+        credentials: { username: "user", password: "pass" },
+        url: "/item",
+        payload: item
+      };
+      const response = await server.inject(request);
+    }
+  );
+
+  it(
+    "should emit item.delete event if an existing item is deleted",
+    { plan: 2 },
+    async () => {
+      const id = "mock-item-to-test-edits";
+      const handlerDeleted = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.delete", handlerDeleted);
+      server.events.once("item.update", handlerUpdated);
+
+      const itemResponse = await server.inject("/item/mock-item-to-test-edits");
+      const item = JSON.parse(itemResponse.payload);
+      item._deleted = true;
+      const request = {
+        method: "PUT",
+        credentials: { username: "user", password: "pass" },
+        url: "/item",
+        payload: item
+      };
+      const response = await server.inject(request);
+    }
+  );
 });
 
 lab.experiment("core tool proxy routes", () => {
