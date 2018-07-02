@@ -222,13 +222,17 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.activate event if an existing item is activated",
-    { plan: 1 },
+    { plan: 2 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handler = item => {
+      const handlerActivate = item => {
         expect(item._id).to.be.equal(id);
       };
-      server.events.once("item.activate", handler);
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.activate", handlerActivate);
+      server.events.once("item.update", handlerUpdated);
 
       const itemResponse = await server.inject("/item/mock-item-to-test-edits");
       const item = JSON.parse(itemResponse.payload);
@@ -245,13 +249,17 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.deactivate event if an existing active item is deactivated",
-    { plan: 1 },
+    { plan: 2 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handler = item => {
+      const handlerDeactivate = item => {
         expect(item._id).to.be.equal(id);
       };
-      server.events.once("item.deactivate", handler);
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.deactivate", handlerDeactivate);
+      server.events.once("item.update", handlerUpdated);
 
       const itemResponse = await server.inject("/item/mock-item-to-test-edits");
       const item = JSON.parse(itemResponse.payload);
@@ -268,13 +276,17 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.delete event if an existing item is deleted",
-    { plan: 1 },
+    { plan: 2 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handler = item => {
+      const handlerDeleted = item => {
         expect(item._id).to.be.equal(id);
       };
-      server.events.once("item.delete", handler);
+      const handlerUpdated = item => {
+        expect(item._id).to.be.equal(id);
+      };
+      server.events.once("item.delete", handlerDeleted);
+      server.events.once("item.update", handlerUpdated);
 
       const itemResponse = await server.inject("/item/mock-item-to-test-edits");
       const item = JSON.parse(itemResponse.payload);
