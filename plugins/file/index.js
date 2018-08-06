@@ -70,7 +70,7 @@ module.exports = {
       },
       handler: async function(request, h) {
         const file = request.payload.file;
-        const fullPath = request.payload.fullPath;
+        let fileKey = request.payload.fileKey;
 
         if (!file) {
           return Boom.badData("Failed to read file");
@@ -83,8 +83,7 @@ module.exports = {
 
         const type = mimos.type(contentType);
 
-        let fileKey;
-        if (fullPath === undefined) {
+        if (fileKey === undefined) {
           const extension = type.extensions[0] || "";
           const filename = `${uuid.v4()}.${extension}`;
           fileKey = `${getDateString()}/${filename}`;
@@ -92,8 +91,6 @@ module.exports = {
           if (options.keyPrefix) {
             fileKey = `${options.keyPrefix}${fileKey}`;
           }
-        } else {
-          fileKey = fullPath;
         }
 
         const params = {
