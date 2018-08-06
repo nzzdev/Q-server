@@ -1,6 +1,7 @@
 const AWS = require("aws-sdk");
 const uuid = require("uuid");
 const Mimos = require("mimos");
+const Boom = require("boom");
 const mimos = new Mimos();
 
 function getDateString() {
@@ -69,6 +70,8 @@ module.exports = {
       },
       handler: async function(request, h) {
         const file = request.payload.file;
+        const fullPath = request.payload.fullPath;
+
         if (!file) {
           return Boom.badData("Failed to read file");
         }
@@ -80,13 +83,17 @@ module.exports = {
 
         const type = mimos.type(contentType);
 
-        const extension = type.extensions[0] || "";
-        const filename = `${uuid.v4()}.${extension}`;
+        let fileKey;
+        if (fullPath === undefined) {
+          const extension = type.extensions[0] || "";
+          const filename = `${uuid.v4()}.${extension}`;
+          fileKey = `${getDateString()}/${filename}`;
 
-        let fileKey = `${getDateString()}/${filename}`;
-
-        if (options.keyPrefix) {
-          fileKey = `${options.keyPrefix}${fileKey}`;
+          if (options.keyPrefix) {
+            fileKey = `${options.keyPrefix}${fileKey}`;
+          }
+        } else {
+          fileKey = fullPath;
         }
 
         const params = {
