@@ -1,5 +1,4 @@
 const AWS = require("aws-sdk");
-const uuid = require("uuid");
 const Mimos = require("mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
@@ -81,9 +80,7 @@ module.exports = {
         }
 
         const type = mimos.type(contentType);
-
         const extension = type.extensions[0] || "";
-        const filename = `${uuid.v4()}.${extension}`;
 
         const hash = await hasha.fromStream(
           file.pipe(new stream.PassThrough()),
@@ -93,12 +90,14 @@ module.exports = {
         );
 
         const filenameParts = file.hapi.filename.split(".");
-        // add the hash to the 2nd last element after the split by . (this is the filename)
-        filenameParts[filenameParts.length - 2] = `${
-          filenameParts[filenameParts.length - 2]
+        // remove the extension by removing the last element of the array, we will add a normalized one based on the content-type
+        filenameParts.pop();
+        // add the hash to the last element after the split by . and the removing of the extension (this is the filename)
+        filenameParts[filenameParts.length - 1] = `${
+          filenameParts[filenameParts.length - 1]
         }-${hash}`;
         // join everything together again (appending the extension)
-        const hashedFilename = filenameParts.join(".");
+        const hashedFilename = `${filenameParts.join(".")}${extension};
         let fileKey = `${getDateString()}/${hashedFilename}`;
 
         if (options.keyPrefix) {
