@@ -97,7 +97,7 @@ module.exports = {
           filenameParts[filenameParts.length - 1]
         }-${hash}`;
         // join everything together again (appending the extension)
-        const hashedFilename = `${filenameParts.join(".")}${extension};
+        const hashedFilename = `${filenameParts.join(".")}.${extension}`;
         let fileKey = `${getDateString()}/${hashedFilename}`;
 
         if (options.keyPrefix) {
