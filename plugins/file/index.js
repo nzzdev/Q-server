@@ -3,6 +3,7 @@ const uuid = require("uuid");
 const Mimos = require("mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
+const stream = require("stream");
 
 function getDateString() {
   const now = new Date();
@@ -84,9 +85,12 @@ module.exports = {
         const extension = type.extensions[0] || "";
         const filename = `${uuid.v4()}.${extension}`;
 
-        const hash = await hasha.fromStream(file, {
-          algorithm: "md5"
-        });
+        const hash = await hasha.fromStream(
+          file.pipe(new stream.PassThrough()),
+          {
+            algorithm: "md5"
+          }
+        );
 
         const filenameParts = file.hapi.filename.split(".");
         // add the hash to the 2nd last element after the split by . (this is the filename)
@@ -104,7 +108,7 @@ module.exports = {
         const params = {
           Bucket: options.s3Bucket,
           Key: fileKey,
-          Body: file,
+          Body: file.pipe(new stream.PassThrough()),
           ContentType: contentType
         };
 
