@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const uuid = require("uuid");
 const Mimos = require("mimos");
 const mimos = new Mimos();
+const hasha = require("hasha");
 
 function getDateString() {
   const now = new Date();
@@ -83,7 +84,18 @@ module.exports = {
         const extension = type.extensions[0] || "";
         const filename = `${uuid.v4()}.${extension}`;
 
-        let fileKey = `${getDateString()}/${filename}`;
+        const hash = await hasha.fromStream(file, {
+          algorithm: "md5"
+        });
+
+        const filenameParts = file.hapi.filename.split(".");
+        // add the hash to the 2nd last element after the split by . (this is the filename)
+        filenameParts[filenameParts.length - 2] = `${
+          filenameParts[filenameParts.length - 2]
+        }-${hash}`;
+        // join everything together again (appending the extension)
+        const hashedFilename = filenameParts.join(".");
+        let fileKey = `${getDateString()}/${hashedFilename}`;
 
         if (options.keyPrefix) {
           fileKey = `${options.keyPrefix}${fileKey}`;
