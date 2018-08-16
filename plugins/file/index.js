@@ -86,11 +86,14 @@ module.exports = {
 
         // clone the file stream to use one for hashing and one for upload
         const fileStream = cloneable(file);
+        const fileStreamClone1 = fileStream.clone();
+        const fileStreamClone2 = fileStream.clone();
 
+        // pump the streams to start the flow
         const hashStream = new Stream.PassThrough();
-        pump(fileStream.clone(), hashStream);
+        pump(fileStreamClone1, hashStream);
         const uploadStream = new Stream.PassThrough();
-        pump(fileStream.clone(), uploadStream);
+        pump(fileStreamClone2, uploadStream);
 
         const hash = await hasha.fromStream(hashStream, {
           algorithm: "md5"
