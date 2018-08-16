@@ -2,7 +2,9 @@ const AWS = require("aws-sdk");
 const Mimos = require("mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
-const stream = require("stream");
+const Stream = require("stream");
+const cloneable = require("cloneable-readable");
+const pump = require("pump");
 
 function getDateString() {
   const now = new Date();
@@ -82,12 +84,17 @@ module.exports = {
         const type = mimos.type(contentType);
         const extension = type.extensions[0] || "";
 
-        const hash = await hasha.fromStream(
-          file.pipe(new stream.PassThrough()),
-          {
-            algorithm: "md5"
-          }
-        );
+        // clone the file stream to use one for hashing and one for upload
+        const fileStream = cloneable(file);
+
+        const hashStream = new Stream.PassThrough();
+        pump(fileStream.clone(), hashStream);
+        const uploadStream = new Stream.PassThrough();
+        pump(fileStream.clone(), uploadStream);
+
+        const hash = await hasha.fromStream(hashStream, {
+          algorithm: "md5"
+        });
 
         const filenameParts = file.hapi.filename.split(".");
         // remove the extension by removing the last element of the array, we will add a normalized one based on the content-type
@@ -107,7 +114,7 @@ module.exports = {
         const params = {
           Bucket: options.s3Bucket,
           Key: fileKey,
-          Body: file.pipe(new stream.PassThrough()),
+          Body: uploadStream,
           ContentType: contentType
         };
 
