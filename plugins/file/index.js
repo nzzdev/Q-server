@@ -1,7 +1,7 @@
 const AWS = require("aws-sdk");
-const uuid = require("uuid");
 const Mimos = require("mimos");
 const mimos = new Mimos();
+const hasha = require("hasha");
 
 function getDateString() {
   const now = new Date();
@@ -79,11 +79,34 @@ module.exports = {
         }
 
         const type = mimos.type(contentType);
-
         const extension = type.extensions[0] || "";
-        const filename = `${uuid.v4()}.${extension}`;
 
-        let fileKey = `${getDateString()}/${filename}`;
+        // buffer the contents to hash and later upload to s3
+        const fileBuffered = new Promise(resolve => {
+          let data = [];
+          file.on("data", d => {
+            data.push(d);
+          });
+          file.on("end", () => {
+            resolve(Buffer.concat(data));
+          });
+        });
+        const fileBuffer = await fileBuffered;
+
+        const hash = await hasha(fileBuffer, {
+          algorithm: "md5"
+        });
+
+        const filenameParts = file.hapi.filename.split(".");
+        // remove the extension by removing the last element of the array, we will add a normalized one based on the content-type
+        filenameParts.pop();
+        // add the hash to the last element after the split by . and the removing of the extension (this is the filename)
+        filenameParts[filenameParts.length - 1] = `${
+          filenameParts[filenameParts.length - 1]
+        }-${hash}`;
+        // join everything together again (appending the extension)
+        const hashedFilename = `${filenameParts.join(".")}.${extension}`;
+        let fileKey = `${getDateString()}/${hashedFilename}`;
 
         if (options.keyPrefix) {
           fileKey = `${options.keyPrefix}${fileKey}`;
@@ -92,7 +115,7 @@ module.exports = {
         const params = {
           Bucket: options.s3Bucket,
           Key: fileKey,
-          Body: file,
+          Body: fileBuffer,
           ContentType: contentType
         };
 
