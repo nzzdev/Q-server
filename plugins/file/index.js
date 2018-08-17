@@ -2,9 +2,6 @@ const AWS = require("aws-sdk");
 const Mimos = require("mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
-const Stream = require("stream");
-const cloneable = require("cloneable-readable");
-const pump = require("pump");
 
 function getDateString() {
   const now = new Date();
@@ -84,18 +81,19 @@ module.exports = {
         const type = mimos.type(contentType);
         const extension = type.extensions[0] || "";
 
-        // clone the file stream to use one for hashing and one for upload
-        const fileStream = cloneable(file);
-        const fileStreamClone1 = fileStream.clone();
-        const fileStreamClone2 = fileStream.clone();
+        // buffer the contents to hash and later upload to s3
+        const fileBuffered = new Promise(resolve => {
+          let data = [];
+          file.on("data", d => {
+            data.push(d);
+          });
+          file.on("end", () => {
+            resolve(Buffer.concat(data));
+          });
+        });
+        const fileBuffer = await fileBuffered;
 
-        // pump the streams to start the flow
-        const hashStream = new Stream.PassThrough();
-        pump(fileStreamClone1, hashStream);
-        const uploadStream = new Stream.PassThrough();
-        pump(fileStreamClone2, uploadStream);
-
-        const hash = await hasha.fromStream(hashStream, {
+        const hash = await hasha(fileBuffer, {
           algorithm: "md5"
         });
 
@@ -117,7 +115,7 @@ module.exports = {
         const params = {
           Bucket: options.s3Bucket,
           Key: fileKey,
-          Body: uploadStream,
+          Body: fileBuffer,
           ContentType: contentType
         };
 
