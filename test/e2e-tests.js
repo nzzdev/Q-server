@@ -362,21 +362,21 @@ lab.experiment("core tool proxy routes", () => {
     expect(response.result).to.be.equal("mock-item-active");
   });
 
-  it("fails with 403 if the item id passed as appendItemToPayload is inactive for GET requests", async () => {
+  it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an inactive item for GET requests", async () => {
     const response = await server.inject(
       "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive"
     );
-    expect(response.statusCode).to.be.equal(403);
+    expect(response.result).to.be.equal("mock-item-inactive");
   });
 
-  it("fails with 403 if the item id passed as appendItemToPayload is inactive for POST requests", async () => {
+  it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an inactive item for POST requests", async () => {
     const response = await server.inject({
       url:
         "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive",
       method: "POST",
       payload: {}
     });
-    expect(response.statusCode).to.be.equal(403);
+    expect(response.result).to.be.equal("mock-item-inactive");
   });
 
   it("fails with 404 if the item id passed as appendItemToPayload is not found for GET requests", async () => {
