@@ -97,8 +97,10 @@ module.exports = {
       handler: async (request, h) => {
         let payload = null;
         if (request.query.appendItemToPayload) {
+          // Get item with ignoreInactive set to true (gets inactive or active item)
           const item = await request.server.methods.db.item.getById(
-            request.query.appendItemToPayload
+            request.query.appendItemToPayload,
+            true
           );
           payload = {
             item: item
@@ -137,8 +139,10 @@ module.exports = {
       },
       handler: async (request, h) => {
         if (request.query.appendItemToPayload) {
+          // Get item with ignoreInactive set to true (gets inactive or active item)
           const item = await request.server.methods.db.item.getById(
-            request.query.appendItemToPayload
+            request.query.appendItemToPayload,
+            true
           );
           request.payload.item = item;
         }
