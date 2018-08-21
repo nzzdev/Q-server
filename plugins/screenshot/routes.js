@@ -17,7 +17,7 @@ const queryFormat = {
   toolRuntimeConfig: Joi.object().optional()
 };
 
-async function getScreenshot(server, h, params, item) {
+async function getScreenshotResponse(server, h, params, item) {
   const targetKey = params.target;
 
   const target = server.settings.app.targets.get(`/`).find(configuredTarget => {
@@ -109,7 +109,7 @@ async function getScreenshot(server, h, params, item) {
     );
 
     const imageResponse = h.response(screenshotBuffer);
-    imageResponse.type("image/png").header("cache-control", cacheControlHeader);
+    imageResponse.type("image/png");
     return imageResponse;
   } else if (params.format === "json") {
     const screenshotInfo = await getScreenshotInfo(
@@ -121,7 +121,6 @@ async function getScreenshot(server, h, params, item) {
       config
     );
     const infoResponse = h.response(screenshotInfo);
-    infoResponse.header("cache-control", cacheControlHeader);
     return infoResponse;
   }
 }
@@ -153,7 +152,14 @@ module.exports = {
           const screenshotConfig = Object.assign({}, request.query, {
             format: request.params.format
           });
-          return getScreenshot(request.server, h, screenshotConfig, item);
+          const response = getScreenshotResponse(
+            request.server,
+            h,
+            screenshotConfig,
+            item
+          );
+          response.header("cache-control", cacheControlHeader);
+          return response;
         }
       },
       {
@@ -185,12 +191,14 @@ module.exports = {
               request.payload.toolRuntimeConfig
             );
           }
-          return getScreenshot(
+          const response = getScreenshotResponse(
             request.server,
             h,
             screenshotConfig,
             request.payload.item
           );
+          response.header("cache-control", cacheControlHeader);
+          return response;
         }
       },
       {
