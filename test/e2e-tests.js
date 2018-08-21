@@ -620,12 +620,58 @@ lab.experiment("screenshot plugin", async () => {
   );
 
   it(
+    "returns a screenshot with correct cache-control headers without wait for POST request",
+    { timeout: 5000, plan: 3 },
+    async () => {
+      const itemResponse = await server.inject("/item/mock-item-active");
+      const item = itemResponse.result;
+      const response = await server.inject({
+        method: "POST",
+        url: "/screenshot.png?target=pub1&width=500",
+        payload: {
+          item: item
+        }
+      });
+      expect(response.statusCode).to.be.equal(200);
+      expect(response.headers["content-type"]).to.be.equal("image/png");
+      expect(response.headers["cache-control"]).to.be.equal(
+        "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
+      );
+    }
+  );
+
+  it(
     "returns the screenshot info with correct cache-control headers without wait",
     { timeout: 5000, plan: 5 },
     async () => {
       const response = await server.inject(
         "/screenshot/mock-item-active.json?target=pub1&width=500"
       );
+      expect(response.statusCode).to.be.equal(200);
+      expect(response.headers["content-type"]).to.be.equal(
+        "application/json; charset=utf-8"
+      );
+      expect(response.headers["cache-control"]).to.be.equal(
+        "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
+      );
+      expect(response.result.width).to.be.equal(500);
+      expect(response.result.height).to.be.equal(37);
+    }
+  );
+
+  it(
+    "returns the screenshot info with correct cache-control headers for POST request",
+    { timeout: 5000, plan: 5 },
+    async () => {
+      const itemResponse = await server.inject("/item/mock-item-active");
+      const item = itemResponse.result;
+      const response = await server.inject({
+        method: "POST",
+        url: "/screenshot.json?target=pub1&width=500",
+        payload: {
+          item: item
+        }
+      });
       expect(response.statusCode).to.be.equal(200);
       expect(response.headers["content-type"]).to.be.equal(
         "application/json; charset=utf-8"
