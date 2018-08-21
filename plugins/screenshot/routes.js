@@ -151,10 +151,13 @@ module.exports = {
         },
         handler: async (request, h) => {
           const item = await request.server.methods.db.item.getById(
-            params.id,
+            request.params.id,
             request.query.ignoreInactive
           );
-          return getScreenshot(request.server, h, request.query, item);
+          const params = Object.assign({}, request.query, {
+            format: params.format
+          });
+          return getScreenshot(request.server, h, params, item);
         }
       },
       {
@@ -177,19 +180,16 @@ module.exports = {
           tags: ["api"]
         },
         handler: async (request, h) => {
+          const params = Object.assign({}, request.query, {
+            format: params.format
+          });
           if (request.payload.toolRuntimeConfig) {
-            request.query.toolRuntimeConfig = Object.assign(
-              request.query.toolRuntimeConfig || {},
+            params.toolRuntimeConfig = Object.assign(
+              params.toolRuntimeConfig || {},
               request.payload.toolRuntimeConfig
             );
           }
-          debugger;
-          return getScreenshot(
-            request.server,
-            h,
-            request.query,
-            request.payload.item
-          );
+          return getScreenshot(request.server, h, params, request.payload.item);
         }
       },
       {
