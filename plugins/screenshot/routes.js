@@ -152,7 +152,7 @@ module.exports = {
           const screenshotConfig = Object.assign({}, request.query, {
             format: request.params.format
           });
-          const response = getScreenshotResponse(
+          const response = await getScreenshotResponse(
             request.server,
             h,
             screenshotConfig,
@@ -191,7 +191,7 @@ module.exports = {
               request.payload.toolRuntimeConfig
             );
           }
-          const response = getScreenshotResponse(
+          const response = await getScreenshotResponse(
             request.server,
             h,
             screenshotConfig,
