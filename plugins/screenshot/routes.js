@@ -154,10 +154,10 @@ module.exports = {
             request.params.id,
             request.query.ignoreInactive
           );
-          const params = Object.assign({}, request.query, {
-            format: params.format
+          const screenshotConfig = Object.assign({}, request.query, {
+            format: request.params.format
           });
-          return getScreenshot(request.server, h, params, item);
+          return getScreenshot(request.server, h, screenshotConfig, item);
         }
       },
       {
@@ -180,16 +180,21 @@ module.exports = {
           tags: ["api"]
         },
         handler: async (request, h) => {
-          const params = Object.assign({}, request.query, {
-            format: params.format
+          const screenshotConfig = Object.assign({}, request.query, {
+            format: request.params.format
           });
           if (request.payload.toolRuntimeConfig) {
-            params.toolRuntimeConfig = Object.assign(
-              params.toolRuntimeConfig || {},
+            screenshotConfig.toolRuntimeConfig = Object.assign(
+              screenshotConfig.toolRuntimeConfig || {},
               request.payload.toolRuntimeConfig
             );
           }
-          return getScreenshot(request.server, h, params, request.payload.item);
+          return getScreenshot(
+            request.server,
+            h,
+            screenshotConfig,
+            request.payload.item
+          );
         }
       },
       {
