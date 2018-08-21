@@ -99,18 +99,14 @@ async function getScreenshot(server, h, params, item) {
   }
 
   if (params.format === "png") {
-    try {
-      const screenshotBuffer = await getScreenshotImage(
-        `${server.info.protocol}://localhost:${server.info
-          .port}/screenshot/empty-page.html`,
-        renderingInfo.markup,
-        scripts,
-        stylesheets,
-        config
-      );
-    } catch (e) {
-      debugger;
-    }
+    const screenshotBuffer = await getScreenshotImage(
+      `${server.info.protocol}://localhost:${server.info
+        .port}/screenshot/empty-page.html`,
+      renderingInfo.markup,
+      scripts,
+      stylesheets,
+      config
+    );
 
     const imageResponse = h.response(screenshotBuffer);
     imageResponse.type("image/png").header("cache-control", cacheControlHeader);
