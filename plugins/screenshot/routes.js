@@ -150,7 +150,7 @@ module.exports = {
           tags: ["api"]
         },
         handler: async (request, h) => {
-          const item = await request.server.db.getById(
+          const item = await request.server.methods.db.item.getById(
             params.id,
             request.query.ignoreInactive
           );
