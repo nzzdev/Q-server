@@ -209,16 +209,16 @@ module.exports = {
           });
 
           if (isNewActive) {
-            request.server.events.emit("item.activate", savedDoc);
+            request.server.events.emit("item.activate", savedDoc, oldDoc);
           }
           if (isNewInactive) {
-            request.server.events.emit("item.deactivate", savedDoc);
+            request.server.events.emit("item.deactivate", savedDoc, oldDoc);
           }
           if (isDeleted) {
-            request.server.events.emit("item.delete", savedDoc);
+            request.server.events.emit("item.delete", savedDoc, oldDoc);
           }
 
-          request.server.events.emit("item.update", savedDoc);
+          request.server.events.emit("item.update", savedDoc, oldDoc);
 
           docDiff._rev = res.rev;
           return resolve(docDiff);
