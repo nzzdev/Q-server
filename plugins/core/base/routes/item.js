@@ -120,7 +120,7 @@ module.exports = {
             _rev: res.rev
           });
           request.server.events.emit("item.new", {
-            savedDoc: savedDoc
+            newItem: savedDoc
           });
 
           return resolve(docDiff);

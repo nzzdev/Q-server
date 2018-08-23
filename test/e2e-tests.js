@@ -179,8 +179,8 @@ lab.experiment("core item", () => {
     { plan: 1 },
     async () => {
       const id = "fix-id-to-better-test-the-case";
-      const handler = item => {
-        expect(item._id).to.be.equal(id);
+      const handler = ({ newItem }) => {
+        expect(newItem._id).to.be.equal(id);
       };
       server.events.once("item.new", handler);
       const request = {
@@ -200,11 +200,12 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.update event if an existing item is updated",
-    { plan: 1 },
+    { plan: 2 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handler = item => {
-        expect(item._id).to.be.equal(id);
+      const handler = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.update", handler);
 
@@ -221,15 +222,17 @@ lab.experiment("core item", () => {
   );
 
   it(
-    "should emit item.activate event if an existing item is activated",
-    { plan: 2 },
+    "should emit item.activate and item.update event if an existing item is activated",
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerActivate = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerActivate = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.activate", handlerActivate);
       server.events.once("item.update", handlerUpdated);
@@ -248,15 +251,17 @@ lab.experiment("core item", () => {
   );
 
   it(
-    "should emit item.deactivate event if an existing active item is deactivated",
-    { plan: 2 },
+    "should emit item.deactivate and item.update event if an existing active item is deactivated",
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerDeactivate = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerDeactivate = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.deactivate", handlerDeactivate);
       server.events.once("item.update", handlerUpdated);
@@ -276,14 +281,16 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.delete event if an existing item is deleted",
-    { plan: 2 },
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerDeleted = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerDeleted = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.delete", handlerDeleted);
       server.events.once("item.update", handlerUpdated);
