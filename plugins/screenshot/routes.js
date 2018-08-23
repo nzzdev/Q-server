@@ -18,8 +18,6 @@ const queryFormat = {
 };
 
 async function getScreenshotResponse(server, h, params, item) {
-  const targetKey = params.target;
-
   const target = server.settings.app.targets.get(`/`).find(configuredTarget => {
     return configuredTarget.key === params.target;
   });
@@ -100,8 +98,9 @@ async function getScreenshotResponse(server, h, params, item) {
 
   if (params.format === "png") {
     const screenshotBuffer = await getScreenshotImage(
-      `${server.info.protocol}://localhost:${server.info
-        .port}/screenshot/empty-page.html`,
+      `${server.info.protocol}://localhost:${
+        server.info.port
+      }/screenshot/empty-page.html`,
       renderingInfo.markup,
       scripts,
       stylesheets,
@@ -113,8 +112,9 @@ async function getScreenshotResponse(server, h, params, item) {
     return imageResponse;
   } else if (params.format === "json") {
     const screenshotInfo = await getScreenshotInfo(
-      `${server.info.protocol}://localhost:${server.info
-        .port}/screenshot/empty-page.html`,
+      `${server.info.protocol}://localhost:${
+        server.info.port
+      }/screenshot/empty-page.html`,
       renderingInfo.markup,
       scripts,
       stylesheets,
