@@ -2,6 +2,7 @@ const AWS = require("aws-sdk");
 const Mimos = require("mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
+const slugify = require("slugify");
 
 function getDateString() {
   const now = new Date();
@@ -105,7 +106,9 @@ module.exports = {
           filenameParts[filenameParts.length - 1]
         }-${hash}`;
         // join everything together again (appending the extension)
-        const hashedFilename = `${filenameParts.join(".")}.${extension}`;
+        const hashedFilename = `${filenameParts
+          .map(filenamePart => slugify(filenamePart))
+          .join(".")}.${extension}`;
         let fileKey = `${getDateString()}/${hashedFilename}`;
 
         if (options.keyPrefix) {
