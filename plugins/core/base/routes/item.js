@@ -119,7 +119,9 @@ module.exports = {
             _id: res.id,
             _rev: res.rev
           });
-          request.server.events.emit("item.new", savedDoc);
+          request.server.events.emit("item.new", {
+            newItem: savedDoc
+          });
 
           return resolve(docDiff);
         });
@@ -208,17 +210,22 @@ module.exports = {
             _rev: res.rev
           });
 
+          const eventData = {
+            newItem: savedDoc,
+            oldItem: oldDoc
+          };
+
           if (isNewActive) {
-            request.server.events.emit("item.activate", savedDoc);
+            request.server.events.emit("item.activate", eventData);
           }
           if (isNewInactive) {
-            request.server.events.emit("item.deactivate", savedDoc);
+            request.server.events.emit("item.deactivate", eventData);
           }
           if (isDeleted) {
-            request.server.events.emit("item.delete", savedDoc);
+            request.server.events.emit("item.delete", eventData);
           }
 
-          request.server.events.emit("item.update", savedDoc);
+          request.server.events.emit("item.update", eventData);
 
           docDiff._rev = res.rev;
           return resolve(docDiff);

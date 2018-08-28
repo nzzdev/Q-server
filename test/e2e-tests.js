@@ -179,8 +179,8 @@ lab.experiment("core item", () => {
     { plan: 1 },
     async () => {
       const id = "fix-id-to-better-test-the-case";
-      const handler = item => {
-        expect(item._id).to.be.equal(id);
+      const handler = ({ newItem }) => {
+        expect(newItem._id).to.be.equal(id);
       };
       server.events.once("item.new", handler);
       const request = {
@@ -200,11 +200,12 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.update event if an existing item is updated",
-    { plan: 1 },
+    { plan: 2 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handler = item => {
-        expect(item._id).to.be.equal(id);
+      const handler = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.update", handler);
 
@@ -221,15 +222,17 @@ lab.experiment("core item", () => {
   );
 
   it(
-    "should emit item.activate event if an existing item is activated",
-    { plan: 2 },
+    "should emit item.activate and item.update event if an existing item is activated",
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerActivate = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerActivate = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.activate", handlerActivate);
       server.events.once("item.update", handlerUpdated);
@@ -248,15 +251,17 @@ lab.experiment("core item", () => {
   );
 
   it(
-    "should emit item.deactivate event if an existing active item is deactivated",
-    { plan: 2 },
+    "should emit item.deactivate and item.update event if an existing active item is deactivated",
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerDeactivate = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerDeactivate = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.deactivate", handlerDeactivate);
       server.events.once("item.update", handlerUpdated);
@@ -276,14 +281,16 @@ lab.experiment("core item", () => {
 
   it(
     "should emit item.delete event if an existing item is deleted",
-    { plan: 2 },
+    { plan: 4 },
     async () => {
       const id = "mock-item-to-test-edits";
-      const handlerDeleted = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerDeleted = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
-      const handlerUpdated = item => {
-        expect(item._id).to.be.equal(id);
+      const handlerUpdated = ({ newItem, oldItem }) => {
+        expect(newItem._id).to.be.equal(id);
+        expect(oldItem._id).to.be.equal(id);
       };
       server.events.once("item.delete", handlerDeleted);
       server.events.once("item.update", handlerUpdated);
@@ -362,21 +369,21 @@ lab.experiment("core tool proxy routes", () => {
     expect(response.result).to.be.equal("mock-item-active");
   });
 
-  it("fails with 403 if the item id passed as appendItemToPayload is inactive for GET requests", async () => {
+  it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an inactive item for GET requests", async () => {
     const response = await server.inject(
       "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive"
     );
-    expect(response.statusCode).to.be.equal(403);
+    expect(response.result).to.be.equal("mock-item-inactive");
   });
 
-  it("fails with 403 if the item id passed as appendItemToPayload is inactive for POST requests", async () => {
+  it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an inactive item for POST requests", async () => {
     const response = await server.inject({
       url:
         "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive",
       method: "POST",
       payload: {}
     });
-    expect(response.statusCode).to.be.equal(403);
+    expect(response.result).to.be.equal("mock-item-inactive");
   });
 
   it("fails with 404 if the item id passed as appendItemToPayload is not found for GET requests", async () => {
@@ -620,12 +627,58 @@ lab.experiment("screenshot plugin", async () => {
   );
 
   it(
+    "returns a screenshot with correct cache-control headers without wait for POST request",
+    { timeout: 5000, plan: 3 },
+    async () => {
+      const itemResponse = await server.inject("/item/mock-item-active");
+      const item = itemResponse.result;
+      const response = await server.inject({
+        method: "POST",
+        url: "/screenshot.png?target=pub1&width=500",
+        payload: {
+          item: item
+        }
+      });
+      expect(response.statusCode).to.be.equal(200);
+      expect(response.headers["content-type"]).to.be.equal("image/png");
+      expect(response.headers["cache-control"]).to.be.equal(
+        "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
+      );
+    }
+  );
+
+  it(
     "returns the screenshot info with correct cache-control headers without wait",
     { timeout: 5000, plan: 5 },
     async () => {
       const response = await server.inject(
         "/screenshot/mock-item-active.json?target=pub1&width=500"
       );
+      expect(response.statusCode).to.be.equal(200);
+      expect(response.headers["content-type"]).to.be.equal(
+        "application/json; charset=utf-8"
+      );
+      expect(response.headers["cache-control"]).to.be.equal(
+        "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
+      );
+      expect(response.result.width).to.be.equal(500);
+      expect(response.result.height).to.be.equal(37);
+    }
+  );
+
+  it(
+    "returns the screenshot info with correct cache-control headers for POST request",
+    { timeout: 5000, plan: 5 },
+    async () => {
+      const itemResponse = await server.inject("/item/mock-item-active");
+      const item = itemResponse.result;
+      const response = await server.inject({
+        method: "POST",
+        url: "/screenshot.json?target=pub1&width=500",
+        payload: {
+          item: item
+        }
+      });
       expect(response.statusCode).to.be.equal(200);
       expect(response.headers["content-type"]).to.be.equal(
         "application/json; charset=utf-8"

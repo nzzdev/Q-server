@@ -177,13 +177,24 @@ module.exports = {
           );
         }
 
+        let toolEndpointConfig;
+
+        if (endpointConfig instanceof Function) {
+          toolEndpointConfig = await endpointConfig.apply(this, [
+            item,
+            requestToolRuntimeConfig
+          ]);
+        } else {
+          toolEndpointConfig = endpointConfig;
+        }
+
         // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
         const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
           serverWideToolRuntimeConfig: options.get("/toolRuntimeConfig", {
             target: target,
             tool: item.tool
           }),
-          toolEndpointConfig: endpointConfig,
+          toolEndpointConfig: toolEndpointConfig,
           requestToolRuntimeConfig: requestToolRuntimeConfig
         });
 
@@ -194,7 +205,7 @@ module.exports = {
         return await getRenderingInfo(
           item,
           baseUrl,
-          endpointConfig,
+          toolEndpointConfig,
           toolRuntimeConfig,
           itemStateInDb
         );
