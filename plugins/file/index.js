@@ -1,3 +1,4 @@
+const Boom = require("boom");
 const AWS = require("aws-sdk");
 const Mimos = require("mimos");
 const mimos = new Mimos();
@@ -142,19 +143,30 @@ module.exports = {
         tags: ["api"]
       },
       handler: async function(request, h) {
-        return h
-          .response(
-            s3
-              .getObject({
-                Bucket: options.s3Bucket,
-                Key: request.params.fileKey
-              })
-              .createReadStream()
-          )
-          .header(
-            "cache-control",
-            "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
+        return new Promise((resolve, reject) => {
+          s3.getObject(
+            {
+              Bucket: options.s3Bucket,
+              Key: request.params.fileKey
+            },
+            (err, data) => {
+              if (err) {
+                return reject(
+                  new Boom("error", { statusCode: err.statusCode })
+                );
+              }
+              return resolve(
+                h
+                  .response(data.Body)
+                  .header(
+                    "cache-control",
+                    "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
+                  )
+                  .type(data.ContentType)
+              );
+            }
           );
+        });
       }
     });
   }
