@@ -134,5 +134,28 @@ module.exports = {
         };
       }
     });
+
+    server.route({
+      method: "GET",
+      path: "/file/{fileKey*}",
+      options: {
+        tags: ["api"]
+      },
+      handler: async function(request, h) {
+        return h
+          .response(
+            s3
+              .getObject({
+                Bucket: options.s3Bucket,
+                Key: request.params.fileKey
+              })
+              .createReadStream()
+          )
+          .header(
+            "cache-control",
+            "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
+          );
+      }
+    });
   }
 };
