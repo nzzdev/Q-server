@@ -161,6 +161,26 @@ function getCompiledToolRuntimeConfig(
     }${path}`;
   }
 
+  // simplify the fileRequestBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
+  if (
+    typeof overallToolRuntimeConfig.fileRequestBaseUrl === "object" &&
+    overallToolRuntimeConfig.fileRequestBaseUrl.host
+  ) {
+    // the default protocol is https
+    let protocol = "https";
+    if (overallToolRuntimeConfig.fileRequestBaseUrl.protocol) {
+      protocol = overallToolRuntimeConfig.fileRequestBaseUrl.protocol;
+    }
+    // the default if no path is given is /file
+    let path = "/file";
+    if (overallToolRuntimeConfig.fileRequestBaseUrl.path) {
+      path = overallToolRuntimeConfig.fileRequestBaseUrl.path;
+    }
+    overallToolRuntimeConfig.fileRequestBaseUrl = `${protocol}://${
+      overallToolRuntimeConfig.fileRequestBaseUrl.host
+    }${path}`;
+  }
+
   // default to the overall config
   let toolRuntimeConfig = overallToolRuntimeConfig;
 
