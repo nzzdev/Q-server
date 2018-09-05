@@ -20,7 +20,6 @@ module.exports = {
   },
   handler: async (request, h) => {
     const tool = request.params.tool;
-
     let toolBaseUrl = request.server.settings.app.tools.get(`/${tool}/baseUrl`);
 
     if (!toolBaseUrl) {
@@ -34,19 +33,18 @@ module.exports = {
           request.params.id,
           ignoreInactive
         );
+        const migrationStatus = await migrateItem(
+          item,
+          toolBaseUrl,
+          request.server.app.db
+        );
+        return {
+          status: migrationStatus.status
+        };
       } catch (err) {
         Bounce.rethrow(err, "system");
         return err;
       }
-
-      const migrationStatus = await migrateItem(
-        item,
-        toolBaseUrl,
-        request.server.app.db
-      );
-      return {
-        status: migrationStatus.status
-      };
     } else {
       const items = await request.server.methods.db.item.getAllByTool(tool);
 
