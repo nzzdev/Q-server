@@ -76,9 +76,13 @@ module.exports = {
         }
 
         let contentType = file.hapi.headers["content-type"];
+        // The HTML spec (https://html.spec.whatwg.org/multipage/scripting.html#scriptingLanguages) defines
+        // that servers should only use content-type text/javascript for js resources.
+        // Therefore we normalize all content-types containing the string javascript to text/javascript
         if (contentType.includes("javascript")) {
           contentType = "text/javascript";
         }
+
         if (contentTypes.indexOf(contentType) === -1) {
           return Boom.unsupportedMediaType("Content-type not allowed");
         }
