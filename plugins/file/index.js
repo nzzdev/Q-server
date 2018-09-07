@@ -75,7 +75,10 @@ module.exports = {
           return Boom.badData("Failed to read file");
         }
 
-        const contentType = file.hapi.headers["content-type"];
+        let contentType = file.hapi.headers["content-type"];
+        if (contentType.includes("javascript")) {
+          contentType = "text/javascript";
+        }
         if (contentTypes.indexOf(contentType) === -1) {
           return Boom.unsupportedMediaType("Content-type not allowed");
         }
