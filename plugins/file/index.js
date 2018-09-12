@@ -87,7 +87,13 @@ module.exports = {
           return Boom.unsupportedMediaType("Content-type not allowed");
         }
 
-        const type = mimos.type(contentType);
+        let type = mimos.type(contentType);
+        // The mimos package doesn't store the extension for the content-type text/javascript
+        // because its marked as deprecated by IANA. Therefore we get the file extension based
+        // on the content-type application/javascript
+        if (contentType === "text/javascript") {
+          type = mimos.type("application/javascript");
+        }
         const extension = type.extensions[0] || "";
 
         // buffer the contents to hash and later upload to s3
