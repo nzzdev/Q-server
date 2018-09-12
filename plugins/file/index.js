@@ -88,7 +88,7 @@ module.exports = {
         }
 
         // The mimos package doesn't store the extension for the content-type text/javascript
-        // because its marked as depricated by IANA. Therefore we get the file extension based
+        // because its marked as deprecated by IANA. Therefore we get the file extension based
         // on the content-type application/javascript
         let type;
         if (contentType === "text/javascript") {
