@@ -102,6 +102,11 @@ module.exports = {
             request.query.appendItemToPayload,
             true
           );
+          if (request.params.tool !== item.tool) {
+            return Boom.badRequest(
+              `appending item is not from the tool ${request.params.tool}`
+            );
+          }
           payload = {
             item: item
           };
@@ -144,6 +149,11 @@ module.exports = {
             request.query.appendItemToPayload,
             true
           );
+          if (request.params.tool !== item.tool) {
+            return Boom.badRequest(
+              `appending item is not from the tool ${request.params.tool}`
+            );
+          }
           request.payload.item = item;
         }
         return await Reflect.apply(handler, this, [
