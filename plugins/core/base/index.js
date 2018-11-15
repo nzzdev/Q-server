@@ -1,10 +1,12 @@
+const getToolResponse = require("./methods/getToolResponse.js").getToolResponse;
+
 module.exports = {
   name: "q-base",
   dependencies: ["q-db"],
-  register: async function(server, options) {
+  register: async function (server, options) {
     await server.register([require("vision"), require("inert")]);
-
-    server.method("getCacheControlDirectivesFromConfig", async function(
+    server.method("getToolResponse", getToolResponse);
+    server.method("getCacheControlDirectivesFromConfig", async function (
       cacheControlConfig
     ) {
       // return early if no config given, default is 'no-cache'
@@ -50,8 +52,8 @@ module.exports = {
       require("./routes/search.js"),
       require("./routes/tool-default.js").getGetRoute(options),
       require("./routes/tool-default.js").getPostRoute(options),
-      require("./routes/tool-schema.js").schema,
-      require("./routes/tool-schema.js").displayOptionsSchema,
+      require("./routes/tool-schema.js").getSchema(options),
+      require("./routes/tool-schema.js").getDisplayOptionsSchema(options),
       require("./routes/health.js"),
       require("./routes/version.js"),
       require("./routes/admin/migration.js")
