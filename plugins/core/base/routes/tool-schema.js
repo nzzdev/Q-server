@@ -16,7 +16,15 @@ module.exports = {
       options: {
         description:
           "Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment",
-        tags: ["api", "editor"]
+        tags: ["api", "editor"],
+        validate: {
+          params: {
+            tool: Joi.string().required()
+          },
+          query: {
+            appendItemToPayload: Joi.string().optional()
+          }
+        }
       },
       handler: async (request, h) => {
         request.params.path = "schema.json";
