@@ -17,6 +17,12 @@ module.exports = [
     title: "title",
     tool: "tool1",
     foo: "bar",
+    dynamicDisplayOptionsSchema: {
+      hideTitle: {
+        title: "Titel ausblenden",
+        type: "boolean"
+      }
+    },
     active: true
   },
   {
