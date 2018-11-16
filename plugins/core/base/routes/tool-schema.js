@@ -9,7 +9,7 @@ async function getDereferencedSchema(schema) {
 }
 
 module.exports = {
-  getSchema: function (options) {
+  getSchema: function(options) {
     return {
       path: "/tools/{tool}/schema.json",
       method: "GET",
@@ -22,23 +22,23 @@ module.exports = {
             tool: Joi.string().required()
           },
           query: {
-            appendItemToPayload: Joi.string().optional()
+            appendItemToPayload: Joi.string().forbidden()
           }
         }
       },
       handler: async (request, h) => {
         request.params.path = "schema.json";
-        const response = await Reflect.apply(request.server.methods.getToolResponse, this, [
-          options,
-          request,
-          h
-        ]);
+        const response = await Reflect.apply(
+          request.server.methods.getToolResponse,
+          this,
+          [options, request, h]
+        );
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
       }
-    }
+    };
   },
-  getDisplayOptionsSchema: function (options) {
+  getDisplayOptionsSchema: function(options) {
     return {
       path: "/tools/{tool}/display-options-schema.json",
       method: "GET",
@@ -57,14 +57,14 @@ module.exports = {
       },
       handler: async (request, h) => {
         request.params.path = "display-options-schema.json";
-        const response = await Reflect.apply(request.server.methods.getToolResponse, this, [
-          options,
-          request,
-          h
-        ]);
+        const response = await Reflect.apply(
+          request.server.methods.getToolResponse,
+          this,
+          [options, request, h]
+        );
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
       }
-    }
+    };
   }
 };

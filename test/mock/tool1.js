@@ -49,20 +49,6 @@ server.route({
 });
 
 server.route({
-  method: "POST",
-  path: "/schema.json",
-  handler: function(request, h) {
-    if (request.payload.item.dynamicSchema !== undefined) {
-      schema.properties = Object.assign(
-        schema.properties,
-        request.payload.item.dynamicSchema
-      );
-    }
-    return schema;
-  }
-});
-
-server.route({
   method: "GET",
   path: "/display-options-schema.json",
   handler: function(request, h) {

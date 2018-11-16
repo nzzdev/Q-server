@@ -570,13 +570,11 @@ lab.experiment("core schema endpoints", () => {
     expect(response.result.properties.foo.type).to.be.equal("string");
   });
 
-  it("returns the tool schema with appendItemToPayload query parameter", async () => {
+  it("returns 400 for the tool schema with appendItemToPayload query parameter", async () => {
     const response = await server.inject(
       "/tools/tool1/schema.json?appendItemToPayload=mock-item-active"
     );
-    expect(response.statusCode).to.be.equal(200);
-    expect(response.result).to.be.an.object();
-    expect(response.result.properties.subtitle.type).to.be.equal("string");
+    expect(response.statusCode).to.be.equal(400);
   });
 
   it("returns the tool display options schema", async () => {
