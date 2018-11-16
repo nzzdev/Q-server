@@ -1,6 +1,6 @@
-const Hapi = require('hapi');
-const Boom = require('boom');
-const Joi = require('joi');
+const Hapi = require("hapi");
+const Boom = require("boom");
+const Joi = require("joi");
 
 const server = Hapi.server({
   port: 9999,
@@ -9,56 +9,84 @@ const server = Hapi.server({
   }
 });
 
+const schema = {
+  $schema: "http://json-schema.org/draft-04/schema#",
+  title: "mock",
+  type: "object",
+  properties: {
+    foo: {
+      type: "string"
+    }
+  },
+  required: ["foo"]
+};
+
+const displayOptionsSchema = {
+  $schema: "http://json-schema.org/draft-04/schema#",
+  title: "display option mock",
+  type: "object",
+  properties: {
+    foo: {
+      type: "boolean"
+    }
+  }
+};
+
 server.route({
-  method: 'GET',
-  path: '/',
+  method: "GET",
+  path: "/",
   handler: function(request, h) {
-    return 'mock tool running'
+    return "mock tool running";
   }
 });
 
 server.route({
-  method: 'GET',
-  path: '/schema.json',
+  method: "GET",
+  path: "/schema.json",
   handler: function(request, h) {
-    return `
-      {
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "title": "mock",
-        "type": "object",
-        "properties": {
-          "foo": {
-            "type": "string"
-          }
-        },
-        "required": ["foo"]
-      }
-    `;
+    return schema;
   }
 });
 
 server.route({
-  method: 'GET',
-  path: '/display-options-schema.json',
+  method: "POST",
+  path: "/schema.json",
   handler: function(request, h) {
-    return `
-      {
-        "$schema": "http://json-schema.org/draft-04/schema#",
-        "title": "display option mock",
-        "type": "object",
-        "properties": {
-          "foo": {
-            "type": "boolean"
-          }
-        }
-      }
-    `;
+    if (request.payload.item.dynamicSchema !== undefined) {
+      schema.properties = Object.assign(
+        schema.properties,
+        request.payload.item.dynamicSchema
+      );
+    }
+    return schema;
   }
-})
+});
 
 server.route({
-  method: 'POST',
-  path: '/rendering-info/mock',
+  method: "GET",
+  path: "/display-options-schema.json",
+  handler: function(request, h) {
+    return displayOptionsSchema;
+  }
+});
+
+server.route({
+  method: "POST",
+  path: "/display-options-schema.json",
+  handler: function(request, h) {
+    if (request.payload.item.dynamicDisplayOptionsSchema !== undefined) {
+      displayOptionsSchema.properties = Object.assign(
+        displayOptionsSchema.properties,
+        request.payload.item.dynamicDisplayOptionsSchema
+      );
+    }
+    return displayOptionsSchema;
+  }
+});
+
+server.route({
+  method: "POST",
+  path: "/rendering-info/mock",
   options: {
     validate: {
       options: {
@@ -67,70 +95,73 @@ server.route({
       payload: {
         item: Joi.object().required()
       }
-    },
+    }
   },
   handler: function(request, h) {
     return {
-      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${request.payload.itemStateInDb}</h1>`,
+      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${
+        request.payload.itemStateInDb
+      }</h1>`,
       stylesheets: [
         {
-          name: 'mockstyle'
+          name: "mockstyle"
         }
       ],
       scripts: [
         {
-          name: 'mockscript'
+          name: "mockscript"
         }
       ]
-    }
+    };
   }
 });
 
 server.route({
-  method: 'POST',
-  path: '/rendering-info/fail',
+  method: "POST",
+  path: "/rendering-info/fail",
   handler: function(request, h) {
-    throw new Error('fail');
+    throw new Error("fail");
   }
 });
 
 server.route({
-  method: 'GET',
-  path: '/stylesheet/{name}.{hash}.css',
+  method: "GET",
+  path: "/stylesheet/{name}.{hash}.css",
   handler: function(request, h) {
-    let background = 'black';
+    let background = "black";
     if (request.query.background) {
       background = request.query.background;
     }
-    return h.response(`body { background: ${background}; }`)
-      .type('text/css')
-      .header('cache-control', `max-age=${60 * 60 * 24 * 365}, immutable`); // 1 year
+    return h
+      .response(`body { background: ${background}; }`)
+      .type("text/css")
+      .header("cache-control", `max-age=${60 * 60 * 24 * 365}, immutable`); // 1 year
   }
 });
 
 server.route({
-  method: 'POST',
-  path: '/endpoint-returning-the-id-from-tool-in-payload',
+  method: "POST",
+  path: "/endpoint-returning-the-id-from-tool-in-payload",
   handler: function(request, h) {
     return request.payload.item._id;
   }
 });
 
 server.route({
-  method: 'GET',
-  path: '/fixtures/data',
+  method: "GET",
+  path: "/fixtures/data",
   handler: function(request, h) {
     return [
       {
         title: "FIXTURE: mock",
         foo: "bar"
       }
-    ]
+    ];
   }
-})
+});
 
 module.exports = {
   start: async function() {
     await server.start();
   }
-}
+};
