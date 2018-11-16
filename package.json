@@ -1,6 +1,6 @@
 {
   "name": "@nzz/q-server",
-  "version": "6.1.2",
+  "version": "6.2.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -33,7 +33,7 @@
     "inert": "^5.1.0",
     "joi": "^13.3.0",
     "json-schema-ref-parser": "^5.0.3",
-    "keycdn": "^0.2.0",
+    "keycdn": "^0.2.2",
     "mimos": "^4.0.0",
     "nano": "^6.4.4",
     "nano-promises": "^1.2.0",
@@ -48,6 +48,6 @@
     "code": "^5.2.0",
     "confidence": "^3.0.2",
     "lab": "^15.4.5",
-    "pouchdb-server": "^4.0.1"
+    "pouchdb-server": "^4.1.0"
   }
 }
