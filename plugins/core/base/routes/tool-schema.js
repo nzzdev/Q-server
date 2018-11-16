@@ -62,6 +62,9 @@ module.exports = {
           this,
           [options, request, h]
         );
+        if (response.isBoom) {
+          return response;
+        }
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
       }

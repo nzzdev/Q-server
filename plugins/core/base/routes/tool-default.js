@@ -1,7 +1,7 @@
 const Joi = require("joi");
 
 module.exports = {
-  getGetRoute: function (options) {
+  getGetRoute: function(options) {
     return {
       path: "/tools/{tool}/{path*}",
       method: "GET",
@@ -23,15 +23,15 @@ module.exports = {
         }
       },
       handler: async (request, h) => {
-        return await Reflect.apply(request.server.methods.getToolResponse, this, [
-          options,
-          request,
-          h
-        ]);
+        return await Reflect.apply(
+          request.server.methods.getToolResponse,
+          this,
+          [options, request, h]
+        );
       }
     };
   },
-  getPostRoute: function (options) {
+  getPostRoute: function(options) {
     return {
       path: "/tools/{tool}/{path*}",
       method: "POST",
@@ -54,11 +54,11 @@ module.exports = {
         }
       },
       handler: async (request, h) => {
-        return await Reflect.apply(request.server.methods.getToolResponse, this, [
-          options,
-          request,
-          h
-        ]);
+        return await Reflect.apply(
+          request.server.methods.getToolResponse,
+          this,
+          [options, request, h]
+        );
       }
     };
   }
