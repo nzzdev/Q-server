@@ -2,21 +2,26 @@ const Boom = require("boom");
 const Wreck = require("wreck");
 const querystring = require("querystring");
 
-exports.getToolResponse = async function (options, request, h) {
+exports.getToolResponse = async function(options, request, h) {
   if (request.query.appendItemToPayload) {
     // Get item with ignoreInactive set to true (gets inactive or active item)
     const item = await request.server.methods.db.item.getById(
       request.query.appendItemToPayload,
       true
     );
+    // do not allow appending an item of another tool
+    if (request.params.tool !== item.tool) {
+      return Boom.badRequest(
+        `appending item is not from the tool ${request.params.tool}`
+      );
+    }
     if (request.payload) {
       request.payload.item = item;
     } else {
       request.payload = {
         item: item
-      }
+      };
     }
-
   }
   const tool = request.server.settings.app.tools.get(`/${request.params.tool}`);
 
@@ -84,4 +89,4 @@ exports.getToolResponse = async function (options, request, h) {
   );
 
   return response;
-}
+};

@@ -601,6 +601,13 @@ lab.experiment("core schema endpoints", () => {
     expect(response.result).to.be.an.object();
     expect(response.result.properties.hideTitle.type).to.be.equal("boolean");
   });
+
+  it("returns 400 if the item tool in appendItemToPayload is not from the specified tool", async () => {
+    const response = await server.inject(
+      "/tools/tool2/display-options-schema.json?appendItemToPayload=mock-item-active"
+    );
+    expect(response.statusCode).to.be.equal(400);
+  });
 });
 
 lab.experiment("screenshot plugin", async () => {
