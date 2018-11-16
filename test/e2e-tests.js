@@ -563,7 +563,21 @@ lab.experiment("core editor endpoints", () => {
 });
 
 lab.experiment("core schema endpoints", () => {
-  it("returns the tool display option schema", async () => {
+  it("returns the tool schema", async () => {
+    const response = await server.inject("/tools/tool1/schema.json");
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result).to.be.an.object();
+    expect(response.result.properties.foo.type).to.be.equal("string");
+  });
+
+  it("returns 400 for the tool schema with appendItemToPayload query parameter", async () => {
+    const response = await server.inject(
+      "/tools/tool1/schema.json?appendItemToPayload=mock-item-active"
+    );
+    expect(response.statusCode).to.be.equal(400);
+  });
+
+  it("returns the tool display options schema", async () => {
     const response = await server.inject(
       "/tools/tool1/display-options-schema.json"
     );
@@ -577,6 +591,15 @@ lab.experiment("core schema endpoints", () => {
       "/tools/tool2/display-options-schema.json"
     );
     expect(response.statusCode).to.be.equal(404);
+  });
+
+  it("returns the tool display options schema with appendItemToPayload query parameter", async () => {
+    const response = await server.inject(
+      "/tools/tool1/display-options-schema.json?appendItemToPayload=mock-item-active"
+    );
+    expect(response.statusCode).to.be.equal(200);
+    expect(response.result).to.be.an.object();
+    expect(response.result.properties.hideTitle.type).to.be.equal("boolean");
   });
 });
 
