@@ -5,7 +5,7 @@ const defaults = {
 };
 
 module.exports = {
-  name: "q-tasks-api",
+  name: "q-tasks",
   register: async function(server, options) {
     const settings = Hoek.applyToDefaults(defaults, options);
     settings.tasksConfig.tasks.forEach(task => {
@@ -15,7 +15,7 @@ module.exports = {
       path: "/tasks",
       method: "GET",
       options: {
-        description: "Returns configuration for Q Tasks",
+        description: "Returns configuration for tasks",
         tags: ["api", "tasks"]
       },
       handler: (request, h) => {
