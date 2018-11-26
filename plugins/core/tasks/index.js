@@ -19,6 +19,9 @@ module.exports = {
         tags: ["api", "tasks"]
       },
       handler: (request, h) => {
+        settings.tasksConfig.tasks.forEach(task => {
+          delete task.route.handler;
+        });
         return settings.tasksConfig;
       }
     });
