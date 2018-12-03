@@ -16,7 +16,11 @@ module.exports = {
       method: "GET",
       options: {
         description: "Returns configuration for tasks",
-        tags: ["api", "tasks"]
+        tags: ["api", "tasks"],
+        auth: "q-auth",
+        cors: {
+          credentials: true
+        }
       },
       handler: (request, h) => {
         settings.tasksConfig.tasks.forEach(task => {
