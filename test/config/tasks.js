@@ -33,6 +33,38 @@ const tasks = {
               type: "string"
             }
           }
+        }
+      },
+      {
+        id: "adminTask",
+        name: "admintest",
+        route: {
+          path: "/tasks/admintest",
+          method: "POST",
+          options: {
+            auth: "q-auth",
+            cors: {
+              credentials: true
+            }
+          },
+          handler: async function(request, h) {
+            return {
+              type: "json",
+              data: {
+                label: "test 1",
+                content: request.payload
+              }
+            };
+          }
+        },
+        schema: {
+          type: "object",
+          properties: {
+            someTaskInput: {
+              title: "task input",
+              type: "string"
+            }
+          }
         },
         onlyRoles: ["admin"]
       }

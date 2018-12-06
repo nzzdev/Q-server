@@ -792,7 +792,7 @@ lab.experiment("keycdn plugin", () => {
 });
 
 lab.experiment("tasks plugin", () => {
-  it("returns the configured tasks", async () => {
+  it("returns the configured tasks by checking the roles when user doesn't have all the roles", async () => {
     const response = await server.inject({
       method: "GET",
       url: "/tasks",
@@ -800,6 +800,16 @@ lab.experiment("tasks plugin", () => {
     });
     expect(response.result.tasks.length).to.be.equal(1);
     expect(response.result.tasks[0].id).to.be.equal("testTask");
+  });
+  it("returns the configured tasks by checking the roles when user has all the roles needed for the tasks", async () => {
+    const response = await server.inject({
+      method: "GET",
+      url: "/tasks",
+      credentials: { username: "user", password: "pass", roles: ["admin"] }
+    });
+    expect(response.result.tasks.length).to.be.equal(2);
+    expect(response.result.tasks[0].id).to.be.equal("testTask");
+    expect(response.result.tasks[1].id).to.be.equal("adminTask");
   });
   it("returns the response from a configured task", async () => {
     const taskInput = "test input";

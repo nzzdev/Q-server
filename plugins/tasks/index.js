@@ -23,10 +23,25 @@ module.exports = {
         }
       },
       handler: (request, h) => {
-        settings.tasksConfig.tasks.forEach(task => {
-          delete task.route.handler;
-        });
-        return settings.tasksConfig;
+        return {
+          tasks: settings.tasksConfig.tasks
+            .filter(task => {
+              // if the tasks has no onlyRoles property, it's available for everyone
+              if (!task.hasOwnProperty("onlyRoles")) {
+                return true;
+              }
+              // otherwise we only include it in the config if the authenticated user as roles in the credentials and these roles include one role defined in onlyRoles.
+              return task.onlyRoles.some(
+                role =>
+                  request.auth.credentials.roles &&
+                  request.auth.credentials.roles.includes(role)
+              );
+            })
+            .map(task => {
+              delete task.route.handler;
+              return task;
+            })
+        };
       }
     });
   }
