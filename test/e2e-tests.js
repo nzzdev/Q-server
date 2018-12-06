@@ -790,3 +790,31 @@ lab.experiment("keycdn plugin", () => {
     expect(response.headers["cache-tag"]).to.be.undefined();
   });
 });
+
+lab.experiment("tasks plugin", () => {
+  it("returns the configured tasks", async () => {
+    const response = await server.inject({
+      method: "GET",
+      url: "/tasks",
+      credentials: { username: "user", password: "pass" }
+    });
+    expect(response.result.tasks.length).to.be.equal(1);
+    expect(response.result.tasks[0].id).to.be.equal("testTask");
+  });
+  it("returns the response from a configured task", async () => {
+    const taskInput = "test input";
+    const payload = {
+      someTaskInput: taskInput
+    };
+    const response = await server.inject({
+      method: "POST",
+      url: "/tasks/test",
+      credentials: { username: "user", password: "pass" },
+      payload: payload
+    });
+    expect(response.result.type).to.be.equal("json");
+    expect(JSON.stringify(response.result.data.content)).to.be.equal(
+      JSON.stringify(payload)
+    );
+  });
+});
