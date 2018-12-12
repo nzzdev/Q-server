@@ -37,6 +37,10 @@ module.exports = [
     plugin: require("../plugins/statistics")
   },
   {
+    plugin: require("../plugins/tasks/index.js"),
+    options: require("./config/tasks.js").get("")
+  },
+  {
     plugin: require("../plugins/screenshot"),
     options: {
       getScripts: function(renderingInfo) {
