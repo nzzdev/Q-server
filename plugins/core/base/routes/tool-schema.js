@@ -1,4 +1,5 @@
 const Joi = require("joi");
+const Boom = require("boom");
 const jsonSchemaRefParser = require("json-schema-ref-parser");
 
 async function getDereferencedSchema(schema) {
@@ -20,13 +21,16 @@ module.exports = {
         validate: {
           params: {
             tool: Joi.string().required()
-          },
-          query: {
-            appendItemToPayload: Joi.string().forbidden()
           }
         }
       },
       handler: async (request, h) => {
+        // this is done in the handler and not with Joi as hapi-swagger has issues with `forbidden`.
+        if (request.query.appendItemToPayload !== undefined) {
+          return Boom.badRequest(
+            "appending the item to the request to the tool is not allowed. The tool schema needs to be static to be able to validate the item data against the schema."
+          );
+        }
         request.params.path = "schema.json";
         const response = await Reflect.apply(
           request.server.methods.getToolResponse,
