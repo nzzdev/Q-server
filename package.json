@@ -38,7 +38,7 @@
     "nano": "^6.4.4",
     "nano-promises": "^1.2.0",
     "node-fetch": "^2.3.0",
-    "puppeteer": "^1.12.2",
+    "puppeteer": "1.11.0",
     "slugify": "^1.3.4",
     "uuid": "^3.3.2",
     "vision": "^5.4.4",

@@ -2,7 +2,9 @@ const puppeteer = require("puppeteer");
 const fetch = require("node-fetch");
 
 // start a chromium process here
-let browserPromise = puppeteer.launch({ args: ["--no-sandbox"] });
+let browserPromise = puppeteer.launch({
+  args: ["--no-sandbox", "--disable-dev-shm-usage"]
+});
 
 // fetches assets and returns a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
