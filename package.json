@@ -35,7 +35,7 @@
     "json-schema-ref-parser": "^6.0.3",
     "keycdn": "^0.2.2",
     "mimos": "^4.0.2",
-    "nano": "^6.4.4",
+    "nano": "^8.0.1",
     "nano-promises": "^1.2.0",
     "node-fetch": "^2.3.0",
     "puppeteer": "1.11.0",
