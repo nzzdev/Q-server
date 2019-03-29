@@ -21,7 +21,7 @@
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
     "ajv": "^6.10.0",
-    "aws-sdk": "^2.244.1",
+    "aws-sdk": "^2.431.0",
     "boom": "^7.2.0",
     "bounce": "^1.2.0",
     "catbox-memory": "^4.0.1",
