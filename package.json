@@ -47,7 +47,7 @@
   "devDependencies": {
     "code": "^5.2.4",
     "confidence": "^4.0.1",
-    "lab": "^15.5.0",
+    "lab": "^18.0.2",
     "pouchdb-server": "^4.1.0"
   }
 }
