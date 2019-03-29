@@ -86,7 +86,10 @@ lab.experiment("core item", () => {
   it("should respond with 400 if trying to save existing item using POST", async () => {
     const request = {
       method: "POST",
-      credentials: { username: "user", password: "pass" },
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      },
       url: "/item",
       payload: {
         _id: "someid",
@@ -101,7 +104,10 @@ lab.experiment("core item", () => {
   it("should respond with 400 if trying to save new item using PUT", async () => {
     const request = {
       method: "PUT",
-      credentials: { username: "user", password: "pass" },
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      },
       url: "/item",
       payload: {
         title: "title"
@@ -114,7 +120,10 @@ lab.experiment("core item", () => {
   it("should respond with 400 if trying to save item that does not validate against schema and tell the error", async () => {
     const request = {
       method: "PUT",
-      credentials: { username: "user", password: "pass" },
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      },
       url: "/item",
       payload: {
         _id: "some-id",
@@ -134,7 +143,10 @@ lab.experiment("core item", () => {
     try {
       const request = {
         method: "POST",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: {
           title: "some-new-item-from-test",
@@ -157,7 +169,10 @@ lab.experiment("core item", () => {
       item.bar = value;
       const request = {
         method: "PUT",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: item
       };
@@ -185,7 +200,10 @@ lab.experiment("core item", () => {
       server.events.once("item.new", handler);
       const request = {
         method: "POST",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: {
           _id: "fix-id-to-better-test-the-case",
@@ -213,7 +231,10 @@ lab.experiment("core item", () => {
       const item = JSON.parse(itemResponse.payload);
       const request = {
         method: "PUT",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: item
       };
@@ -242,7 +263,10 @@ lab.experiment("core item", () => {
       item.active = true;
       const request = {
         method: "PUT",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: item
       };
@@ -271,7 +295,10 @@ lab.experiment("core item", () => {
       item.active = false;
       const request = {
         method: "PUT",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: item
       };
@@ -300,7 +327,10 @@ lab.experiment("core item", () => {
       item._deleted = true;
       const request = {
         method: "PUT",
-        credentials: { username: "user", password: "pass" },
+        auth: {
+          strategy: "q-auth",
+          credentials: { username: "user", password: "pass" }
+        },
         url: "/item",
         payload: item
       };
@@ -768,7 +798,10 @@ lab.experiment("fixture data plugin", () => {
     const response = await server.inject({
       method: "POST",
       url: "/fixtures/data",
-      credentials: { username: "user", password: "pass" }
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      }
     });
     expect(response.statusCode).to.be.equal(200);
     expect(response.result.saved.length).to.be.equal(1);
@@ -832,7 +865,10 @@ lab.experiment("tasks plugin", () => {
     const response = await server.inject({
       method: "GET",
       url: "/tasks",
-      credentials: { username: "user", password: "pass" }
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      }
     });
     expect(response.result.tasks.length).to.be.equal(1);
     expect(response.result.tasks[0].id).to.be.equal("testTask");
@@ -841,7 +877,10 @@ lab.experiment("tasks plugin", () => {
     const response = await server.inject({
       method: "GET",
       url: "/tasks",
-      credentials: { username: "user", password: "pass", roles: ["admin"] }
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass", roles: ["admin"] }
+      }
     });
     expect(response.result.tasks.length).to.be.equal(2);
     expect(response.result.tasks[0].id).to.be.equal("testTask");
@@ -855,7 +894,10 @@ lab.experiment("tasks plugin", () => {
     const response = await server.inject({
       method: "POST",
       url: "/tasks/test",
-      credentials: { username: "user", password: "pass" },
+      auth: {
+        strategy: "q-auth",
+        credentials: { username: "user", password: "pass" }
+      },
       payload: payload
     });
     expect(response.result.type).to.be.equal("json");
