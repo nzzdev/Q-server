@@ -18,9 +18,7 @@ const queryFormat = {
 };
 
 async function getScreenshotResponse(server, h, params, item) {
-  const target = server.settings.app.targets.get(`/`).find(configuredTarget => {
-    return configuredTarget.key === params.target;
-  });
+  const target = server.settings.app.targets.get(`/${params.target}`);
 
   if (!target) {
     throw Boom.badRequest("no such target");

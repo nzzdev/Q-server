@@ -585,46 +585,10 @@ lab.experiment("core editor endpoints", () => {
     );
   });
 
-  it("returns the target configs in the correct format", async () => {
+  it("returns the target configs in the correct format (as an array of targets)", async () => {
     const response = await server.inject("/editor/targets");
     expect(response.result).to.be.an.array();
     expect(response.result[0].key).to.be.equal("pub1");
-  });
-
-  it("returns the target configs in the correct format for legacy confidence target configuration (array as top level)", async () => {
-    // this tests the backwards compatibility code in the editor/targets route
-    // handling the case where the target configuration is an array of targets instead of an object with targets as properties
-    // this can be removed in the next bc breaking change
-    // it has to be done to be compatible with confidence >= 4
-    const targets = [
-      {
-        key: "legacyFormatTargetKey",
-        label: "Pub1",
-        type: "web",
-        context: {
-          stylesheets: [
-            {
-              url:
-                "https://proxy.st-cdn.nzz.ch/context-service/stylesheet/all/nzz.ch.css"
-            }
-          ],
-          background: {
-            color: "white"
-          }
-        }
-      }
-    ];
-
-    const origTargets = server.settings.app.targets;
-    server.settings.app.targets = {
-      get: (key, criteria = {}) => {
-        return targets;
-      }
-    };
-    const response = await server.inject("/editor/targets");
-    expect(response.result).to.be.an.array();
-    expect(response.result[0].key).to.be.equal("legacyFormatTargetKey");
-    server.settings.app.targets = origTargets;
   });
 });
 
