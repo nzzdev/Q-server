@@ -2,8 +2,8 @@ dist: trusty
 sudo: true
 language: node_js
 node_js:
-- '10'
+  - "11"
 install:
-- npm install
+  - npm install
 script:
-- npm test
+  - npm test
