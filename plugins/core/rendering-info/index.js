@@ -177,8 +177,12 @@ module.exports = {
           );
         }
 
-        let toolEndpointConfig;
+        const targetConfig = server.settings.app.targets.get(`/${target}`);
+        if (!targetConfig) {
+          throw new Error(`${target} not configured`);
+        }
 
+        let toolEndpointConfig;
         if (endpointConfig instanceof Function) {
           toolEndpointConfig = await endpointConfig.apply(this, [
             item,
@@ -207,6 +211,7 @@ module.exports = {
           baseUrl,
           toolEndpointConfig,
           toolRuntimeConfig,
+          targetConfig,
           itemStateInDb
         );
       }

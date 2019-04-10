@@ -42,6 +42,7 @@ async function getRenderingInfo(
   baseUrl,
   endpointConfig,
   toolRuntimeConfig,
+  targetConfig,
   itemStateInDb
 ) {
   let requestUrl;
@@ -95,6 +96,18 @@ async function getRenderingInfo(
     renderingInfo = deepmerge(
       renderingInfo,
       endpointConfig.additionalRenderingInfo,
+      {
+        arrayMerge: (destArr, srcArr) => {
+          return srcArr.concat(destArr);
+        }
+      }
+    );
+  }
+
+  if (targetConfig.additionalRenderingInfo) {
+    renderingInfo = deepmerge(
+      renderingInfo,
+      targetConfig.additionalRenderingInfo,
       {
         arrayMerge: (destArr, srcArr) => {
           return srcArr.concat(destArr);
