@@ -11,8 +11,12 @@ So, in a nutshell we have to deal with two groups of target specifics.
 
 ## Styling related specifics
 
-For each tool - target - environment combination additional [rendering info](rendering-info.html) can be configured in the config passed as `app.tools` to `Hapi.server()`. We use _config/tools.js_ for this. See our [demo implementation](https://github.com/nzzdev/Q-server-demo) for details.
+For each tool - target - environment combination, additional [rendering info](rendering-info.html) can be configured in the config passed as `app.tools` to `Hapi.server()`. We use _config/tools.js_ for this.
+It works the same for _targets_. The additional [rendering info](rendering-info.html) can be configured in the config passed as `app.targets` to `Hapi.server()`. The config is stored in _config/targets.js_.
+See our [demo implementation](https://github.com/nzzdev/Q-server-demo) for details.
 This `additionalRenderingInfo` object will be merged with the object returned from the defined endpoint of the tool before getting sent back to the client. We use this to apply the stylesheets of our styleguide system to theme the rendered output for different publications.
+
+### Tools
 
 ```javascript
 const tools = {
@@ -69,6 +73,35 @@ const tools = {
   }
   //...
 }
+```
+
+### Targets
+
+```javascript
+const targets = {
+  demo1: {
+    label: "Demo 1",
+    type: "Web",
+    context: {
+      //stylesheets
+    },
+    additionalRenderingInfo: {
+      sophieModules: {
+        $filter: "env",
+        $default: [
+          {
+            url: "https://service.sophie.nzz.ch/bundle/sophie-q%23master.css"
+          }
+        ],
+        production: [
+          {
+            url: "https://service.sophie.nzz.ch/bundle/sophie-q@^1.css"
+          }
+        ]
+      }
+    }
+  }
+};
 ```
 
 ## Technology related specifics
