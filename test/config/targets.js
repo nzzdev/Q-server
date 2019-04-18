@@ -14,6 +14,26 @@ const targets = {
       background: {
         color: "white"
       }
+    },
+    additionalRenderingInfo: {
+      stylesheets: [
+        {
+          name: "test.css"
+        }
+      ],
+      sophieModules: {
+        $filter: "env",
+        production: [
+          {
+            name: "sophie-q@1"
+          }
+        ],
+        $default: [
+          {
+            name: "sophie-q%23master"
+          }
+        ]
+      }
     }
   },
   pub2: {

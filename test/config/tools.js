@@ -20,7 +20,7 @@ const tools = {
           stylesheets: [
             {
               url:
-                "https://service.sophie.nzz.ch/bundle/sophie-q@^1,sophie-font@^1,sophie-color@^1,sophie-viz-color@^1[general].css"
+                "https://service.sophie.nzz.ch/bundle/sophie-font@^1,sophie-color@^1,sophie-viz-color@^1[general].css"
             },
             function(item, toolRuntimeConfig) {
               return {

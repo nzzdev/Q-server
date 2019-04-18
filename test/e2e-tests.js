@@ -518,7 +518,7 @@ lab.experiment("core rendering-info", () => {
         "/rendering-info/mock-item-active/pub1"
       );
 
-      expect(response.result.stylesheets[2].path).to.be.equal(
+      expect(response.result.stylesheets[3].path).to.be.equal(
         "/tools/tool1/stylesheet/mockstyle"
       );
     }
@@ -532,7 +532,7 @@ lab.experiment("core rendering-info", () => {
         "/rendering-info/mock-item-active/pub1"
       );
 
-      expect(response.result.stylesheets[1].path).to.be.equal(
+      expect(response.result.stylesheets[2].path).to.be.equal(
         "/tools/tool1/stylesheet/functionGeneratedStylesheetName.css"
       );
 
@@ -542,6 +542,31 @@ lab.experiment("core rendering-info", () => {
     }
   );
 });
+
+lab.experiment(
+  "correctly merges additionalRenderingInfo from tool endpoint and target config",
+  () => {
+    it("correctly merges arrays", { plan: 4 }, async () => {
+      const response = await server.inject(
+        "/rendering-info/mock-item-active/pub1"
+      );
+
+      // config from tool
+      expect(response.result.stylesheets[3].name).to.be.equals("mockstyle");
+
+      // config from tool endpoint
+      expect(response.result.stylesheets[1].url).to.be.equals(
+        "https://service.sophie.nzz.ch/bundle/sophie-font@^1,sophie-color@^1,sophie-viz-color@^1[general].css"
+      );
+
+      // config from target
+      expect(response.result.stylesheets[0].name).to.be.equals("test.css");
+      expect(response.result.sophieModules[0].name).to.be.equals(
+        "sophie-q%23master"
+      );
+    });
+  }
+);
 
 lab.experiment("core editor endpoints", () => {
   it("returns the editor config", async () => {
