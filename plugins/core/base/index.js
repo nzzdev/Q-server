@@ -1,13 +1,17 @@
 const getToolResponse = require("./methods/getToolResponse.js").getToolResponse;
-const getCacheControlDirectivesFromConfig = require("./methods/getCacheControlDirectivesFromConfig.js").getCacheControlDirectivesFromConfig;
+const getCacheControlDirectivesFromConfig = require("./methods/getCacheControlDirectivesFromConfig.js")
+  .getCacheControlDirectivesFromConfig;
 
 module.exports = {
   name: "q-base",
   dependencies: ["q-db"],
-  register: async function (server, options) {
-    await server.register([require("vision"), require("inert")]);
+  register: async function(server, options) {
+    await server.register([require("@hapi/vision"), require("@hapi/inert")]);
     server.method("getToolResponse", getToolResponse);
-    server.method("getCacheControlDirectivesFromConfig", getCacheControlDirectivesFromConfig);
+    server.method(
+      "getCacheControlDirectivesFromConfig",
+      getCacheControlDirectivesFromConfig
+    );
 
     server.event("item.new");
     server.event("item.update");

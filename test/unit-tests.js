@@ -1,6 +1,5 @@
 const Lab = require("lab");
 const Code = require("code");
-const Hapi = require("hapi");
 const lab = (exports.lab = Lab.script());
 
 const clone = require("clone");

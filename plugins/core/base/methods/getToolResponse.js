@@ -1,5 +1,5 @@
-const Boom = require("boom");
-const Wreck = require("wreck");
+const Boom = require("@hapi/boom");
+const Wreck = require("@hapi/wreck");
 const querystring = require("querystring");
 
 exports.getToolResponse = async function(options, request, h) {

@@ -1,5 +1,5 @@
-const Boom = require("boom");
-const Joi = require("joi");
+const Boom = require("@hapi/boom");
+const Joi = require("@hapi/joi");
 const Ajv = require("ajv");
 const ajv = new Ajv({ schemaId: "id" });
 // add draft-04 support explicit

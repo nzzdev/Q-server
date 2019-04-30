@@ -1,4 +1,4 @@
-const Hapi = require("hapi");
+const Hapi = require("@hapi/hapi");
 
 function getServer() {
   let server = Hapi.server({

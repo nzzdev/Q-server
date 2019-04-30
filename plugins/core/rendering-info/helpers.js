@@ -2,7 +2,7 @@ const querystring = require("querystring");
 const fetch = require("node-fetch");
 const clone = require("clone");
 const deepmerge = require("deepmerge");
-const Boom = require("boom");
+const Boom = require("@hapi/boom");
 const deleteMetaProperties = require("../../../helper/meta-properties")
   .deleteMetaProperties;
 
