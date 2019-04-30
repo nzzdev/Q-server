@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "lab -a code -t 87 -c -P tests -m 3000 --verbose --leaks",
+    "test": "lab -a @hapi/code -t 87 -c -P tests -m 3000 --verbose --leaks",
     "start:prod": "APP_ENV=prod node index.js",
     "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
@@ -45,9 +45,9 @@
     "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "code": "^5.2.4",
+    "@hapi/lab": "^18.1.2",
+    "@hapi/code": "^5.3.1",
     "confidence": "^4.0.1",
-    "lab": "^18.0.2",
     "pouchdb-server": "^4.1.0"
   }
 }
