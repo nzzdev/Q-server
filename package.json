@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "lab -a code -t 87 -c -P tests -m 3000 --verbose --leaks",
+    "test": "lab -a @hapi/code -t 87 -c -P tests -m 3000 --verbose --leaks",
     "start:prod": "APP_ENV=prod node index.js",
     "start:staging": "APP_ENV=staging node index.js",
     "start:local": "APP_ENV=local node index.js"
@@ -20,34 +20,33 @@
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
+    "@hapi/boom": "^7.4.2",
+    "@hapi/bounce": "^1.3.0",
+    "@hapi/hapi": "^18.3.1",
+    "@hapi/hoek": "^6.2.1",
+    "@hapi/inert": "^5.2.0",
+    "@hapi/joi": "^15.0.0",
+    "@hapi/mimos": "^4.1.0",
+    "@hapi/vision": "^5.5.2",
+    "@hapi/wreck": "^15.0.1",
     "ajv": "^6.10.0",
     "aws-sdk": "^2.439.0",
-    "boom": "^7.3.0",
-    "bounce": "^1.2.3",
-    "catbox-memory": "^4.0.1",
-    "clone": "^2.1.2",
-    "deepmerge": "^3.2.0",
-    "hapi": "^18.1.0",
+    "clone": "^2.1.1",
+    "deepmerge": "^3.1.0",
     "hasha": "^5.0.0",
-    "hoek": "^6.1.3",
-    "inert": "^5.1.3",
-    "joi": "^14.3.1",
-    "json-schema-ref-parser": "^6.1.0",
+    "json-schema-ref-parser": "^6.1.3",
     "keycdn": "^0.2.2",
-    "mimos": "^4.0.2",
     "nano": "^8.0.1",
     "nano-promises": "^1.2.0",
     "node-fetch": "^2.3.0",
     "puppeteer": "^1.14.0",
     "slugify": "^1.3.4",
-    "uuid": "^3.3.2",
-    "vision": "^5.4.4",
-    "wreck": "^14.2.0"
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
-    "code": "^5.2.4",
+    "@hapi/lab": "^18.1.2",
+    "@hapi/code": "^5.3.1",
     "confidence": "^4.0.1",
-    "lab": "^18.0.2",
     "pouchdb-server": "^4.1.0"
   }
 }

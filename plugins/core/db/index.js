@@ -1,5 +1,5 @@
 const nano = require("nano");
-const Boom = require("boom");
+const Boom = require("@hapi/boom");
 
 function getSearchFilters(filterProperties) {
   return Object.keys(filterProperties).map(parameterName => {

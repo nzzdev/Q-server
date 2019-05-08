@@ -1,5 +1,5 @@
-const Boom = require("boom");
-const Bounce = require("bounce");
+const Boom = require("@hapi/boom");
+const Bounce = require("@hapi/bounce");
 const fetch = require("node-fetch");
 
 const statusUpdated = "updated";

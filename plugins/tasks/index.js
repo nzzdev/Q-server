@@ -1,4 +1,4 @@
-const Hoek = require("hoek");
+const Hoek = require("@hapi/hoek");
 
 const defaults = {
   tasksConfig: {}
