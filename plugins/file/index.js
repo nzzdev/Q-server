@@ -1,6 +1,6 @@
-const Boom = require("boom");
+const Boom = require("@hapi/boom");
 const AWS = require("aws-sdk");
-const Mimos = require("mimos");
+const Mimos = require("@hapi/mimos");
 const mimos = new Mimos();
 const hasha = require("hasha");
 const slugify = require("slugify");
