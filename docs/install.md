@@ -14,23 +14,21 @@ title: Installation
   "_id": "_design/items",
   "views": {
     "numberOfItems": {
-      "map":
-        "function(doc) {\n  if (doc.active && doc.createdDate && doc.department) {\n    var d = new Date(doc.createdDate);\n    emit(d.valueOf(), 1);\n  }\n}",
+      "map": "function(doc) {\n  if (doc.active && doc.createdDate && doc.department) {\n    var d = new Date(doc.createdDate);\n    emit(d.valueOf(), 1);\n  }\n}",
       "reduce": "_sum"
     },
     "numberOfItemsPerDay": {
-      "map":
-        "function(doc) {\n  if (doc.active && doc.createdDate && doc.department) {\n    var d = new Date(doc.createdDate);\n    var year = d.getFullYear();\n    var month = d.getMonth() + 1;\n    if (month < 10) {\n      month = '0' + month;\n    }\n    var day = d.getDate();\n    if (day < 10) {\n      day = '0' + day;\n    }\n    emit('' + year + month + day, 1);\n  }\n}",
+      "map": "function(doc) {\n  if (doc.active && doc.createdDate && doc.department) {\n    var d = new Date(doc.createdDate);\n    var year = d.getFullYear();\n    var month = d.getMonth() + 1;\n    if (month < 10) {\n      month = '0' + month;\n    }\n    var day = d.getDate();\n    if (day < 10) {\n      day = '0' + day;\n    }\n    emit('' + year + month + day, 1);\n  }\n}",
       "reduce": "_count"
     },
     "byTool": {
-      "map":
-        "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}",
+      "map": "function (doc) {\n  if (doc.tool) {\n    emit(doc.tool, doc._id);\n  }\n}",
       "reduce": "_count"
     }
   }
 }
 ```
+
 ```json
 {
   "_id": "_design/tools",
@@ -43,6 +41,7 @@ title: Installation
   "language": "javascript"
 }
 ```
+
 ```json
 {
   "_id": "_design/query-index",
@@ -86,4 +85,4 @@ COUCH_HOST=host COUCH_DB=db COUCH_USER=user COUCH_PASS=pass node index.js
 
 ## Setup Q editor
 
-Now you probably want to [setup your Q editor](https://github.com/nzzdev/Q-editor) to connect it to your Q server.
+Now you probably want to [deploy your Q editor](https://github.com/nzzdev/Q-editor#deployment) to connect it to your Q server.
