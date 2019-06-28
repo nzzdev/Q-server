@@ -176,11 +176,10 @@ module.exports = {
       doc.updatedBy = request.auth.credentials.name;
       docDiff.updatedBy = doc.updatedBy;
 
-      const ignoreInactive = true;
-      const oldDoc = await request.server.methods.db.item.getById(
-        request.payload._id,
-        ignoreInactive
-      );
+      const oldDoc = await request.server.methods.db.item.getById({
+        id: request.payload._id,
+        ignoreInactive: true
+      });
 
       // if the active state change to true, we set activateDate
       let isNewActive = false;

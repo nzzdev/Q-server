@@ -173,7 +173,11 @@ module.exports = {
       }
 
       const res = await server.app.db.view("items", "numberOfItems", options);
-      return res.rows[0].value; // this returns the exact number of items in the database
+      try {
+        return res.rows[0].value; // this returns the exact number of items in the database
+      } catch (e) {
+        return 0;
+      }
     });
 
     server.method("db.tools.getWithUserUsage", function({ username }) {

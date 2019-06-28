@@ -57,7 +57,11 @@ function getGetRenderingInfoRoute(config) {
           request.params.id,
           request.params.target,
           requestToolRuntimeConfig,
-          request.query.ignoreInactive
+          request.query.ignoreInactive,
+          {
+            credentials: request.auth.credentials,
+            artifacts: request.auth.artifacts
+          }
         );
         return h
           .response(renderingInfo)
@@ -219,14 +223,10 @@ module.exports = {
 
     server.method(
       "renderingInfo.getRenderingInfoForId",
-      async (id, target, requestToolRuntimeConfig, ignoreInactive) => {
+      async (id, target, requestToolRuntimeConfig, ignoreInactive, session) => {
         const item = await server.methods.db.item.getById({
           id,
-          ignoreInactive,
-          session: {
-            credentials: request.auth.credentials,
-            artifacts: request.auth.artifacts
-          }
+          ignoreInactive
         });
         // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
         const itemStateInDb = true;
