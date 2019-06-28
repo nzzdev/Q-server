@@ -16,7 +16,7 @@ function getServer() {
   server.auth.scheme("mock", function(server, options) {
     return {
       authenticate: function(request, h) {
-        return { credentials: "user" };
+        return h.authenticated({ credentials: "user" });
       }
     };
   });
