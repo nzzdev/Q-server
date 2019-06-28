@@ -40,6 +40,13 @@ module.exports = {
     path: "/item/{id}",
     method: "GET",
     options: {
+      auth: {
+        strategies: ["q-auth"],
+        mode: "optional"
+      },
+      cors: {
+        credentials: true
+      },
       validate: {
         params: {
           id: Joi.string().required()
@@ -49,11 +56,14 @@ module.exports = {
       tags: ["api", "editor"]
     },
     handler: async function(request, h) {
-      const ignoreInactive = true;
-      return request.server.methods.db.item.getById(
-        request.params.id,
-        ignoreInactive
-      );
+      return request.server.methods.db.item.getById({
+        id: request.params.id,
+        ignoreInactive: true,
+        session: {
+          credentials: request.auth.credentials,
+          artifacts: request.auth.artifacts
+        }
+      });
     }
   },
   post: {
@@ -104,28 +114,23 @@ module.exports = {
       doc.updatedBy = request.auth.credentials.name;
       docDiff.updatedBy = doc.updatedBy;
 
-      return new Promise((resolve, reject) => {
-        request.server.app.db.insert(request.payload, (err, res) => {
-          if (err) {
-            return reject(
-              new Boom(err.description, { statusCode: err.statusCode })
-            );
-          }
-
-          docDiff._id = res.id;
-          docDiff._rev = res.rev;
-
-          const savedDoc = Object.assign(request.payload, {
-            _id: res.id,
-            _rev: res.rev
-          });
-          request.server.events.emit("item.new", {
-            newItem: savedDoc
-          });
-
-          return resolve(docDiff);
-        });
+      const res = await request.server.methods.db.item.insert({
+        doc,
+        session: {
+          credentials: request.auth.credentials,
+          artifacts: request.auth.artifacts
+        }
       });
+
+      docDiff._id = res.id;
+      docDiff._rev = res.rev;
+
+      const savedDoc = Object.assign(doc, docDiff);
+      request.server.events.emit("item.new", {
+        newItem: savedDoc
+      });
+
+      return docDiff;
     }
   },
   put: {
@@ -198,39 +203,35 @@ module.exports = {
         isDeleted = true;
       }
 
-      return new Promise((resolve, reject) => {
-        request.server.app.db.insert(doc, (err, res) => {
-          if (err) {
-            return reject(
-              new Boom(err.description, { statusCode: err.statusCode })
-            );
-          }
-
-          const savedDoc = Object.assign(doc, {
-            _rev: res.rev
-          });
-
-          const eventData = {
-            newItem: savedDoc,
-            oldItem: oldDoc
-          };
-
-          if (isNewActive) {
-            request.server.events.emit("item.activate", eventData);
-          }
-          if (isNewInactive) {
-            request.server.events.emit("item.deactivate", eventData);
-          }
-          if (isDeleted) {
-            request.server.events.emit("item.delete", eventData);
-          }
-
-          request.server.events.emit("item.update", eventData);
-
-          docDiff._rev = res.rev;
-          return resolve(docDiff);
-        });
+      const res = await request.server.methods.db.item.insert({
+        doc,
+        session: {
+          credentials: request.auth.credentials,
+          artifacts: request.auth.artifacts
+        }
       });
+
+      docDiff._rev = res.rev;
+      const savedDoc = Object.assign(doc, docDiff);
+
+      const eventData = {
+        newItem: savedDoc,
+        oldItem: oldDoc
+      };
+
+      if (isNewActive) {
+        request.server.events.emit("item.activate", eventData);
+      }
+      if (isNewInactive) {
+        request.server.events.emit("item.deactivate", eventData);
+      }
+      if (isDeleted) {
+        request.server.events.emit("item.delete", eventData);
+      }
+
+      request.server.events.emit("item.update", eventData);
+
+      return docDiff;
     }
   }
 };

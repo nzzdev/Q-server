@@ -143,10 +143,14 @@ module.exports = {
           tags: ["api"]
         },
         handler: async (request, h) => {
-          const item = await request.server.methods.db.item.getById(
-            request.params.id,
-            request.query.ignoreInactive
-          );
+          const item = await request.server.methods.db.item.getById({
+            id: request.params.id,
+            ignoreInactive: request.query.ignoreInactive,
+            session: {
+              credentials: request.auth.credentials,
+              artifacts: request.auth.artifacts
+            }
+          });
           const screenshotConfig = Object.assign({}, request.query, {
             format: request.params.format
           });

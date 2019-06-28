@@ -89,79 +89,78 @@ module.exports = {
     }
 
     server.app.db = nano(nanoConfig);
-
-    server.method("db.item.getById", function(id, ignoreInactive = false) {
-      return new Promise((resolve, reject) => {
-        server.app.db.get(id, (err, item) => {
-          if (err) {
-            return reject(
-              new Boom(err.description, { statusCode: err.statusCode })
-            );
-          }
-
-          if (!ignoreInactive && item.active !== true) {
-            return reject(Boom.forbidden("Item is not active"));
-          }
-          return resolve(item);
-        });
-      });
+    server.method("db.item.getById", async function({
+      id,
+      ignoreInactive,
+      session
+    }) {
+      const item = await server.app.db.get(id);
+      if (!ignoreInactive && item.active !== true) {
+        throw new Boom.forbidden("Item is not active");
+      }
+      return item;
     });
 
-    server.method("db.item.getAllByTool", function(tool) {
+    // the session property passed here is
+    server.method("db.item.insert", async function({ doc, session }) {
+      const res = await server.app.db.insert(doc);
+      if (!res.ok) {
+        throw new Error("failed to insert doc");
+      }
+      return {
+        id: res.id,
+        rev: res.rev
+      };
+    });
+
+    server.method("db.item.getAllByTool", async function({ tool, session }) {
       const options = {
         keys: [tool],
         include_docs: true,
         reduce: false
       };
-      return new Promise((resolve, reject) => {
-        server.app.db.view("items", "byTool", options, async (err, data) => {
-          if (err) {
-            return reject(Boom.internal(err));
-          } else {
-            const items = data.rows.map(item => {
-              return item.doc;
-            });
-            return resolve(items);
-          }
-        });
+      const res = await server.app.db.view("items", "byTool", options);
+      if (!res.ok) {
+        throw new Error(`failed to getAllByTool ${tool}`);
+      }
+      const items = res.rows.map(item => {
+        return item.doc;
       });
+      return items;
     });
 
-    server.method("db.item.search", function(
+    server.method("db.item.search", async function({
       filterProperties,
       limit,
-      bookmark
-    ) {
-      return new Promise((resolve, reject) => {
-        const requestOptions = {
-          db: options.database,
-          path: "_find",
-          method: "POST",
-          body: {
-            selector: {
-              $and: getSearchFilters(filterProperties)
-            },
-            sort: [
-              {
-                updatedDate: "desc"
-              }
-            ],
-            limit: limit || 18,
-            bookmark: bookmark || null
-          }
-        };
+      bookmark,
+      session
+    }) {
+      const requestOptions = {
+        db: options.database,
+        path: "_find",
+        method: "POST",
+        body: {
+          selector: {
+            $and: getSearchFilters(filterProperties)
+          },
+          sort: [
+            {
+              updatedDate: "desc"
+            }
+          ],
+          limit: limit || 18,
+          bookmark: bookmark || null
+        }
+      };
 
-        server.app.db.server.request(requestOptions, (err, data) => {
-          if (err) {
-            return reject(Boom.internal(err));
-          } else {
-            return resolve(data);
-          }
-        });
-      });
+      const res = await server.app.db.server.request(requestOptions);
+      if (!res.docs) {
+        throw new Error(`failed to search`);
+      }
+      return res;
     });
 
-    server.method("db.tools.getWithUserUsage", function(username) {
+    server.method("db.tools.getWithUserUsage", function({ username }) {
       const options = {
         startkey: [username],
         endkey: [username, {}],
