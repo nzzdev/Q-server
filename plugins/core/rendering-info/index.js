@@ -224,19 +224,24 @@ module.exports = {
     server.method(
       "renderingInfo.getRenderingInfoForId",
       async (id, target, requestToolRuntimeConfig, ignoreInactive, session) => {
-        const item = await server.methods.db.item.getById({
-          id,
-          ignoreInactive
-        });
-        // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
-        const itemStateInDb = true;
-        return server.methods.renderingInfo.getRenderingInfoForItem(
-          item,
-          target,
-          requestToolRuntimeConfig,
-          ignoreInactive,
-          itemStateInDb
-        );
+        try {
+          const item = await server.methods.db.item.getById({
+            id,
+            ignoreInactive,
+            session
+          });
+          // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
+          const itemStateInDb = true;
+          return server.methods.renderingInfo.getRenderingInfoForItem(
+            item,
+            target,
+            requestToolRuntimeConfig,
+            ignoreInactive,
+            itemStateInDb
+          );
+        } catch (err) {
+          throw err;
+        }
       }
     );
 

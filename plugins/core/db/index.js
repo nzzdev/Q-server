@@ -94,11 +94,18 @@ module.exports = {
       ignoreInactive,
       session
     }) {
-      const item = await server.app.db.get(id);
-      if (!ignoreInactive && item.active !== true) {
-        throw new Boom.forbidden("Item is not active");
+      try {
+        const item = await server.app.db.get(id);
+        if (!ignoreInactive && item.active !== true) {
+          throw Boom.forbidden("Item is not active");
+        }
+        return item;
+      } catch (err) {
+        if (err.isBoom) {
+          throw err;
+        }
+        throw new Boom(err.description, { statusCode: err.statusCode });
       }
-      return item;
     });
 
     // the session property passed here is
