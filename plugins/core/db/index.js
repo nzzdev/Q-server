@@ -160,6 +160,22 @@ module.exports = {
       return res;
     });
 
+    server.method("db.statistics.getNumberOfItems", async function({
+      since,
+      session
+    }) {
+      const options = {
+        reduce: "true"
+      };
+
+      if (!Number.isNaN(since)) {
+        options.startkey = since;
+      }
+
+      const res = await server.app.db.view("items", "numberOfItems", options);
+      return res.rows[0].value; // this returns the exact number of items in the database
+    });
+
     server.method("db.tools.getWithUserUsage", function({ username }) {
       const options = {
         startkey: [username],

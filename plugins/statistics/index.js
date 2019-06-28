@@ -9,6 +9,13 @@ module.exports = {
       path: "/statistics/number-of-items/{since?}",
       method: "GET",
       config: {
+        auth: {
+          strategies: ["q-auth"],
+          mode: "optional"
+        },
+        cors: {
+          credentials: true
+        },
         validate: {
           params: {
             since: Joi.number().optional()
@@ -19,33 +26,13 @@ module.exports = {
         tags: ["api", "statistics", "non-critical"]
       },
       handler: async (request, h) => {
-        const db = request.server.app.db;
-
-        const options = {
-          reduce: "true"
-        };
-
-        if (request.params.since) {
-          options.startkey = request.params.since;
-        }
-
-        const returnValue = await new Promise((resolve, reject) => {
-          db.view("items", "numberOfItems", options, (err, data) => {
-            if (err) {
-              return reject(Boom.internal(err));
-            } else {
-              if (data.rows.length === 0) {
-                return resolve({
-                  value: 0
-                });
-              }
-              return resolve({
-                value: data.rows[0].value
-              });
-            }
-          });
+        return request.server.methods.db.statistics.getNumberOfItems({
+          since: request.params.since,
+          session: {
+            credentials: request.auth.credentials,
+            artifacts: request.auth.artifacts
+          }
         });
-        return returnValue;
       }
     });
   }
