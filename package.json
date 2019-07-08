@@ -36,7 +36,7 @@
     "ajv": "^6.10.0",
     "aws-sdk": "^2.451.0",
     "clone": "^2.1.1",
-    "deepmerge": "^3.1.0",
+    "deepmerge": "^4.0.0",
     "hasha": "^5.0.0",
     "json-schema-ref-parser": "^6.1.0",
     "keycdn": "^0.2.2",
