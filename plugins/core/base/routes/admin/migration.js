@@ -27,12 +27,15 @@ module.exports = {
     }
 
     if (request.params.id) {
-      const ignoreInactive = true;
       try {
-        const item = await request.server.methods.db.item.getById(
-          request.params.id,
-          ignoreInactive
-        );
+        const item = await request.server.methods.db.item.getById({
+          id: request.params.id,
+          ignoreInactive: true,
+          session: {
+            credentials: request.auth.credentials,
+            artifacts: request.auth.artifacts
+          }
+        });
         const migrationStatus = await migrateItem(
           item,
           toolBaseUrl,
@@ -46,7 +49,13 @@ module.exports = {
         return err;
       }
     } else {
-      const items = await request.server.methods.db.item.getAllByTool(tool);
+      const items = await request.server.methods.db.item.getAllByTool({
+        tool,
+        session: {
+          credentials: request.auth.credentials,
+          artifacts: request.auth.artifacts
+        }
+      });
 
       let migrationStatuses = items.map(async item => {
         return await migrateItem(item, toolBaseUrl, request.server.app.db);

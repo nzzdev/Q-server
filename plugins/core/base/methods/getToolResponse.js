@@ -5,10 +5,14 @@ const querystring = require("querystring");
 exports.getToolResponse = async function(options, request, h) {
   if (request.query.appendItemToPayload) {
     // Get item with ignoreInactive set to true (gets inactive or active item)
-    const item = await request.server.methods.db.item.getById(
-      request.query.appendItemToPayload,
-      true
-    );
+    const item = await request.server.methods.db.item.getById({
+      id: request.query.appendItemToPayload,
+      ignoreInactive: true,
+      session: {
+        credentials: request.auth.credentials,
+        artifacts: request.auth.artifacts
+      }
+    });
     // do not allow appending an item of another tool
     if (request.params.tool !== item.tool) {
       return Boom.badRequest(
