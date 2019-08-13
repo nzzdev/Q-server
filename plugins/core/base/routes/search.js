@@ -4,6 +4,10 @@ module.exports = {
   path: "/search",
   method: "GET",
   options: {
+    auth: {
+      strategy: "q-auth",
+      mode: "try"
+    },
     validate: {
       query: {
         limit: Joi.number().optional(),
