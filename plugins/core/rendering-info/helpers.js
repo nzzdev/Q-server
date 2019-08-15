@@ -1,10 +1,6 @@
-const querystring = require("querystring");
-const fetch = require("node-fetch");
-const clone = require("clone");
 const deepmerge = require("deepmerge");
-const Boom = require("@hapi/boom");
-const deleteMetaProperties = require("../../../helper/meta-properties")
-  .deleteMetaProperties;
+const Mimos = require("@hapi/mimos");
+const mimos = new Mimos();
 
 async function getWithResolvedFunction(
   renderingInfoPart,
@@ -37,60 +33,37 @@ function getWithResolvedNameProperty(
   });
 }
 
-async function getRenderingInfo(
-  item,
-  baseUrl,
+function getRequestUrlFromEndpointConfig(toolEndpointConfig, baseUrl) {
+  if (toolEndpointConfig.hasOwnProperty("path")) {
+    return `${baseUrl}${toolEndpointConfig.path}`;
+  } else if (toolEndpointConfig.hasOwnProperty("url")) {
+    return toolEndpointConfig.url;
+  }
+  throw new Error("Endpoint has no path nor url configured");
+}
+
+function isValidContentTypeForTarget(targetConfig, contentType) {
+  const mime = mimos.type(contentType);
+  if (targetConfig.type === "web") {
+    return mime.type === "application/json";
+  }
+  return false;
+}
+
+async function getCompiledRenderingInfo({
+  renderingInfoBuffer,
+  contentType,
   endpointConfig,
-  toolRuntimeConfig,
   targetConfig,
-  itemStateInDb
-) {
-  let requestUrl;
-  if (endpointConfig.hasOwnProperty("path")) {
-    requestUrl = `${baseUrl}${endpointConfig.path}`;
-  } else if (endpointConfig.hasOwnProperty("url")) {
-    requestUrl = endpointConfig.url;
-  } else {
-    throw new Error("Endpoint has no path nor url configured");
+  item,
+  toolRuntimeConfig
+}) {
+  // only application/json aka web type renderingInfo can get enhanced
+  const mime = mimos.type(contentType);
+  if (mime.type !== "application/json" && targetConfig.type === "web") {
+    return renderingInfoBuffer;
   }
-
-  // add _id, createdDate and updatedDate as query params to rendering info request
-  // todo: the tool could provide the needed query parameters in the config in a future version
-  let queryParams = ["_id", "createdDate", "updatedDate"];
-  let query = {};
-  for (let queryParam of queryParams) {
-    if (item.hasOwnProperty(queryParam) && item[queryParam]) {
-      query[queryParam] = item[queryParam];
-    }
-  }
-  let queryString = querystring.stringify(query);
-
-  // strip the meta properties before sending the item to the tool service
-  const body = {
-    item: deleteMetaProperties(clone(item)),
-    itemStateInDb: itemStateInDb,
-    toolRuntimeConfig: toolRuntimeConfig
-  };
-
-  const response = await fetch(`${requestUrl}?${queryString}`, {
-    method: "POST",
-    body: JSON.stringify(body),
-    headers: {
-      "Content-Type": "application/json"
-    }
-  });
-
-  if (!response.ok) {
-    try {
-      const data = await response.json();
-      throw new Boom(data.message, { statusCode: response.status });
-    } catch (err) {
-      throw new Boom(err.message, { statusCode: response.status });
-    }
-  }
-
-  let renderingInfo = await response.json();
-
+  let renderingInfo = JSON.parse(renderingInfoBuffer.toString("utf-8"));
   // check if the tool config has additional renderingInfo and apply it if so
   if (endpointConfig.additionalRenderingInfo) {
     renderingInfo = deepmerge(
@@ -220,6 +193,8 @@ function getCompiledToolRuntimeConfig(
 }
 
 module.exports = {
-  getRenderingInfo: getRenderingInfo,
-  getCompiledToolRuntimeConfig: getCompiledToolRuntimeConfig
+  getCompiledToolRuntimeConfig,
+  getRequestUrlFromEndpointConfig,
+  isValidContentTypeForTarget,
+  getCompiledRenderingInfo
 };

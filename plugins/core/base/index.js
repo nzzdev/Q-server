@@ -1,3 +1,4 @@
+const Wreck = require("@hapi/wreck");
 const getToolResponse = require("./methods/getToolResponse.js").getToolResponse;
 const getCacheControlDirectivesFromConfig = require("./methods/getCacheControlDirectivesFromConfig.js")
   .getCacheControlDirectivesFromConfig;
@@ -18,6 +19,8 @@ module.exports = {
     server.event("item.activate");
     server.event("item.deactivate");
     server.event("item.delete");
+
+    server.app.wreck = Wreck.defaults(options.wreckDefaults || {});
 
     await server.route([
       require("./routes/item.js").get,

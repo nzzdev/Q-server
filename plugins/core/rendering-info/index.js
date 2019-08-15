@@ -2,11 +2,14 @@ const Boom = require("@hapi/boom");
 const Joi = require("@hapi/joi");
 const Hoek = require("@hapi/hoek");
 
-const getRenderingInfo = require("./helpers.js").getRenderingInfo;
-const getCompiledToolRuntimeConfig = require("./helpers.js")
-  .getCompiledToolRuntimeConfig;
+const querystring = require("querystring");
+const clone = require("clone");
+
+const helpers = require("./helpers.js");
 const sizeValidationObject = require("./size-helpers.js").sizeValidationObject;
 const validateSize = require("./size-helpers.js").validateSize;
+const deleteMetaProperties = require("../../../helper/meta-properties")
+  .deleteMetaProperties;
 
 function getGetRenderingInfoRoute(config) {
   return {
@@ -197,7 +200,7 @@ module.exports = {
         }
 
         // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
-        const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
+        const toolRuntimeConfig = helpers.getCompiledToolRuntimeConfig(item, {
           serverWideToolRuntimeConfig: options.get("/toolRuntimeConfig", {
             target: target,
             tool: item.tool
@@ -210,14 +213,55 @@ module.exports = {
           target: target
         });
 
-        return await getRenderingInfo(
-          item,
-          baseUrl,
+        const requestUrl = helpers.getRequestUrlFromEndpointConfig(
           toolEndpointConfig,
-          toolRuntimeConfig,
-          targetConfig,
-          itemStateInDb
+          baseUrl
         );
+
+        // add _id, createdDate and updatedDate as query params to rendering info request
+        // todo: the tool could provide the needed query parameters in the config in a future version
+        let queryParams = ["_id", "createdDate", "updatedDate"];
+        let query = {};
+        for (let queryParam of queryParams) {
+          if (item.hasOwnProperty(queryParam) && item[queryParam]) {
+            query[queryParam] = item[queryParam];
+          }
+        }
+        let queryString = querystring.stringify(query);
+
+        // strip the meta properties before sending the item to the tool service
+        const requestPayload = {
+          item: deleteMetaProperties(clone(item)),
+          itemStateInDb: itemStateInDb,
+          toolRuntimeConfig: toolRuntimeConfig
+        };
+
+        const { res, payload } = await server.app.wreck.post(
+          `${requestUrl}?${queryString}`,
+          {
+            payload: requestPayload
+          }
+        );
+
+        const contentType = res.headers["content-type"];
+
+        // first validate the response content-type against the target type to see if the response is valid
+        if (!helpers.isValidContentTypeForTarget(targetConfig, contentType)) {
+          throw new Error(
+            `no valid response received from endpoint for target ${
+              targetConfig.label
+            }`
+          );
+        }
+
+        return helpers.getCompiledRenderingInfo({
+          renderingInfoBuffer: payload,
+          contentType,
+          endpointConfig: toolEndpointConfig,
+          targetConfig,
+          item,
+          toolRuntimeConfig
+        });
       }
     );
 
