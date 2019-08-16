@@ -11,6 +11,8 @@ const validateSize = require("./size-helpers.js").validateSize;
 const deleteMetaProperties = require("../../../helper/meta-properties")
   .deleteMetaProperties;
 
+const configSchemas = require("./configSchemas.js");
+
 function getGetRenderingInfoRoute(config) {
   return {
     method: "GET",
@@ -135,11 +137,13 @@ function getPostRenderingInfoRoute(config) {
 
       try {
         return await request.server.methods.renderingInfo.getRenderingInfoForItem(
-          request.payload.item,
-          request.params.target,
-          requestToolRuntimeConfig,
-          request.query.ignoreInactive,
-          itemStateInDb
+          {
+            item: request.payload.item,
+            target: request.params.target,
+            requestToolRuntimeConfig,
+            ignoreInactive: request.query.ignoreInactive,
+            itemStateInDb
+          }
         );
       } catch (err) {
         if (err.isBoom) {
@@ -162,15 +166,45 @@ module.exports = {
       new Error("server.settings.app.tools.get needs to be a function")
     );
 
+    // validate the target config used by this plugin
+    const targetConfigValidationResult = configSchemas.target.validate(
+      server.settings.app.targets.get(`/`),
+      {
+        allowUnknown: true
+      }
+    );
+    if (targetConfigValidationResult.error !== null) {
+      throw new Error(targetConfigValidationResult.error);
+    }
+
+    // validate the tool endpoint config for all the defined targets
+    Object.keys(server.settings.app.tools.get(`/`)).forEach(tool => {
+      Object.keys(server.settings.app.targets.get(`/`)).forEach(target => {
+        const endpointConfig = server.settings.app.tools.get(
+          `/${tool}/endpoint`,
+          { target }
+        );
+        const toolEndpointConfigValidationResult = configSchemas.toolEndpoint.validate(
+          endpointConfig,
+          {
+            allowUnknown: true
+          }
+        );
+        if (toolEndpointConfigValidationResult.error !== null) {
+          throw new Error(toolEndpointConfigValidationResult.error);
+        }
+      });
+    });
+
     server.method(
       "renderingInfo.getRenderingInfoForItem",
-      async (
-        item,
-        target,
-        requestToolRuntimeConfig,
-        ignoreInactive,
-        itemStateInDb
-      ) => {
+      async ({ item, target, requestToolRuntimeConfig, itemStateInDb }) => {
+        // the target needs to be defined, otherwise we fail here
+        const targetConfig = server.settings.app.targets.get(`/${target}`);
+        if (!targetConfig) {
+          throw new Error(`${target} not configured`);
+        }
+
         const endpointConfig = server.settings.app.tools.get(
           `/${item.tool}/endpoint`,
           { target: target }
@@ -182,11 +216,6 @@ module.exports = {
               item.tool
             } and target: ${target}`
           );
-        }
-
-        const targetConfig = server.settings.app.targets.get(`/${target}`);
-        if (!targetConfig) {
-          throw new Error(`${target} not configured`);
         }
 
         let toolEndpointConfig;
@@ -276,13 +305,12 @@ module.exports = {
           });
           // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
           const itemStateInDb = true;
-          return server.methods.renderingInfo.getRenderingInfoForItem(
+          return server.methods.renderingInfo.getRenderingInfoForItem({
             item,
             target,
             requestToolRuntimeConfig,
-            ignoreInactive,
             itemStateInDb
-          );
+          });
         } catch (err) {
           throw err;
         }
