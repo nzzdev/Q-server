@@ -191,7 +191,11 @@ module.exports = {
           }
         );
         if (toolEndpointConfigValidationResult.error !== null) {
-          throw new Error(toolEndpointConfigValidationResult.error);
+          throw new Error(
+            `failed to validate toolEndpoint config: ${JSON.stringify(
+              endpointConfig
+            )}. Joi error: ${toolEndpointConfigValidationResult.error}`
+          );
         }
       });
     });

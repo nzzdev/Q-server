@@ -17,15 +17,19 @@ const target = Joi.object().pattern(
   })
 );
 
-const toolEndpoint = Joi.object()
-  .keys({
-    path: Joi.string(),
-    url: Joi.string(),
-    additionalRenderingInfo: Joi.object(),
-    toolRuntimeConfig: Joi.object()
-  })
-  .without("path", ["url"])
-  .without("url", ["path"]);
+const toolEndpoint = Joi.alternatives().try(
+  Joi.object()
+    .keys({
+      path: Joi.string().optional(),
+      url: Joi.string().optional(),
+      additionalRenderingInfo: Joi.object().optional(),
+      toolRuntimeConfig: Joi.object().optional()
+    })
+    .without("path", ["url"])
+    .without("url", ["path"]),
+  Joi.boolean().falsy(),
+  Joi.func().arity(2)
+);
 
 module.exports = {
   target,
