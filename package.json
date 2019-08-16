@@ -29,7 +29,7 @@
     "@hapi/bounce": "^1.3.1",
     "@hapi/hoek": "^8.2.1",
     "@hapi/inert": "^5.2.1",
-    "@hapi/joi": "^15.1.0",
+    "@hapi/joi": "^15.1.1",
     "@hapi/mimos": "^4.1.0",
     "@hapi/vision": "^5.5.2",
     "@hapi/wreck": "^15.0.1",
