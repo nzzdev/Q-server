@@ -71,7 +71,7 @@ const tools = {
       $filter: "target",
       $default: false,
       pub1: {
-        // no path nor url configured to let it fail
+        path: "/rendering-info/mock"
       }
     }
   }

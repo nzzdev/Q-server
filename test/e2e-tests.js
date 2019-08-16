@@ -458,20 +458,6 @@ lab.experiment("core rendering-info", () => {
   );
 
   it(
-    "returns an error if tool endpoint is not properly configured",
-    { plan: 2 },
-    async () => {
-      const response = await server.inject(
-        "/rendering-info/mock-item-from-wrong-configured-tool/pub1"
-      );
-      expect(response.statusCode).to.be.equal(503);
-      expect(response.result.message).to.be.equal(
-        "Endpoint has no path nor url configured"
-      );
-    }
-  );
-
-  it(
     "returns an error if rendering-info tool endpoint returns one",
     { plan: 1 },
     async () => {
