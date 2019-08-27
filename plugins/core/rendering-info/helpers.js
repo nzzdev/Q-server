@@ -47,6 +47,17 @@ function isValidContentTypeForTarget(targetConfig, contentType) {
   if (targetConfig.type === "web") {
     return mime.type === "application/json";
   }
+  if (targetConfig.type === "image") {
+    return mime.type.startsWith("image/");
+  }
+  return targetConfig.type === mime.type;
+}
+
+function canGetCompiled(targetConfig, contentType) {
+  const mime = mimos.type(contentType);
+  if (targetConfig.type === "web" && mime.type === "application/json") {
+    return true;
+  }
   return false;
 }
 
@@ -60,7 +71,7 @@ async function getCompiledRenderingInfo({
 }) {
   // only application/json aka web type renderingInfo can get enhanced
   const mime = mimos.type(contentType);
-  if (mime.type !== "application/json" && targetConfig.type === "web") {
+  if (mime.type !== "application/json" && targetConfig.type !== "web") {
     return renderingInfoBuffer;
   }
   let renderingInfo = JSON.parse(renderingInfoBuffer.toString("utf-8"));
@@ -123,7 +134,12 @@ async function getCompiledRenderingInfo({
 
 function getCompiledToolRuntimeConfig(
   item,
-  { serverWideToolRuntimeConfig, toolEndpointConfig, requestToolRuntimeConfig }
+  {
+    serverWideToolRuntimeConfig,
+    targetToolRuntimeConfig,
+    toolEndpointConfig,
+    requestToolRuntimeConfig
+  }
 ) {
   const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
 
@@ -175,6 +191,14 @@ function getCompiledToolRuntimeConfig(
     toolRuntimeConfig.id = item._id;
   }
 
+  // if the target defines tool runtime config, apply it
+  if (targetToolRuntimeConfig) {
+    toolRuntimeConfig = Object.assign(
+      toolRuntimeConfig,
+      targetToolRuntimeConfig
+    );
+  }
+
   // if endpoint defines tool runtime config, apply it
   if (toolEndpointConfig && toolEndpointConfig.toolRuntimeConfig) {
     toolRuntimeConfig = Object.assign(
@@ -196,5 +220,6 @@ module.exports = {
   getCompiledToolRuntimeConfig,
   getRequestUrlFromEndpointConfig,
   isValidContentTypeForTarget,
+  canGetCompiled,
   getCompiledRenderingInfo
 };

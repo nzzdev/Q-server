@@ -68,14 +68,33 @@ function getGetRenderingInfoRoute(config) {
             artifacts: request.auth.artifacts
           }
         );
-        return h
-          .response(renderingInfo)
-          .header(
-            "cache-control",
-            request.query.noCache === true
-              ? "no-cache"
-              : config.cacheControlHeader
-          );
+
+        // this is not nice, but does the job for now
+        // we take the content-type header from the response of the tool
+        // and apply it to the response we return from Q server
+        // this only works if getRenderingInfoForId returns an object with payload and headers properties
+        let response;
+        if (
+          renderingInfo.hasOwnProperty("payload") &&
+          renderingInfo.hasOwnProperty("headers")
+        ) {
+          response = h.response(renderingInfo.payload);
+          if (renderingInfo.headers.hasOwnProperty("content-type")) {
+            response.header(
+              "content-type",
+              renderingInfo.headers["content-type"]
+            );
+          }
+        } else {
+          response = h.response(renderingInfo);
+        }
+
+        return response.header(
+          "cache-control",
+          request.query.noCache === true
+            ? "no-cache"
+            : config.cacheControlHeader
+        );
       } catch (err) {
         if (err.stack) {
           request.server.log(["error"], err.stack);
@@ -83,7 +102,7 @@ function getGetRenderingInfoRoute(config) {
         if (err.isBoom) {
           return err;
         } else {
-          return Boom.serverUnavailable(err.message);
+          return Boom.internal(err.message);
         }
       }
     }
@@ -134,7 +153,6 @@ function getPostRenderingInfoRoute(config) {
 
       // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
       const itemStateInDb = false;
-
       try {
         return await request.server.methods.renderingInfo.getRenderingInfoForItem(
           {
@@ -149,6 +167,7 @@ function getPostRenderingInfoRoute(config) {
         if (err.isBoom) {
           return err;
         } else {
+          request.server.log(["error"], err.message);
           return Boom.serverUnavailable(err.message);
         }
       }
@@ -238,6 +257,9 @@ module.exports = {
             target: target,
             tool: item.tool
           }),
+          targetToolRuntimeConfig: server.settings.app.targets.get(
+            `/${target}/toolRuntimeConfig`
+          ),
           toolEndpointConfig: toolEndpointConfig,
           requestToolRuntimeConfig: requestToolRuntimeConfig
         });
@@ -263,8 +285,18 @@ module.exports = {
         let queryString = querystring.stringify(query);
 
         // strip the meta properties before sending the item to the tool service
+        // and keepMeta is not true in target and endpoint config
+        let keepMeta = false;
+        if (targetConfig.keepMeta === true) {
+          keepMeta = true;
+        }
+        if (endpointConfig.keepMeta === true) {
+          keepMeta = true;
+        } else if (endpointConfig.keepMeta === false) {
+          keepMeta = false;
+        }
         const requestPayload = {
-          item: deleteMetaProperties(clone(item)),
+          item: keepMeta ? item : deleteMetaProperties(clone(item)),
           itemStateInDb: itemStateInDb,
           toolRuntimeConfig: toolRuntimeConfig
         };
@@ -285,6 +317,15 @@ module.exports = {
               targetConfig.label
             }`
           );
+        }
+
+        // only application/json and target config type web can be compiled with additional renderingInfo
+        // all the other cases get returned here
+        if (!helpers.canGetCompiled(targetConfig, contentType)) {
+          return {
+            payload: payload,
+            headers: res.headers
+          };
         }
 
         return helpers.getCompiledRenderingInfo({
