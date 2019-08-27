@@ -46,9 +46,7 @@ async function getScreenshotResponse(server, h, params, item) {
 
   const response = await server.inject({
     method: "POST",
-    url: `/rendering-info/${params.target}?toolRuntimeConfig=${JSON.stringify(
-      toolRuntimeConfig
-    )}`,
+    url: `/rendering-info/${params.target}`,
     payload: {
       toolRuntimeConfig: toolRuntimeConfig,
       item: item,
@@ -57,9 +55,14 @@ async function getScreenshotResponse(server, h, params, item) {
   });
 
   if (response.statusCode !== 200) {
-    throw new Boom(response.statusMessage, {
-      statusCode: response.statusCode
-    });
+    throw new Boom(
+      `Failed to get renderingInfo to load in headless chrome for screenshot for ${
+        item.tool
+      } and ${params.target} with the error: ${response.statusMessage}`,
+      {
+        statusCode: response.statusCode
+      }
+    );
   }
 
   const renderingInfo = JSON.parse(response.payload);
