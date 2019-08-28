@@ -69,32 +69,22 @@ function getGetRenderingInfoRoute(config) {
           }
         );
 
-        // this is not nice, but does the job for now
-        // we take the content-type header from the response of the tool
-        // and apply it to the response we return from Q server
-        // this only works if getRenderingInfoForId returns an object with payload and headers properties
-        let response;
-        if (
-          renderingInfo.hasOwnProperty("payload") &&
-          renderingInfo.hasOwnProperty("headers")
-        ) {
-          response = h.response(renderingInfo.payload);
-          if (renderingInfo.headers.hasOwnProperty("content-type")) {
-            response.header(
-              "content-type",
-              renderingInfo.headers["content-type"]
-            );
-          }
-        } else {
-          response = h.response(renderingInfo);
+        const response = h.response(renderingInfo.payload);
+        if (renderingInfo.headers.hasOwnProperty("content-type")) {
+          response.header(
+            "content-type",
+            renderingInfo.headers["content-type"]
+          );
         }
 
-        return response.header(
+        response.header(
           "cache-control",
           request.query.noCache === true
             ? "no-cache"
             : config.cacheControlHeader
         );
+
+        return response;
       } catch (err) {
         if (err.stack) {
           request.server.log(["error"], err.stack);
@@ -154,7 +144,7 @@ function getPostRenderingInfoRoute(config) {
       // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
       const itemStateInDb = false;
       try {
-        return await request.server.methods.renderingInfo.getRenderingInfoForItem(
+        const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForItem(
           {
             item: request.payload.item,
             target: request.params.target,
@@ -163,11 +153,28 @@ function getPostRenderingInfoRoute(config) {
             itemStateInDb
           }
         );
+
+        const response = h.response(renderingInfo.payload);
+        if (renderingInfo.headers.hasOwnProperty("content-type")) {
+          response.header(
+            "content-type",
+            renderingInfo.headers["content-type"]
+          );
+        }
+
+        response.header(
+          "cache-control",
+          request.query.noCache === true
+            ? "no-cache"
+            : config.cacheControlHeader
+        );
+
+        return response;
       } catch (err) {
+        request.server.log(["error"], err);
         if (err.isBoom) {
           return err;
         } else {
-          request.server.log(["error"], err.message);
           return Boom.serverUnavailable(err.message);
         }
       }
@@ -319,23 +326,36 @@ module.exports = {
           );
         }
 
+        let renderingInfo;
+
         // only application/json and target config type web can be compiled with additional renderingInfo
         // all the other cases get returned here
-        if (!helpers.canGetCompiled(targetConfig, contentType)) {
-          return {
-            payload: payload,
-            headers: res.headers
-          };
+        if (helpers.canGetCompiled(targetConfig, contentType)) {
+          renderingInfo = await helpers.getCompiledRenderingInfo({
+            renderingInfo: JSON.parse(payload.toString("utf-8")),
+            endpointConfig: toolEndpointConfig,
+            targetConfig,
+            item,
+            toolRuntimeConfig
+          });
+        } else {
+          renderingInfo = payload;
         }
 
-        return helpers.getCompiledRenderingInfo({
-          renderingInfoBuffer: payload,
-          contentType,
-          endpointConfig: toolEndpointConfig,
-          targetConfig,
-          item,
-          toolRuntimeConfig
-        });
+        renderingInfo = await server.methods.renderingInfo.getProcessedRenderingInfo(
+          {
+            item,
+            targetConfig,
+            endpointConfig,
+            toolRuntimeConfig,
+            renderingInfo
+          }
+        );
+
+        return {
+          payload: renderingInfo,
+          headers: res.headers
+        };
       }
     );
 
@@ -359,6 +379,38 @@ module.exports = {
         } catch (err) {
           throw err;
         }
+      }
+    );
+
+    server.method(
+      "renderingInfo.getProcessedRenderingInfo",
+      async ({
+        item,
+        targetConfig,
+        endpointConfig,
+        toolRuntimeConfig,
+        renderingInfo,
+        session
+      }) => {
+        const processFunctions = [];
+        if (Array.isArray(targetConfig.processRenderingInfo)) {
+          processFunctions.push(...targetConfig.processRenderingInfo);
+        } else if (targetConfig.processRenderingInfo instanceof Function) {
+          processFunctions.push(targetConfig.processRenderingInfo);
+        }
+        if (Array.isArray(endpointConfig.processRenderingInfo)) {
+          processFunctions.push(...endpointConfig.processRenderingInfo);
+        } else if (endpointConfig.processRenderingInfo instanceof Function) {
+          processFunctions.push(endpointConfig.processRenderingInfo);
+        }
+
+        for (const func of processFunctions) {
+          renderingInfo = await func.apply(this, [
+            { item, toolRuntimeConfig, renderingInfo, session }
+          ]);
+        }
+
+        return renderingInfo;
       }
     );
 

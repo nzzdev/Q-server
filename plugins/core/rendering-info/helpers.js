@@ -25,9 +25,7 @@ function getWithResolvedNameProperty(
 ) {
   return renderingInfoPart.map(renderingInfoPartItem => {
     if (renderingInfoPartItem.name !== undefined) {
-      renderingInfoPartItem.path = `/tools/${item.tool}/${typePath}/${
-        renderingInfoPartItem.name
-      }`;
+      renderingInfoPartItem.path = `/tools/${item.tool}/${typePath}/${renderingInfoPartItem.name}`;
     }
     return renderingInfoPartItem;
   });
@@ -62,19 +60,12 @@ function canGetCompiled(targetConfig, contentType) {
 }
 
 async function getCompiledRenderingInfo({
-  renderingInfoBuffer,
-  contentType,
+  renderingInfo,
   endpointConfig,
   targetConfig,
   item,
   toolRuntimeConfig
 }) {
-  // only application/json aka web type renderingInfo can get enhanced
-  const mime = mimos.type(contentType);
-  if (mime.type !== "application/json" && targetConfig.type !== "web") {
-    return renderingInfoBuffer;
-  }
-  let renderingInfo = JSON.parse(renderingInfoBuffer.toString("utf-8"));
   // check if the tool config has additional renderingInfo and apply it if so
   if (endpointConfig.additionalRenderingInfo) {
     renderingInfo = deepmerge(
@@ -158,9 +149,7 @@ function getCompiledToolRuntimeConfig(
     if (overallToolRuntimeConfig.toolBaseUrl.path) {
       path = overallToolRuntimeConfig.toolBaseUrl.path;
     }
-    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${
-      overallToolRuntimeConfig.toolBaseUrl.host
-    }${path}`;
+    overallToolRuntimeConfig.toolBaseUrl = `${protocol}://${overallToolRuntimeConfig.toolBaseUrl.host}${path}`;
   }
 
   // simplify the fileRequestBaseUrl to an url string if it is an object by applying some defaults before sending it to the tool
@@ -178,9 +167,7 @@ function getCompiledToolRuntimeConfig(
     if (overallToolRuntimeConfig.fileRequestBaseUrl.path) {
       path = overallToolRuntimeConfig.fileRequestBaseUrl.path;
     }
-    overallToolRuntimeConfig.fileRequestBaseUrl = `${protocol}://${
-      overallToolRuntimeConfig.fileRequestBaseUrl.host
-    }${path}`;
+    overallToolRuntimeConfig.fileRequestBaseUrl = `${protocol}://${overallToolRuntimeConfig.fileRequestBaseUrl.host}${path}`;
   }
 
   // default to the overall config
