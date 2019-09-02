@@ -127,18 +127,21 @@ function getPostRenderingInfoRoute(config) {
       let requestToolRuntimeConfig = {};
 
       if (request.query.toolRuntimeConfig) {
-        if (request.query.toolRuntimeConfig.size) {
-          try {
-            validateSize(request.query.toolRuntimeConfig.size);
-          } catch (err) {
-            if (err.isBoom) {
-              throw err;
-            } else {
-              throw Boom.internal(err);
-            }
+        requestToolRuntimeConfig = request.query.toolRuntimeConfig;
+      } else {
+        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
+      }
+
+      if (requestToolRuntimeConfig.size) {
+        try {
+          validateSize(requestToolRuntimeConfig.size);
+        } catch (err) {
+          if (err.isBoom) {
+            throw err;
+          } else {
+            throw Boom.internal(err);
           }
         }
-        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
 
       // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
@@ -242,9 +245,7 @@ module.exports = {
 
         if (!endpointConfig) {
           throw new Error(
-            `no endpoint configured for tool: ${
-              item.tool
-            } and target: ${target}`
+            `no endpoint configured for tool: ${item.tool} and target: ${target}`
           );
         }
 
@@ -320,9 +321,7 @@ module.exports = {
         // first validate the response content-type against the target type to see if the response is valid
         if (!helpers.isValidContentTypeForTarget(targetConfig, contentType)) {
           throw new Error(
-            `no valid response received from endpoint for target ${
-              targetConfig.label
-            }`
+            `no valid response received from endpoint for target ${targetConfig.label}`
           );
         }
 
