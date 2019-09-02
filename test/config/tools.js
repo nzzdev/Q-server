@@ -39,6 +39,9 @@ const tools = {
       },
       pub2: {
         path: "/rendering-info/mock",
+        toolRuntimeConfig: {
+          processRenderingInfoProp: "processRenderingInfoValue"
+        },
         additionalRenderingInfo: {
           stylesheets: [
             {
@@ -46,7 +49,17 @@ const tools = {
                 "https://service.sophie.nzz.ch/bundle/sophie-nzzas-q@^1,sophie-nzzas-font@^1,sophie-nzzas-color@^1,sophie-nzzas-viz-color@^1[general].css"
             }
           ]
-        }
+        },
+        processRenderingInfo: [
+          ({ item, renderingInfo, toolRuntimeConfig }) => {
+            if (!renderingInfo.loaderConfig) {
+              renderingInfo.loaderConfig = {};
+            }
+            renderingInfo.loaderConfig.processRenderingInfoProp =
+              toolRuntimeConfig.processRenderingInfoProp;
+            return renderingInfo;
+          }
+        ]
       },
       fail: {
         path: "/rendering-info/fail",
