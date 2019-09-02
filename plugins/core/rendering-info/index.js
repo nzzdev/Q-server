@@ -132,7 +132,7 @@ function getPostRenderingInfoRoute(config) {
         requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
 
-      if (requestToolRuntimeConfig.size) {
+      if (requestToolRuntimeConfig && requestToolRuntimeConfig.size) {
         try {
           validateSize(requestToolRuntimeConfig.size);
         } catch (err) {
