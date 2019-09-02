@@ -13,7 +13,11 @@ const target = Joi.object().pattern(
         .valid(["web", "json"]),
       then: Joi.optional(),
       otherwise: Joi.forbidden()
-    })
+    }),
+    processRenderingInfo: Joi.optional().allow([
+      Joi.func().arity(1),
+      Joi.array().items(Joi.func().arity(1))
+    ])
   })
 );
 
@@ -23,7 +27,11 @@ const toolEndpoint = Joi.alternatives().try(
       path: Joi.string().optional(),
       url: Joi.string().optional(),
       additionalRenderingInfo: Joi.object().optional(),
-      toolRuntimeConfig: Joi.object().optional()
+      toolRuntimeConfig: Joi.object().optional(),
+      processRenderingInfo: Joi.optional().allow([
+        Joi.func().arity(1),
+        Joi.array().items(Joi.func().arity(1))
+      ])
     })
     .without("path", ["url"])
     .without("url", ["path"]),

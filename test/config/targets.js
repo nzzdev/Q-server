@@ -35,14 +35,12 @@ const targets = {
         ]
       }
     },
-    processRenderingInfo: [
-      ({ item, renderingInfo }) => {
-        renderingInfo.markup =
-          renderingInfo.markup +
-          `<div>appended by processRenderingInfo function in target</div>`;
-        return renderingInfo;
-      }
-    ]
+    processRenderingInfo: ({ item, renderingInfo }) => {
+      renderingInfo.markup =
+        renderingInfo.markup +
+        `<div>appended by processRenderingInfo function in target</div>`;
+      return renderingInfo;
+    }
   },
   pub2: {
     label: "pub2",
