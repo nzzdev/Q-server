@@ -20,6 +20,9 @@ module.exports = {
     server.event("item.deactivate");
     server.event("item.delete");
 
+    // provide a common wreck instance
+    // this should be used throughout all the plugins in the future
+    // to allow for common wreck options for all the requests (proxies for example)
     server.app.wreck = Wreck.defaults(options.wreckDefaults || {});
 
     await server.route([
