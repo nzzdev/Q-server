@@ -2,11 +2,16 @@ const Boom = require("@hapi/boom");
 const Joi = require("@hapi/joi");
 const Hoek = require("@hapi/hoek");
 
-const getRenderingInfo = require("./helpers.js").getRenderingInfo;
-const getCompiledToolRuntimeConfig = require("./helpers.js")
-  .getCompiledToolRuntimeConfig;
+const querystring = require("querystring");
+const clone = require("clone");
+
+const helpers = require("./helpers.js");
 const sizeValidationObject = require("./size-helpers.js").sizeValidationObject;
 const validateSize = require("./size-helpers.js").validateSize;
+const deleteMetaProperties = require("../../../helper/meta-properties")
+  .deleteMetaProperties;
+
+const configSchemas = require("./configSchemas.js");
 
 function getGetRenderingInfoRoute(config) {
   return {
@@ -63,14 +68,23 @@ function getGetRenderingInfoRoute(config) {
             artifacts: request.auth.artifacts
           }
         );
-        return h
-          .response(renderingInfo)
-          .header(
-            "cache-control",
-            request.query.noCache === true
-              ? "no-cache"
-              : config.cacheControlHeader
+
+        const response = h.response(renderingInfo.payload);
+        if (renderingInfo.headers.hasOwnProperty("content-type")) {
+          response.header(
+            "content-type",
+            renderingInfo.headers["content-type"]
           );
+        }
+
+        response.header(
+          "cache-control",
+          request.query.noCache === true
+            ? "no-cache"
+            : config.cacheControlHeader
+        );
+
+        return response;
       } catch (err) {
         if (err.stack) {
           request.server.log(["error"], err.stack);
@@ -78,7 +92,7 @@ function getGetRenderingInfoRoute(config) {
         if (err.isBoom) {
           return err;
         } else {
-          return Boom.serverUnavailable(err.message);
+          return Boom.internal(err.message);
         }
       }
     }
@@ -113,32 +127,54 @@ function getPostRenderingInfoRoute(config) {
       let requestToolRuntimeConfig = {};
 
       if (request.query.toolRuntimeConfig) {
-        if (request.query.toolRuntimeConfig.size) {
-          try {
-            validateSize(request.query.toolRuntimeConfig.size);
-          } catch (err) {
-            if (err.isBoom) {
-              throw err;
-            } else {
-              throw Boom.internal(err);
-            }
+        requestToolRuntimeConfig = request.query.toolRuntimeConfig;
+      } else {
+        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
+      }
+
+      if (requestToolRuntimeConfig && requestToolRuntimeConfig.size) {
+        try {
+          validateSize(requestToolRuntimeConfig.size);
+        } catch (err) {
+          if (err.isBoom) {
+            throw err;
+          } else {
+            throw Boom.internal(err);
           }
         }
-        requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
 
       // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
       const itemStateInDb = false;
-
       try {
-        return await request.server.methods.renderingInfo.getRenderingInfoForItem(
-          request.payload.item,
-          request.params.target,
-          requestToolRuntimeConfig,
-          request.query.ignoreInactive,
-          itemStateInDb
+        const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForItem(
+          {
+            item: request.payload.item,
+            target: request.params.target,
+            requestToolRuntimeConfig,
+            ignoreInactive: request.query.ignoreInactive,
+            itemStateInDb
+          }
         );
+
+        const response = h.response(renderingInfo.payload);
+        if (renderingInfo.headers.hasOwnProperty("content-type")) {
+          response.header(
+            "content-type",
+            renderingInfo.headers["content-type"]
+          );
+        }
+
+        response.header(
+          "cache-control",
+          request.query.noCache === true
+            ? "no-cache"
+            : config.cacheControlHeader
+        );
+
+        return response;
       } catch (err) {
+        request.server.log(["error"], err);
         if (err.isBoom) {
           return err;
         } else {
@@ -159,15 +195,49 @@ module.exports = {
       new Error("server.settings.app.tools.get needs to be a function")
     );
 
+    // validate the target config used by this plugin
+    const targetConfigValidationResult = configSchemas.target.validate(
+      server.settings.app.targets.get(`/`),
+      {
+        allowUnknown: true
+      }
+    );
+    if (targetConfigValidationResult.error !== null) {
+      throw new Error(targetConfigValidationResult.error);
+    }
+
+    // validate the tool endpoint config for all the defined targets
+    Object.keys(server.settings.app.tools.get(`/`)).forEach(tool => {
+      Object.keys(server.settings.app.targets.get(`/`)).forEach(target => {
+        const endpointConfig = server.settings.app.tools.get(
+          `/${tool}/endpoint`,
+          { target }
+        );
+        const toolEndpointConfigValidationResult = configSchemas.toolEndpoint.validate(
+          endpointConfig,
+          {
+            allowUnknown: true
+          }
+        );
+        if (toolEndpointConfigValidationResult.error !== null) {
+          throw new Error(
+            `failed to validate toolEndpoint config: ${JSON.stringify(
+              endpointConfig
+            )}. Joi error: ${toolEndpointConfigValidationResult.error}`
+          );
+        }
+      });
+    });
+
     server.method(
       "renderingInfo.getRenderingInfoForItem",
-      async (
-        item,
-        target,
-        requestToolRuntimeConfig,
-        ignoreInactive,
-        itemStateInDb
-      ) => {
+      async ({ item, target, requestToolRuntimeConfig, itemStateInDb }) => {
+        // the target needs to be defined, otherwise we fail here
+        const targetConfig = server.settings.app.targets.get(`/${target}`);
+        if (!targetConfig) {
+          throw new Error(`${target} not configured`);
+        }
+
         const endpointConfig = server.settings.app.tools.get(
           `/${item.tool}/endpoint`,
           { target: target }
@@ -175,15 +245,8 @@ module.exports = {
 
         if (!endpointConfig) {
           throw new Error(
-            `no endpoint configured for tool: ${
-              item.tool
-            } and target: ${target}`
+            `no endpoint configured for tool: ${item.tool} and target: ${target}`
           );
-        }
-
-        const targetConfig = server.settings.app.targets.get(`/${target}`);
-        if (!targetConfig) {
-          throw new Error(`${target} not configured`);
         }
 
         let toolEndpointConfig;
@@ -197,11 +260,14 @@ module.exports = {
         }
 
         // compile the toolRuntimeConfig from runtimeConfig from server, tool endpoint and request
-        const toolRuntimeConfig = getCompiledToolRuntimeConfig(item, {
+        const toolRuntimeConfig = helpers.getCompiledToolRuntimeConfig(item, {
           serverWideToolRuntimeConfig: options.get("/toolRuntimeConfig", {
             target: target,
             tool: item.tool
           }),
+          targetToolRuntimeConfig: server.settings.app.targets.get(
+            `/${target}/toolRuntimeConfig`
+          ),
           toolEndpointConfig: toolEndpointConfig,
           requestToolRuntimeConfig: requestToolRuntimeConfig
         });
@@ -210,14 +276,85 @@ module.exports = {
           target: target
         });
 
-        return await getRenderingInfo(
-          item,
-          baseUrl,
+        const requestUrl = helpers.getRequestUrlFromEndpointConfig(
           toolEndpointConfig,
-          toolRuntimeConfig,
-          targetConfig,
-          itemStateInDb
+          baseUrl
         );
+
+        // add _id, createdDate and updatedDate as query params to rendering info request
+        // todo: the tool could provide the needed query parameters in the config in a future version
+        let queryParams = ["_id", "createdDate", "updatedDate"];
+        let query = {};
+        for (let queryParam of queryParams) {
+          if (item.hasOwnProperty(queryParam) && item[queryParam]) {
+            query[queryParam] = item[queryParam];
+          }
+        }
+        let queryString = querystring.stringify(query);
+
+        // strip the meta properties before sending the item to the tool service
+        // and keepMeta is not true in target and endpoint config
+        let keepMeta = false;
+        if (targetConfig.keepMeta === true) {
+          keepMeta = true;
+        }
+        if (endpointConfig.keepMeta === true) {
+          keepMeta = true;
+        } else if (endpointConfig.keepMeta === false) {
+          keepMeta = false;
+        }
+        const requestPayload = {
+          item: keepMeta ? item : deleteMetaProperties(clone(item)),
+          itemStateInDb: itemStateInDb,
+          toolRuntimeConfig: toolRuntimeConfig
+        };
+
+        const { res, payload } = await server.app.wreck.post(
+          `${requestUrl}?${queryString}`,
+          {
+            payload: requestPayload
+          }
+        );
+
+        const contentType = res.headers["content-type"];
+
+        // first validate the response content-type against the target type to see if the response is valid
+        if (!helpers.isValidContentTypeForTarget(targetConfig, contentType)) {
+          throw new Error(
+            `no valid response received from endpoint for target ${targetConfig.label}`
+          );
+        }
+
+        let renderingInfo;
+
+        // only application/json and target config type web can be compiled with additional renderingInfo
+        // all the other cases get returned here
+        if (helpers.canGetCompiled(targetConfig, contentType)) {
+          renderingInfo = await helpers.getCompiledRenderingInfo({
+            renderingInfo: JSON.parse(payload.toString("utf-8")),
+            endpointConfig: toolEndpointConfig,
+            targetConfig,
+            item,
+            toolRuntimeConfig
+          });
+        } else {
+          renderingInfo = payload;
+        }
+
+        renderingInfo = await server.methods.renderingInfo.getProcessedRenderingInfo(
+          {
+            item,
+            targetConfig,
+            endpointConfig,
+            toolRuntimeConfig,
+            renderingInfo
+          }
+        );
+
+        return {
+          payload: renderingInfo,
+          headers: res.headers
+        };
       }
     );
 
@@ -232,16 +369,47 @@ module.exports = {
           });
           // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
           const itemStateInDb = true;
-          return server.methods.renderingInfo.getRenderingInfoForItem(
+          return server.methods.renderingInfo.getRenderingInfoForItem({
             item,
             target,
             requestToolRuntimeConfig,
-            ignoreInactive,
             itemStateInDb
-          );
+          });
         } catch (err) {
           throw err;
         }
+      }
+    );
+
+    server.method(
+      "renderingInfo.getProcessedRenderingInfo",
+      async ({
+        item,
+        targetConfig,
+        endpointConfig,
+        toolRuntimeConfig,
+        renderingInfo,
+        session
+      }) => {
+        const processFunctions = [];
+        if (Array.isArray(targetConfig.processRenderingInfo)) {
+          processFunctions.push(...targetConfig.processRenderingInfo);
+        } else if (targetConfig.processRenderingInfo instanceof Function) {
+          processFunctions.push(targetConfig.processRenderingInfo);
+        }
+        if (Array.isArray(endpointConfig.processRenderingInfo)) {
+          processFunctions.push(...endpointConfig.processRenderingInfo);
+        } else if (endpointConfig.processRenderingInfo instanceof Function) {
+          processFunctions.push(endpointConfig.processRenderingInfo);
+        }
+
+        for (const func of processFunctions) {
+          renderingInfo = await func.apply(this, [
+            { item, toolRuntimeConfig, renderingInfo, session }
+          ]);
+        }
+
+        return renderingInfo;
       }
     );
 
