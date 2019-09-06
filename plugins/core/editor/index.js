@@ -1,5 +1,7 @@
 const Hoek = require("@hapi/hoek");
 
+const configSchemas = require("./configSchemas.js");
+
 const defaults = {
   editorConfig: {}
 };
@@ -8,6 +10,18 @@ module.exports = {
   name: "q-editor-api",
   register: async function(server, options) {
     const settings = Hoek.applyToDefaults(defaults, options);
+
+    //validate the server settings
+    const targetConfigValidationResult = configSchemas.target.validate(
+      server.settings.app.targets.get(`/`),
+      {
+        allowUnknown: true
+      }
+    );
+    if (targetConfigValidationResult.error !== null) {
+      throw new Error(targetConfigValidationResult.error);
+    }
+
     server.route([
       require("./routes/targets"),
       require("./routes/tools"),

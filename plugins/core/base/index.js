@@ -1,3 +1,4 @@
+const Wreck = require("@hapi/wreck");
 const getToolResponse = require("./methods/getToolResponse.js").getToolResponse;
 const getCacheControlDirectivesFromConfig = require("./methods/getCacheControlDirectivesFromConfig.js")
   .getCacheControlDirectivesFromConfig;
@@ -19,6 +20,11 @@ module.exports = {
     server.event("item.deactivate");
     server.event("item.delete");
 
+    // provide a common wreck instance
+    // this should be used throughout all the plugins in the future
+    // to allow for common wreck options for all the requests (proxies for example)
+    server.app.wreck = Wreck.defaults(options.wreckDefaults || {});
+
     await server.route([
       require("./routes/item.js").get,
       require("./routes/item.js").post,
@@ -28,6 +34,7 @@ module.exports = {
       require("./routes/tool-default.js").getPostRoute(options),
       require("./routes/tool-schema.js").getSchema(options),
       require("./routes/tool-schema.js").getDisplayOptionsSchema(options),
+      require("./routes/export-options-schema.js").getGetRoute(options),
       require("./routes/health.js"),
       require("./routes/version.js"),
       require("./routes/admin/migration.js")

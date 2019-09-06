@@ -458,20 +458,6 @@ lab.experiment("core rendering-info", () => {
   );
 
   it(
-    "returns an error if tool endpoint is not properly configured",
-    { plan: 2 },
-    async () => {
-      const response = await server.inject(
-        "/rendering-info/mock-item-from-wrong-configured-tool/pub1"
-      );
-      expect(response.statusCode).to.be.equal(503);
-      expect(response.result.message).to.be.equal(
-        "Endpoint has no path nor url configured"
-      );
-    }
-  );
-
-  it(
     "returns an error if rendering-info tool endpoint returns one",
     { plan: 1 },
     async () => {
@@ -486,7 +472,7 @@ lab.experiment("core rendering-info", () => {
     const response = await server.inject(
       "/rendering-info/mock-item-active/pub1"
     );
-    expect(response.result.markup).to.be.equal(
+    expect(response.result.markup).to.contain(
       `<h1>title - itemStateInDb: true</h1>`
     );
   });
@@ -503,7 +489,7 @@ lab.experiment("core rendering-info", () => {
         }
       })
     });
-    expect(response.result.markup).to.be.equal(
+    expect(response.result.markup).to.contain(
       `<h1>title - itemStateInDb: false</h1>`
     );
   });
@@ -565,6 +551,28 @@ lab.experiment(
     });
   }
 );
+
+lab.experiment("correctly executes processRenderingInfo:", () => {
+  it("processRenderingInfo in target config", { plan: 1 }, async () => {
+    const response = await server.inject(
+      "/rendering-info/mock-item-active/pub1"
+    );
+
+    expect(response.result.markup).to.contain(
+      "<div>appended by processRenderingInfo function in target</div>"
+    );
+  });
+
+  it("processRenderingInfo in toolEndpoint config", { plan: 1 }, async () => {
+    const response = await server.inject(
+      "/rendering-info/mock-item-active/pub2"
+    );
+
+    expect(response.result.loaderConfig.processRenderingInfoProp).to.be.equal(
+      "processRenderingInfoValue"
+    );
+  });
+});
 
 lab.experiment("core editor endpoints", () => {
   it("returns the editor config", async () => {
@@ -745,7 +753,7 @@ lab.experiment("screenshot plugin", async () => {
         "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
       );
       expect(response.result.width).to.be.equal(500);
-      expect(response.result.height).to.be.equal(37);
+      expect(response.result.height).to.be.equal(76.4375);
     }
   );
 
@@ -770,7 +778,7 @@ lab.experiment("screenshot plugin", async () => {
         "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
       );
       expect(response.result.width).to.be.equal(500);
-      expect(response.result.height).to.be.equal(37);
+      expect(response.result.height).to.be.equal(76.4375);
     }
   );
 });
