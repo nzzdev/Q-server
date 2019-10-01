@@ -25,14 +25,19 @@ module.exports = {
           "returns the number of items. If given since the timestamp passed.",
         tags: ["api", "statistics", "non-critical"]
       },
-      handler: (request, h) => {
-        return request.server.methods.db.statistics.getNumberOfItems({
-          since: request.params.since,
-          session: {
-            credentials: request.auth.credentials,
-            artifacts: request.auth.artifacts
+      handler: async (request, h) => {
+        const value = await request.server.methods.db.statistics.getNumberOfItems(
+          {
+            since: request.params.since,
+            session: {
+              credentials: request.auth.credentials,
+              artifacts: request.auth.artifacts
+            }
           }
-        });
+        );
+        return {
+          value: value
+        };
       }
     });
   }
