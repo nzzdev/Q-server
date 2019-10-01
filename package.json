@@ -1,6 +1,6 @@
 {
   "name": "@nzz/q-server",
-  "version": "8.0.0",
+  "version": "8.0.1",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -51,6 +51,6 @@
     "@hapi/hapi": "^18.3.2",
     "@hapi/lab": "^20.2.2",
     "confidence": "^4.0.2",
-    "pouchdb-server": "^4.1.0"
+    "pouchdb-server": "^4.2.0"
   }
 }
