@@ -135,7 +135,7 @@ function getPostRenderingInfoRoute(config) {
 
       if (request.query.toolRuntimeConfig) {
         requestToolRuntimeConfig = request.query.toolRuntimeConfig;
-      } else {
+      } else if (request.payload.toolRuntimeConfig) {
         requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
 
