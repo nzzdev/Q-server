@@ -59,10 +59,11 @@ function getGetRenderingInfoRoute(config) {
         requestToolRuntimeConfig = request.query.toolRuntimeConfig;
       }
 
-      requestToolRuntimeConfig.requestId = crypto
+      request.app.requestId = crypto
         .createHash("sha1")
         .update(request.info.id)
         .digest("hex");
+      requestToolRuntimeConfig.requestId = request.app.requestId;
 
       try {
         const renderingInfo = await request.server.methods.renderingInfo.getRenderingInfoForId(
@@ -151,10 +152,11 @@ function getPostRenderingInfoRoute(config) {
         }
       }
 
-      requestToolRuntimeConfig.requestId = crypto
+      request.app.requestId = crypto
         .createHash("sha1")
         .update(request.info.id)
         .digest("hex");
+      requestToolRuntimeConfig.requestId = request.app.requestId;
 
       // this property is passed through to the tool in the end to let it know if the item state is available in the database or not
       const itemStateInDb = false;
