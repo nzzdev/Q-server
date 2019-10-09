@@ -34,7 +34,7 @@ module.exports = {
       require("./routes/tool-default.js").getPostRoute(options),
       require("./routes/tool-schema.js").getSchema(options),
       require("./routes/tool-schema.js").getDisplayOptionsSchema(options),
-      require("./routes/export-options-schema.js").getGetRoute(options),
+      require("./routes/display-options-schema.js").getGetRoute(options),
       require("./routes/health.js"),
       require("./routes/version.js"),
       require("./routes/admin/migration.js")
