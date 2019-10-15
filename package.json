@@ -32,7 +32,7 @@
     "@hapi/joi": "^15.1.1",
     "@hapi/mimos": "^4.1.1",
     "@hapi/vision": "^5.5.4",
-    "@hapi/wreck": "^15.1.0",
+    "@hapi/wreck": "^16.0.0",
     "ajv": "^6.10.2",
     "aws-sdk": "^2.541.0",
     "clone": "^2.1.2",
