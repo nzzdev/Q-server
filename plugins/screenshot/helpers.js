@@ -3,7 +3,11 @@ const fetch = require("node-fetch");
 
 // start a chromium process here
 let browserPromise = puppeteer.launch({
-  args: ["--no-sandbox", "--disable-dev-shm-usage"]
+  args: [
+    "--no-sandbox",
+    "--disable-dev-shm-usage",
+    "--font-render-hinting=none"
+  ]
 });
 
 // fetches assets and returns a concatenated string containing everything fetched
