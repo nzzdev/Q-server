@@ -2,7 +2,7 @@
 
 [![Greenkeeper badge](https://badges.greenkeeper.io/nzzdev/Q-server.svg)](https://greenkeeper.io/)
 
-**Maintainer**: [benib](https://github.com/benib)
+**Maintainer**: [Sharon Funke](https://github.com/fuenkchen)
 
 __Q__ is a system that lets journalists create visual elements for stories. It is developed by [NZZ Editorial Tech](https://twitter.com/NZZEditoTech) and [NZZ Visuals](https://twitter.com/NZZVisuals) and used in the [NZZ](https://www.nzz.ch) newsroom. There is a Demo over here: https://editor.q.tools
 
