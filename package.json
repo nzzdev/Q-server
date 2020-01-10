@@ -48,7 +48,7 @@
   },
   "devDependencies": {
     "@hapi/code": "^6.0.0",
-    "@hapi/hapi": "^18.4.0",
+    "@hapi/hapi": "^19.0.0",
     "@hapi/lab": "^20.3.2",
     "confidence": "^4.0.2",
     "pouchdb-server": "^4.2.0"
