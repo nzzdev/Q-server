@@ -55,10 +55,8 @@ async function getScreenshotResponse(server, h, params, item) {
   });
 
   if (response.statusCode !== 200) {
-    throw new Boom(
-      `Failed to get renderingInfo to load in headless chrome for screenshot for ${
-        item.tool
-      } and ${params.target} with the error: ${response.statusMessage}`,
+    throw new Boom.Boom(
+      `Failed to get renderingInfo to load in headless chrome for screenshot for ${item.tool} and ${params.target} with the error: ${response.statusMessage}`,
       {
         statusCode: response.statusCode
       }
@@ -99,9 +97,7 @@ async function getScreenshotResponse(server, h, params, item) {
 
   if (params.format === "png") {
     const screenshotBuffer = await getScreenshotImage(
-      `${server.info.protocol}://localhost:${
-        server.info.port
-      }/screenshot/empty-page.html`,
+      `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
       renderingInfo.markup,
       scripts,
       stylesheets,
@@ -113,9 +109,7 @@ async function getScreenshotResponse(server, h, params, item) {
     return imageResponse;
   } else if (params.format === "json") {
     const screenshotInfo = await getScreenshotInfo(
-      `${server.info.protocol}://localhost:${
-        server.info.port
-      }/screenshot/empty-page.html`,
+      `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
       renderingInfo.markup,
       scripts,
       stylesheets,
@@ -136,7 +130,7 @@ module.exports = {
           validate: {
             params: {
               id: Joi.string().required(),
-              format: Joi.string().valid(["json", "png"])
+              format: Joi.string().valid("json", "png")
             },
             query: queryFormat,
             options: {
@@ -173,7 +167,7 @@ module.exports = {
         options: {
           validate: {
             params: {
-              format: Joi.string().valid(["json", "png"])
+              format: Joi.string().valid("json", "png")
             },
             payload: {
               item: Joi.object().required(),

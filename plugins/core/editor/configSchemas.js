@@ -6,7 +6,7 @@ const target = Joi.object().pattern(
     label: Joi.string().required(),
     type: Joi.string()
       .required()
-      .valid(["web", "AMP", "image", "application/json", "application/pdf"]),
+      .valid("web", "AMP", "image", "application/json", "application/pdf"),
     context: Joi.object().keys({
       stylesheets: Joi.array().items(
         Joi.object().keys({ url: Joi.string().uri() })

@@ -1,4 +1,5 @@
 const Hapi = require("@hapi/hapi");
+const Joi = require("@hapi/joi");
 
 function getServer() {
   let server = Hapi.server({
@@ -11,6 +12,8 @@ function getServer() {
       cors: true
     }
   });
+
+  server.validator(Joi);
 
   // mock the auth strategy
   server.auth.scheme("mock", function(server, options) {

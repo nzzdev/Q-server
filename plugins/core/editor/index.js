@@ -18,7 +18,7 @@ module.exports = {
         allowUnknown: true
       }
     );
-    if (targetConfigValidationResult.error !== null) {
+    if (targetConfigValidationResult.error) {
       throw new Error(targetConfigValidationResult.error);
     }
 

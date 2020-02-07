@@ -104,7 +104,7 @@ module.exports = {
         if (err.isBoom) {
           throw err;
         }
-        throw new Boom(err.description, { statusCode: err.statusCode });
+        throw new Boom.Boom(err.description, { statusCode: err.statusCode });
       }
     });
 

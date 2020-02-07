@@ -165,7 +165,7 @@ module.exports = {
             (err, data) => {
               if (err) {
                 return reject(
-                  new Boom("error", { statusCode: err.statusCode })
+                  new Boom.Boom("error", { statusCode: err.statusCode })
                 );
               }
               return resolve(
