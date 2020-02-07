@@ -559,7 +559,7 @@ lab.experiment("correctly executes processRenderingInfo:", () => {
     );
 
     expect(response.result.markup).to.contain(
-      "<div>appended by processRenderingInfo function in target</div>"
+      '<div style="height: 50px;">appended by processRenderingInfo function in target</div>'
     );
   });
 
@@ -753,7 +753,7 @@ lab.experiment("screenshot plugin", async () => {
         "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
       );
       expect(response.result.width).to.be.equal(500);
-      expect(response.result.height).to.be.equal(76.4375);
+      expect(response.result.height).to.be.equal(99);
     }
   );
 
@@ -778,7 +778,7 @@ lab.experiment("screenshot plugin", async () => {
         "public,max-age=1,s-maxage=1,stale-while-revalidate=1,stale-if-error=1"
       );
       expect(response.result.width).to.be.equal(500);
-      expect(response.result.height).to.be.equal(76.4375);
+      expect(response.result.height).to.be.equal(99);
     }
   );
 });

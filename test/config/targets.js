@@ -38,7 +38,7 @@ const targets = {
     processRenderingInfo: ({ item, renderingInfo }) => {
       renderingInfo.markup =
         renderingInfo.markup +
-        `<div>appended by processRenderingInfo function in target</div>`;
+        `<div style="height: 50px;">appended by processRenderingInfo function in target</div>`;
       return renderingInfo;
     }
   },
