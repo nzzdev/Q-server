@@ -216,7 +216,7 @@ module.exports = {
         allowUnknown: true
       }
     );
-    if (targetConfigValidationResult.error !== null) {
+    if (targetConfigValidationResult.error) {
       throw new Error(targetConfigValidationResult.error);
     }
 
@@ -233,7 +233,7 @@ module.exports = {
             allowUnknown: true
           }
         );
-        if (toolEndpointConfigValidationResult.error !== null) {
+        if (toolEndpointConfigValidationResult.error) {
           throw new Error(
             `failed to validate toolEndpoint config: ${JSON.stringify(
               endpointConfig

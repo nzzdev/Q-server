@@ -7,6 +7,7 @@ const server = Hapi.server({
     cors: true
   }
 });
+server.validator(Joi);
 
 const schema = {
   $schema: "http://json-schema.org/draft-04/schema#",
@@ -84,9 +85,7 @@ server.route({
   },
   handler: function(request, h) {
     return {
-      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${
-        request.payload.itemStateInDb
-      }</h1>`,
+      markup: `<h1>${request.payload.item.title} - itemStateInDb: ${request.payload.itemStateInDb}</h1>`,
       stylesheets: [
         {
           name: "mockstyle"

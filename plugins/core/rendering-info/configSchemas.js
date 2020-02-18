@@ -6,18 +6,18 @@ const target = Joi.object().pattern(
     label: Joi.string().required(),
     type: Joi.string()
       .required()
-      .valid(["web", "AMP", "image", "application/json", "application/pdf"]),
+      .valid("web", "AMP", "image", "application/json", "application/pdf"),
     additionalRenderingInfo: Joi.object().when("type", {
       is: Joi.string()
         .required()
-        .valid(["web", "json"]),
+        .valid("web", "json"),
       then: Joi.optional(),
       otherwise: Joi.forbidden()
     }),
-    processRenderingInfo: Joi.optional().allow([
+    processRenderingInfo: Joi.optional().allow(
       Joi.func().arity(1),
       Joi.array().items(Joi.func().arity(1))
-    ])
+    )
   })
 );
 
@@ -28,10 +28,10 @@ const toolEndpoint = Joi.alternatives().try(
       url: Joi.string().optional(),
       additionalRenderingInfo: Joi.object().optional(),
       toolRuntimeConfig: Joi.object().optional(),
-      processRenderingInfo: Joi.optional().allow([
+      processRenderingInfo: Joi.optional().allow(
         Joi.func().arity(1),
         Joi.array().items(Joi.func().arity(1))
-      ])
+      )
     })
     .without("path", ["url"])
     .without("url", ["path"]),
