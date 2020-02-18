@@ -179,6 +179,24 @@ lab.experiment("rendering-info toolRuntimeConfig", () => {
     }
   );
 
+  it("validates a stringified object", async () => {
+    const Joi = require("../helper/custom-joi.js");
+
+    const schema = Joi.object({ foo: Joi.string() });
+    expect(schema.validate('{"foo": "bar"}')).to.equal({
+      value: { foo: "bar" }
+    });
+  });
+
+  it("validates a stringified array", async () => {
+    const Joi = require("../helper/custom-joi.js");
+
+    const schema = Joi.array().items(Joi.string());
+    expect(schema.validate('["foo", "bar"]')).to.equal({
+      value: ["foo", "bar"]
+    });
+  });
+
   it("fails to validate invalid size object", { plan: 10 }, async () => {
     const validateSize = require("../plugins/core/rendering-info/size-helpers.js")
       .validateSize;

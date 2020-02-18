@@ -1,4 +1,4 @@
-const Joi = require("@hapi/joi");
+const Joi = require("../../../../helper/custom-joi.js");
 const Boom = require("@hapi/boom");
 const jsonSchemaRefParser = require("json-schema-ref-parser");
 

@@ -1,4 +1,4 @@
-const Joi = require("@hapi/joi");
+const Joi = require("../../../helper/custom-joi.js");
 
 const target = Joi.object().pattern(
   Joi.string(), // the key needs to be a string

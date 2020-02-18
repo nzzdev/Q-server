@@ -1,5 +1,5 @@
 const Hapi = require("@hapi/hapi");
-const Joi = require("@hapi/joi");
+const Joi = require("../helper/custom-joi.js");
 
 function getServer() {
   let server = Hapi.server({
