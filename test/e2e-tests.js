@@ -457,6 +457,13 @@ lab.experiment("core rendering-info", () => {
     }
   );
 
+  it("accepts a toolRuntimeConfig object", async () => {
+    const response = await server.inject(
+      '/rendering-info/mock-item-active/pub1?toolRuntimeConfig={"foo":"bar"}'
+    );
+    expect(response.statusCode).to.be.equal(200);
+  });
+
   it(
     "returns an error if rendering-info tool endpoint returns one",
     { plan: 1 },

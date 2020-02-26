@@ -1,4 +1,4 @@
-const Joi = require("@hapi/joi");
+const Joi = require("../../../../helper/custom-joi.js");
 
 module.exports = {
   getGetToolsRoute: function() {

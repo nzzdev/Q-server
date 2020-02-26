@@ -1,5 +1,5 @@
 const Boom = require("@hapi/boom");
-const Joi = require("@hapi/joi");
+const Joi = require("../../../helper/custom-joi.js");
 const Hoek = require("@hapi/hoek");
 
 const querystring = require("querystring");
