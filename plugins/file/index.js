@@ -66,6 +66,7 @@ module.exports = {
           output: "stream",
           parse: true,
           allow: "multipart/form-data",
+          multipart: true,
           maxBytes: 10485760
         }
       },
