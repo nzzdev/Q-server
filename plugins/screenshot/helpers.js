@@ -2,13 +2,17 @@ const puppeteer = require("puppeteer");
 const fetch = require("node-fetch");
 
 // start a chromium process here
-let browserPromise = puppeteer.launch({
-  args: [
-    "--no-sandbox",
-    "--disable-dev-shm-usage",
-    "--font-render-hinting=none"
-  ]
-});
+let browserPromise = startChromiumProcess();
+
+function startChromiumProcess() {
+  return puppeteer.launch({
+    args: [
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--font-render-hinting=none",
+    ],
+  });
+}
 
 // fetches assets and returns a concatenated string containing everything fetched
 async function getConcatenatedAssets(assets, userAgent) {
@@ -51,7 +55,7 @@ async function getFinishedPage(
   try {
     page = await browser.newPage();
   } catch (err) {
-    browserPromise = puppeteer.launch({ args: ["--no-sandbox"] });
+    browserPromise = startChromiumProcess();
     browser = await browserPromise;
     page = await browser.newPage();
   }
