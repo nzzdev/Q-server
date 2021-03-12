@@ -6,7 +6,10 @@ module.exports = {
   options: {
     auth: {
       strategy: "q-auth",
-      mode: "try"
+      mode: "try",
+    },
+    cors: {
+      credentials: true,
     },
     validate: {
       query: {
@@ -19,10 +22,10 @@ module.exports = {
         department: Joi.string().optional(),
         publication: Joi.string().optional(),
         active: Joi.boolean().optional(),
-        searchString: Joi.string().optional()
-      }
+        searchString: Joi.string().optional(),
+      },
     },
-    tags: ["api", "editor"]
+    tags: ["api", "editor"],
   },
   handler: async (request, h) => {
     // Creates new object filterProperties which contains all properties but bookmark and limit
@@ -33,8 +36,8 @@ module.exports = {
       bookmark,
       session: {
         credentials: request.auth.credentials,
-        artifacts: request.auth.artifacts
-      }
+        artifacts: request.auth.artifacts,
+      },
     });
-  }
+  },
 };
