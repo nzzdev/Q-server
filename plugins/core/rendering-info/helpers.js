@@ -1,13 +1,13 @@
 const deepmerge = require("deepmerge");
 const Mimos = require("@hapi/mimos");
-const mimos = new Mimos();
+const mimos = new Mimos.Mimos();
 
 async function getWithResolvedFunction(
   renderingInfoPart,
   item,
   toolRuntimeConfig
 ) {
-  const promises = renderingInfoPart.map(async renderingInfoPartItem => {
+  const promises = renderingInfoPart.map(async (renderingInfoPartItem) => {
     if (renderingInfoPartItem instanceof Function) {
       return await renderingInfoPartItem.apply(this, [item, toolRuntimeConfig]);
     }
@@ -23,7 +23,7 @@ function getWithResolvedNameProperty(
   item,
   toolRuntimeConfig
 ) {
-  return renderingInfoPart.map(renderingInfoPartItem => {
+  return renderingInfoPart.map((renderingInfoPartItem) => {
     if (renderingInfoPartItem.name !== undefined) {
       renderingInfoPartItem.path = `/tools/${item.tool}/${typePath}/${renderingInfoPartItem.name}`;
     }
@@ -64,7 +64,7 @@ async function getCompiledRenderingInfo({
   endpointConfig,
   targetConfig,
   item,
-  toolRuntimeConfig
+  toolRuntimeConfig,
 }) {
   // check if the tool config has additional renderingInfo and apply it if so
   if (endpointConfig.additionalRenderingInfo) {
@@ -74,7 +74,7 @@ async function getCompiledRenderingInfo({
       {
         arrayMerge: (destArr, srcArr) => {
           return srcArr.concat(destArr);
-        }
+        },
       }
     );
   }
@@ -86,7 +86,7 @@ async function getCompiledRenderingInfo({
       {
         arrayMerge: (destArr, srcArr) => {
           return srcArr.concat(destArr);
-        }
+        },
       }
     );
   }
@@ -94,12 +94,12 @@ async function getCompiledRenderingInfo({
   const renderingInfoTypesToResolve = [
     {
       name: "stylesheets",
-      path: "stylesheet"
+      path: "stylesheet",
     },
     {
       name: "scripts",
-      path: "script"
-    }
+      path: "script",
+    },
   ];
   for (const type of renderingInfoTypesToResolve) {
     if (
@@ -129,7 +129,7 @@ function getCompiledToolRuntimeConfig(
     serverWideToolRuntimeConfig,
     targetToolRuntimeConfig,
     toolEndpointConfig,
-    requestToolRuntimeConfig
+    requestToolRuntimeConfig,
   }
 ) {
   const overallToolRuntimeConfig = serverWideToolRuntimeConfig;
@@ -208,5 +208,5 @@ module.exports = {
   getRequestUrlFromEndpointConfig,
   isValidContentTypeForTarget,
   canGetCompiled,
-  getCompiledRenderingInfo
+  getCompiledRenderingInfo,
 };

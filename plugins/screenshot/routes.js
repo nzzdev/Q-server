@@ -14,7 +14,7 @@ const queryFormat = {
     .regex(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?){1,4}$/)
     .optional(),
   wait: Joi.optional(),
-  toolRuntimeConfig: Joi.object().optional()
+  toolRuntimeConfig: Joi.object().optional(),
 };
 
 async function getScreenshotResponse(server, h, params, item) {
@@ -38,9 +38,9 @@ async function getScreenshotResponse(server, h, params, item) {
         {
           value: width,
           unit: "px",
-          comparison: "="
-        }
-      ]
+          comparison: "=",
+        },
+      ],
     };
   }
 
@@ -50,15 +50,15 @@ async function getScreenshotResponse(server, h, params, item) {
     payload: {
       toolRuntimeConfig: toolRuntimeConfig,
       item: item,
-      ignoreInactive: true
-    }
+      ignoreInactive: true,
+    },
   });
 
   if (response.statusCode !== 200) {
     throw new Boom.Boom(
       `Failed to get renderingInfo to load in headless chrome for screenshot for ${item.tool} and ${params.target} with the error: ${response.statusMessage}`,
       {
-        statusCode: response.statusCode
+        statusCode: response.statusCode,
       }
     );
   }
@@ -84,13 +84,11 @@ async function getScreenshotResponse(server, h, params, item) {
     width: params.width,
     dpr: params.dpr || 1,
     padding: params.padding || "0",
-    background: params.background
+    background: params.background,
   };
 
   if (params.wait !== undefined) {
-    if (Number.isNaN(parseInt(params.wait))) {
-      config.waitBeforeScreenshot = params.wait;
-    } else {
+    if (!Number.isNaN(parseInt(params.wait))) {
       config.waitBeforeScreenshot = parseInt(params.wait);
     }
   }
@@ -121,7 +119,7 @@ async function getScreenshotResponse(server, h, params, item) {
 }
 
 module.exports = {
-  getRoutes: function(cacheControlHeader) {
+  getRoutes: function (cacheControlHeader) {
     return [
       {
         path: "/screenshot/{id}.{format}",
@@ -130,14 +128,14 @@ module.exports = {
           validate: {
             params: {
               id: Joi.string().required(),
-              format: Joi.string().valid("json", "png")
+              format: Joi.string().valid("json", "png"),
             },
             query: queryFormat,
             options: {
-              allowUnknown: true
-            }
+              allowUnknown: true,
+            },
           },
-          tags: ["api"]
+          tags: ["api"],
         },
         handler: async (request, h) => {
           const item = await request.server.methods.db.item.getById({
@@ -145,11 +143,11 @@ module.exports = {
             ignoreInactive: request.query.ignoreInactive,
             session: {
               credentials: request.auth.credentials,
-              artifacts: request.auth.artifacts
-            }
+              artifacts: request.auth.artifacts,
+            },
           });
           const screenshotConfig = Object.assign({}, request.query, {
-            format: request.params.format
+            format: request.params.format,
           });
           const response = await getScreenshotResponse(
             request.server,
@@ -159,7 +157,7 @@ module.exports = {
           );
           response.header("cache-control", cacheControlHeader);
           return response;
-        }
+        },
       },
       {
         path: "/screenshot.{format}",
@@ -167,22 +165,22 @@ module.exports = {
         options: {
           validate: {
             params: {
-              format: Joi.string().valid("json", "png")
+              format: Joi.string().valid("json", "png"),
             },
             payload: {
               item: Joi.object().required(),
-              toolRuntimeConfig: Joi.object().optional()
+              toolRuntimeConfig: Joi.object().optional(),
             },
             query: queryFormat,
             options: {
-              allowUnknown: true
-            }
+              allowUnknown: true,
+            },
           },
-          tags: ["api"]
+          tags: ["api"],
         },
         handler: async (request, h) => {
           const screenshotConfig = Object.assign({}, request.query, {
-            format: request.params.format
+            format: request.params.format,
           });
           if (request.payload.toolRuntimeConfig) {
             screenshotConfig.toolRuntimeConfig = Object.assign(
@@ -198,15 +196,15 @@ module.exports = {
           );
           response.header("cache-control", cacheControlHeader);
           return response;
-        }
+        },
       },
       {
         path: "/screenshot/empty-page.html",
         method: "GET",
         handler: (request, h) => {
           return "<!DOCTYPE html><html><head></head><body></body></html>";
-        }
-      }
+        },
+      },
     ];
-  }
+  },
 };

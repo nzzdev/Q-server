@@ -1,7 +1,7 @@
 const Boom = require("@hapi/boom");
 const AWS = require("aws-sdk");
 const Mimos = require("@hapi/mimos");
-const mimos = new Mimos();
+const mimos = new Mimos.Mimos();
 const hasha = require("hasha");
 const slugify = require("slugify");
 
@@ -26,7 +26,7 @@ async function upload(s3, params) {
 
 module.exports = {
   name: "q-file",
-  register: async function(server, options) {
+  register: async function (server, options) {
     if (
       !options.s3AccessKey ||
       !options.s3SecretKey ||
@@ -39,13 +39,13 @@ module.exports = {
     const s3 = new AWS.S3({
       accessKeyId: options.s3AccessKey,
       secretAccessKey: options.s3SecretKey,
-      region: options.s3Region
+      region: options.s3Region,
     });
 
     const contentTypes = options.contentTypes || [
       "application/pdf",
       "image/jpeg",
-      "image/png"
+      "image/png",
     ];
 
     server.route({
@@ -58,8 +58,8 @@ module.exports = {
           additionalHeaders: [
             "x-requested-with",
             "x-file-name",
-            "cache-control"
-          ]
+            "cache-control",
+          ],
         },
         tags: ["api"],
         payload: {
@@ -67,10 +67,10 @@ module.exports = {
           parse: true,
           allow: "multipart/form-data",
           multipart: true,
-          maxBytes: 10485760
-        }
+          maxBytes: 10485760,
+        },
       },
-      handler: async function(request, h) {
+      handler: async function (request, h) {
         const file = request.payload.file;
         if (!file) {
           return Boom.badData("Failed to read file");
@@ -98,9 +98,9 @@ module.exports = {
         const extension = type.extensions[0] || "";
 
         // buffer the contents to hash and later upload to s3
-        const fileBuffered = new Promise(resolve => {
+        const fileBuffered = new Promise((resolve) => {
           let data = [];
-          file.on("data", d => {
+          file.on("data", (d) => {
             data.push(d);
           });
           file.on("end", () => {
@@ -110,7 +110,7 @@ module.exports = {
         const fileBuffer = await fileBuffered;
 
         const hash = await hasha(fileBuffer, {
-          algorithm: "md5"
+          algorithm: "md5",
         });
 
         const filenameParts = file.hapi.filename.split(".");
@@ -122,7 +122,7 @@ module.exports = {
         }-${hash}`;
         // join everything together again (appending the extension)
         const hashedFilename = `${filenameParts
-          .map(filenamePart => slugify(filenamePart))
+          .map((filenamePart) => slugify(filenamePart))
           .join(".")}.${extension}`;
         let fileKey = `${getDateString()}/${hashedFilename}`;
 
@@ -134,7 +134,7 @@ module.exports = {
           Bucket: options.s3Bucket,
           Key: fileKey,
           Body: fileBuffer,
-          ContentType: contentType
+          ContentType: contentType,
         };
 
         if (options.cacheControl) {
@@ -145,23 +145,23 @@ module.exports = {
 
         return {
           key: data.Key,
-          url: data.Location
+          url: data.Location,
         };
-      }
+      },
     });
 
     server.route({
       method: "GET",
       path: "/file/{fileKey*}",
       options: {
-        tags: ["api"]
+        tags: ["api"],
       },
-      handler: async function(request, h) {
+      handler: async function (request, h) {
         return new Promise((resolve, reject) => {
           s3.getObject(
             {
               Bucket: options.s3Bucket,
-              Key: request.params.fileKey
+              Key: request.params.fileKey,
             },
             (err, data) => {
               if (err) {
@@ -181,7 +181,7 @@ module.exports = {
             }
           );
         });
-      }
+      },
     });
-  }
+  },
 };

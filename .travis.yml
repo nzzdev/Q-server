@@ -2,7 +2,7 @@ dist: trusty
 sudo: true
 language: node_js
 node_js:
-  - "12"
+  - "14"
 cache:
   directories:
     - node_modules

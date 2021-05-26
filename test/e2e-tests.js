@@ -23,11 +23,11 @@ before(async () => {
     pouchdbServer = spawn("./node_modules/pouchdb-server/bin/pouchdb-server", [
       "-c",
       "test/pouchdb-server-config.json",
-      "--in-memory"
+      "--in-memory",
     ]);
 
     // wait a second to give pouchdbServer time to boot
-    await new Promise(resolve => {
+    await new Promise((resolve) => {
       setTimeout(resolve, 1000);
     });
 
@@ -86,14 +86,14 @@ lab.experiment("core item", () => {
       method: "POST",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
+        credentials: { username: "user", password: "pass" },
       },
       url: "/item",
       payload: {
         _id: "someid",
         _rev: "somerev",
-        title: "title"
-      }
+        title: "title",
+      },
     };
     const response = await server.inject(request);
     expect(response.statusCode).to.be.equal(400);
@@ -104,12 +104,12 @@ lab.experiment("core item", () => {
       method: "PUT",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
+        credentials: { username: "user", password: "pass" },
       },
       url: "/item",
       payload: {
-        title: "title"
-      }
+        title: "title",
+      },
     };
     const response = await server.inject(request);
     expect(response.statusCode).to.be.equal(400);
@@ -120,15 +120,15 @@ lab.experiment("core item", () => {
       method: "PUT",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
+        credentials: { username: "user", password: "pass" },
       },
       url: "/item",
       payload: {
         _id: "some-id",
         _rev: "some_rev",
         title: "title",
-        tool: "tool1"
-      }
+        tool: "tool1",
+      },
     };
     const response = await server.inject(request);
     expect(response.statusCode).to.be.equal(400);
@@ -143,14 +143,14 @@ lab.experiment("core item", () => {
         method: "POST",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
         payload: {
           title: "some-new-item-from-test",
           tool: "tool1",
-          foo: "bar"
-        }
+          foo: "bar",
+        },
       };
       const response = await server.inject(request);
       expect(response.statusCode).to.be.equal(200);
@@ -169,10 +169,10 @@ lab.experiment("core item", () => {
         method: "PUT",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
-        payload: item
+        payload: item,
       };
       const response = await server.inject(request);
       expect(response.statusCode).to.be.equal(200);
@@ -200,15 +200,15 @@ lab.experiment("core item", () => {
         method: "POST",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
         payload: {
           _id: "fix-id-to-better-test-the-case",
           title: "some-new-item",
           tool: "tool1",
-          foo: "bar"
-        }
+          foo: "bar",
+        },
       };
       const response = await server.inject(request);
     }
@@ -231,10 +231,10 @@ lab.experiment("core item", () => {
         method: "PUT",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
-        payload: item
+        payload: item,
       };
       const response = await server.inject(request);
     }
@@ -263,10 +263,10 @@ lab.experiment("core item", () => {
         method: "PUT",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
-        payload: item
+        payload: item,
       };
       const response = await server.inject(request);
     }
@@ -295,10 +295,10 @@ lab.experiment("core item", () => {
         method: "PUT",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
-        payload: item
+        payload: item,
       };
       const response = await server.inject(request);
     }
@@ -327,10 +327,10 @@ lab.experiment("core item", () => {
         method: "PUT",
         auth: {
           strategy: "q-auth",
-          credentials: { username: "user", password: "pass" }
+          credentials: { username: "user", password: "pass" },
         },
         url: "/item",
-        payload: item
+        payload: item,
       };
       const response = await server.inject(request);
     }
@@ -389,10 +389,9 @@ lab.experiment("core tool proxy routes", () => {
 
   it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an active item for POST requests", async () => {
     const response = await server.inject({
-      url:
-        "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-active",
+      url: "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-active",
       method: "POST",
-      payload: {}
+      payload: {},
     });
     expect(response.result).to.be.equal("mock-item-active");
   });
@@ -406,10 +405,9 @@ lab.experiment("core tool proxy routes", () => {
 
   it("passes the item from db in the payload of the tool request if query appendItemToPayload is set to an id of an inactive item for POST requests", async () => {
     const response = await server.inject({
-      url:
-        "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive",
+      url: "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=mock-item-inactive",
       method: "POST",
-      payload: {}
+      payload: {},
     });
     expect(response.result).to.be.equal("mock-item-inactive");
   });
@@ -423,10 +421,9 @@ lab.experiment("core tool proxy routes", () => {
 
   it("fails with 404 if the item id passed as appendItemToPayload is not found for POST requests", async () => {
     const response = await server.inject({
-      url:
-        "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=some-random-id-that-does-not-exist",
+      url: "/tools/tool1/endpoint-returning-the-id-from-tool-in-payload?appendItemToPayload=some-random-id-that-does-not-exist",
       method: "POST",
-      payload: {}
+      payload: {},
     });
     expect(response.statusCode).to.be.equal(404);
   });
@@ -492,9 +489,9 @@ lab.experiment("core rendering-info", () => {
         item: {
           _id: "mock-item-active",
           title: "title",
-          tool: "tool1"
-        }
-      })
+          tool: "tool1",
+        },
+      }),
     });
     expect(response.result.markup).to.contain(
       `<h1>title - itemStateInDb: false</h1>`
@@ -678,7 +675,7 @@ lab.experiment("core schema endpoints", () => {
   });
 });
 
-lab.experiment("screenshot plugin", async () => {
+lab.experiment("screenshot plugin", () => {
   it(
     "returns a screenshot with correct cache-control headers with wait as number",
     { timeout: 5000, plan: 3 },
@@ -734,8 +731,8 @@ lab.experiment("screenshot plugin", async () => {
         method: "POST",
         url: "/screenshot.png?target=pub1&width=500",
         payload: {
-          item: item
-        }
+          item: item,
+        },
       });
       expect(response.statusCode).to.be.equal(200);
       expect(response.headers["content-type"]).to.be.equal("image/png");
@@ -774,8 +771,8 @@ lab.experiment("screenshot plugin", async () => {
         method: "POST",
         url: "/screenshot.json?target=pub1&width=500",
         payload: {
-          item: item
-        }
+          item: item,
+        },
       });
       expect(response.statusCode).to.be.equal(200);
       expect(response.headers["content-type"]).to.be.equal(
@@ -802,8 +799,8 @@ lab.experiment("fixture data plugin", () => {
       url: "/fixtures/data",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
-      }
+        credentials: { username: "user", password: "pass" },
+      },
     });
     expect(response.statusCode).to.be.equal(200);
     expect(response.result.saved.length).to.be.equal(1);
@@ -822,9 +819,9 @@ lab.experiment("keycdn plugin", () => {
     const response = await server.inject({
       method: "GET",
       headers: {
-        "x-pull": "KeyCDN"
+        "x-pull": "KeyCDN",
       },
-      url: "/rendering-info/mock-item-active/pub1"
+      url: "/rendering-info/mock-item-active/pub1",
     });
     expect(response.headers["cache-tag"]).to.be.equal(
       "q-item-id-mock-item-active"
@@ -834,7 +831,7 @@ lab.experiment("keycdn plugin", () => {
   it("returns no cache-tag header if there is an id in the route params and request is not from keycdn", async () => {
     const response = await server.inject({
       method: "GET",
-      url: "/rendering-info/mock-item-active/pub1"
+      url: "/rendering-info/mock-item-active/pub1",
     });
     expect(response.headers["cache-tag"]).to.be.undefined();
   });
@@ -843,9 +840,9 @@ lab.experiment("keycdn plugin", () => {
     const response = await server.inject({
       method: "GET",
       headers: {
-        "x-pull": "KeyCDN"
+        "x-pull": "KeyCDN",
       },
-      url: "/tools/tool1/display-options-schema.json"
+      url: "/tools/tool1/display-options-schema.json",
     });
     expect(response.headers["cache-tag"]).to.be.undefined();
   });
@@ -854,9 +851,9 @@ lab.experiment("keycdn plugin", () => {
     const response = await server.inject({
       method: "GET",
       headers: {
-        "x-pull": "KeyCDN"
+        "x-pull": "KeyCDN",
       },
-      url: "/rendering-info/mock-item-active/pub1?noCache=true"
+      url: "/rendering-info/mock-item-active/pub1?noCache=true",
     });
     expect(response.headers["cache-tag"]).to.be.undefined();
   });
@@ -869,8 +866,8 @@ lab.experiment("tasks plugin", () => {
       url: "/tasks",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
-      }
+        credentials: { username: "user", password: "pass" },
+      },
     });
     expect(response.result.tasks.length).to.be.equal(1);
     expect(response.result.tasks[0].id).to.be.equal("testTask");
@@ -881,8 +878,8 @@ lab.experiment("tasks plugin", () => {
       url: "/tasks",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass", roles: ["admin"] }
-      }
+        credentials: { username: "user", password: "pass", roles: ["admin"] },
+      },
     });
     expect(response.result.tasks.length).to.be.equal(2);
     expect(response.result.tasks[0].id).to.be.equal("testTask");
@@ -891,16 +888,16 @@ lab.experiment("tasks plugin", () => {
   it("returns the response from a configured task", async () => {
     const taskInput = "test input";
     const payload = {
-      someTaskInput: taskInput
+      someTaskInput: taskInput,
     };
     const response = await server.inject({
       method: "POST",
       url: "/tasks/test",
       auth: {
         strategy: "q-auth",
-        credentials: { username: "user", password: "pass" }
+        credentials: { username: "user", password: "pass" },
       },
-      payload: payload
+      payload: payload,
     });
     expect(response.result.type).to.be.equal("json");
     expect(JSON.stringify(response.result.data.content)).to.be.equal(
