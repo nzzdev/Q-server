@@ -24,9 +24,9 @@ async function getConcatenatedAssets(assets, userAgent) {
     if (asset.url) {
       const promise = fetch(asset.url, {
         headers: {
-          "User-Agent": userAgent
-        }
-      }).then(response => {
+          "User-Agent": userAgent,
+        },
+      }).then((response) => {
         if (response.ok) {
           return response.text();
         } else {
@@ -64,7 +64,7 @@ async function getFinishedPage(
   await page.setViewport({
     width: config.width,
     height: 16384,
-    deviceScaleFactor: config.dpr
+    deviceScaleFactor: config.dpr,
   });
 
   await page.goto(emptyPageUrl);
@@ -94,12 +94,12 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: "load"
+    waitUntil: "load",
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
   await page.mainFrame().addScriptTag({
-    content: scriptContent
+    content: scriptContent,
   });
 
   // wait for the next idle callback (to have most probably finished all work)
@@ -109,9 +109,9 @@ async function getFinishedPage(
     });
   }`);
 
-  // we support a wait parameter, this can be either a number or a css selector to wait for
+  // we support a wait parameter, this is a number in milliseconds to wait for
   if (config.waitBeforeScreenshot) {
-    await page.waitFor(config.waitBeforeScreenshot);
+    await page.waitForTimeout(config.waitBeforeScreenshot);
   }
 
   return page;
@@ -140,7 +140,7 @@ async function getScreenshotImage(
   const graphicElement = await page.$("#q-screenshot-service-container");
 
   const imageBuffer = await graphicElement.screenshot({
-    omitBackground: isTransparent
+    omitBackground: isTransparent,
   });
 
   await page.close();
@@ -168,7 +168,7 @@ async function getScreenshotInfo(
 
   return {
     width: bbox.width,
-    height: bbox.height
+    height: bbox.height,
   };
 }
 
@@ -181,15 +181,15 @@ function getInnerWidth(width, padding) {
     // split the padding by space
     const units = padding
       .split(" ")
-      .map(paddingPos => {
+      .map((paddingPos) => {
         return paddingPos.match(
           new RegExp(/^$|^(([0-9.]+)(px|em|ex|%|in|cm|mm|pt|pc|vh|vw)?([ ])?)$/)
         );
       })
-      .filter(match => {
+      .filter((match) => {
         return Array.isArray(match);
       })
-      .map(match => {
+      .map((match) => {
         if (match[3] === undefined) {
           // if no unit given, px is default
           return "px";
@@ -240,5 +240,5 @@ function getInnerWidth(width, padding) {
 module.exports = {
   getScreenshotImage: getScreenshotImage,
   getScreenshotInfo: getScreenshotInfo,
-  getInnerWidth: getInnerWidth
+  getInnerWidth: getInnerWidth,
 };
