@@ -41,7 +41,7 @@ You have to define the following endpoint if you want to be able to migrate item
   One example of one of our election tools:
 
   ```javascript
-  const Joi = require("@hapi/joi");
+  const Joi = require("joi");
   const Boom = require("boom");
 
   // register migration scripts here in order of version,
@@ -54,29 +54,29 @@ You have to define the following endpoint if you want to be able to migrate item
     options: {
       validate: {
         payload: {
-          item: Joi.object().required()
-        }
-      }
+          item: Joi.object().required(),
+        },
+      },
     },
     handler: async (request, h) => {
       let item = request.payload.item;
-      const results = migrationScripts.map(script => {
+      const results = migrationScripts.map((script) => {
         const result = script.migrate(item);
         if (result.isChanged) {
           item = result.item;
         }
         return result;
       });
-      const isChanged = results.findIndex(result => {
+      const isChanged = results.findIndex((result) => {
         return result.isChanged;
       });
       if (isChanged >= 0) {
         return {
-          item: item
+          item: item,
         };
       }
       return h.response().code(304);
-    }
+    },
   };
   ```
 
@@ -92,12 +92,12 @@ In the following example you see one migration module with just one method. Sinc
 // contains all scripts which shall be executed to migrate to tool version 2.0.0
 // each module has to return a result object holding the modified item and a
 // flag property indicating if item was changed or not
-module.exports.migrate = function(item) {
+module.exports.migrate = function (item) {
   let result = {
-    isChanged: false
+    isChanged: false,
   };
   if (item.parties) {
-    let truthyparties = item.parties.filter(party => {
+    let truthyparties = item.parties.filter((party) => {
       return party.name !== undefined && party.name !== "";
     });
     if (truthyparties.length < item.parties.length) {

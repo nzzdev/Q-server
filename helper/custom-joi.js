@@ -1,5 +1,5 @@
 const Bourne = require("@hapi/bourne");
-const Joi = require("@hapi/joi");
+const Joi = require("joi");
 
 // As of Joi v16, strings are no longer automatically converted to objects/arrays,
 // even if the convert option of any.validate() is "true" (which is the default).
@@ -24,8 +24,8 @@ module.exports = Joi.extend(
         try {
           return { value: Bourne.parse(value) };
         } catch (ignoreErr) {}
-      }
-    }
+      },
+    },
   },
   {
     type: "array",
@@ -43,7 +43,7 @@ module.exports = Joi.extend(
         try {
           return { value: Bourne.parse(value) };
         } catch (ignoreErr) {}
-      }
-    }
+      },
+    },
   }
 );
