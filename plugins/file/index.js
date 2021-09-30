@@ -1,5 +1,5 @@
 const Boom = require("@hapi/boom");
-const AWS = require("aws-sdk");
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const Mimos = require("@hapi/mimos");
 const mimos = new Mimos.Mimos();
 const hasha = require("hasha");
@@ -13,13 +13,16 @@ function getDateString() {
   return `${now.getFullYear()}/${month}/${day}`;
 }
 
-async function upload(s3, params) {
+async function upload(params, s3Region) {
   return new Promise((resolve, reject) => {
-    s3.upload(params, (err, data) => {
+    s3Client.send(new PutObjectCommand(params), (err) => {
       if (err) {
         reject(err);
       }
-      resolve(data);
+      resolve({
+        key: params.Key,
+        url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
+      });
     });
   });
 }
@@ -36,9 +39,11 @@ module.exports = {
       throw new Error("Not all required S3 options are provided.");
     }
 
-    const s3 = new AWS.S3({
-      accessKeyId: options.s3AccessKey,
-      secretAccessKey: options.s3SecretKey,
+    const s3Client = new S3Client({
+      credentials: {
+        accessKeyId: options.s3AccessKey,
+        secretAccessKey: options.s3SecretKey,
+      },
       region: options.s3Region,
     });
 
@@ -141,12 +146,7 @@ module.exports = {
           params.CacheControl = options.cacheControl;
         }
 
-        const data = await upload(s3, params);
-
-        return {
-          key: data.Key,
-          url: data.Location,
-        };
+        return await upload(params, options.s3Region);
       },
     });
 
@@ -158,11 +158,10 @@ module.exports = {
       },
       handler: async function (request, h) {
         return new Promise((resolve, reject) => {
-          s3.getObject(
-            {
+          s3Client.send(new GetObjectCommand({
               Bucket: options.s3Bucket,
               Key: request.params.fileKey,
-            },
+            }),
             (err, data) => {
               if (err) {
                 return reject(
