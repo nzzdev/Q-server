@@ -13,7 +13,7 @@ function getDateString() {
   return `${now.getFullYear()}/${month}/${day}`;
 }
 
-async function upload(params, s3Region) {
+async function upload(s3Client, params, s3Region) {
   return new Promise((resolve, reject) => {
     s3Client.send(new PutObjectCommand(params), (err) => {
       if (err) {
@@ -146,7 +146,7 @@ module.exports = {
           params.CacheControl = options.cacheControl;
         }
 
-        return await upload(params, options.s3Region);
+        return await upload(s3Client, params, options.s3Region);
       },
     });
 
