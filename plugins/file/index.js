@@ -14,17 +14,15 @@ function getDateString() {
 }
 
 async function upload(s3Client, params, s3Region) {
-  return new Promise((resolve, reject) => {
-    s3Client.send(new PutObjectCommand(params), (err) => {
-      if (err) {
-        reject(err);
-      }
-      resolve({
-        key: params.Key,
-        url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
-      });
-    });
-  });
+  try {
+    await s3Client.send(new PutObjectCommand(params));
+    return {
+      key: params.Key,
+      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
+    };
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = {
@@ -146,7 +144,7 @@ module.exports = {
           params.CacheControl = options.cacheControl;
         }
 
-        return await upload(s3Client, params, options.s3Region);
+        return upload(s3Client, params, options.s3Region);
       },
     });
 
@@ -157,29 +155,21 @@ module.exports = {
         tags: ["api"],
       },
       handler: async function (request, h) {
-        return new Promise((resolve, reject) => {
-          s3Client.send(new GetObjectCommand({
-              Bucket: options.s3Bucket,
-              Key: request.params.fileKey,
-            }),
-            (err, data) => {
-              if (err) {
-                return reject(
-                  new Boom.Boom("error", { statusCode: err.statusCode })
-                );
-              }
-              return resolve(
-                h
-                  .response(data.Body)
-                  .header(
-                    "cache-control",
-                    "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
-                  )
-                  .type(data.ContentType)
-              );
-            }
-          );
-        });
+        try {
+          const data = await s3Client.send(new GetObjectCommand({
+            Bucket: options.s3Bucket,
+            Key: request.params.fileKey,
+          }));
+          return h
+            .response(data.Body)
+            .header(
+              "cache-control",
+              "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
+            )
+            .type(data.ContentType);
+        } catch (error) {
+          throw error;
+        }
       },
     });
   },
