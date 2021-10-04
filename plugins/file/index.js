@@ -17,8 +17,8 @@ async function upload(s3Client, params, s3Region) {
   try {
     const data = await s3Client.send(new PutObjectCommand(params));
     return {
-      key: data.Key,
-      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${data.Key}`,
+      key: params.Key,
+      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
     };
   } catch (error) {
     throw error;
