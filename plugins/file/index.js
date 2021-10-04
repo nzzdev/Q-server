@@ -144,7 +144,7 @@ module.exports = {
           params.CacheControl = options.cacheControl;
         }
 
-        return upload(s3Client, params, options.s3Region);
+        return await upload(s3Client, params, options.s3Region);
       },
     });
 
