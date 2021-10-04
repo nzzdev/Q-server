@@ -1,5 +1,5 @@
 const Boom = require("@hapi/boom");
-const AWS = require("aws-sdk");
+const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
 const Mimos = require("@hapi/mimos");
 const mimos = new Mimos.Mimos();
 const hasha = require("hasha");
@@ -13,15 +13,16 @@ function getDateString() {
   return `${now.getFullYear()}/${month}/${day}`;
 }
 
-async function upload(s3, params) {
-  return new Promise((resolve, reject) => {
-    s3.upload(params, (err, data) => {
-      if (err) {
-        reject(err);
-      }
-      resolve(data);
-    });
-  });
+async function upload(s3Client, params, s3Region) {
+  try {
+    const data = await s3Client.send(new PutObjectCommand(params));
+    return {
+      key: params.Key,
+      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
+    };
+  } catch (error) {
+    throw error;
+  }
 }
 
 module.exports = {
@@ -36,9 +37,11 @@ module.exports = {
       throw new Error("Not all required S3 options are provided.");
     }
 
-    const s3 = new AWS.S3({
-      accessKeyId: options.s3AccessKey,
-      secretAccessKey: options.s3SecretKey,
+    const s3Client = new S3Client({
+      credentials: {
+        accessKeyId: options.s3AccessKey,
+        secretAccessKey: options.s3SecretKey,
+      },
       region: options.s3Region,
     });
 
@@ -141,12 +144,7 @@ module.exports = {
           params.CacheControl = options.cacheControl;
         }
 
-        const data = await upload(s3, params);
-
-        return {
-          key: data.Key,
-          url: data.Location,
-        };
+        return await upload(s3Client, params, options.s3Region);
       },
     });
 
@@ -157,30 +155,21 @@ module.exports = {
         tags: ["api"],
       },
       handler: async function (request, h) {
-        return new Promise((resolve, reject) => {
-          s3.getObject(
-            {
-              Bucket: options.s3Bucket,
-              Key: request.params.fileKey,
-            },
-            (err, data) => {
-              if (err) {
-                return reject(
-                  new Boom.Boom("error", { statusCode: err.statusCode })
-                );
-              }
-              return resolve(
-                h
-                  .response(data.Body)
-                  .header(
-                    "cache-control",
-                    "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
-                  )
-                  .type(data.ContentType)
-              );
-            }
-          );
-        });
+        try {
+          const data = await s3Client.send(new GetObjectCommand({
+            Bucket: options.s3Bucket,
+            Key: request.params.fileKey,
+          }));
+          return h
+            .response(data.Body)
+            .header(
+              "cache-control",
+              "max-age=31536000, s-maxage=31536000, stale-while-revalidate=31536000, stale-if-error=31536000, immutable"
+            )
+            .type(data.ContentType);
+        } catch (error) {
+          new Boom.Boom("error", { statusCode: error.statusCode });
+        }
       },
     });
   },
