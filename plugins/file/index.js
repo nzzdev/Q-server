@@ -15,10 +15,10 @@ function getDateString() {
 
 async function upload(s3Client, params, s3Region) {
   try {
-    await s3Client.send(new PutObjectCommand(params));
+    const data = await s3Client.send(new PutObjectCommand(params));
     return {
-      key: params.Key,
-      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${params.Key}`,
+      key: data.Key,
+      url: `https://${params.Bucket}.s3.${s3Region}.amazonaws.com/${data.Key}`,
     };
   } catch (error) {
     throw error;
