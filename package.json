@@ -1,6 +1,6 @@
 {
   "name": "@nzz/q-server",
-  "version": "10.0.5",
+  "version": "10.0.6",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.34.0",
     "@hapi/boom": "^9.1.2",
     "@hapi/bounce": "^2.0.0",
     "@hapi/hoek": "^9.2.0",
@@ -33,7 +34,6 @@
     "@hapi/vision": "^6.1.0",
     "@hapi/wreck": "^17.1.0",
     "ajv": "^6.12.6",
-    "aws-sdk": "^2.914.0",
     "clone": "^2.1.2",
     "deepmerge": "^4.2.2",
     "hasha": "^5.2.2",
