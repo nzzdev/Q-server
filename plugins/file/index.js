@@ -168,7 +168,7 @@ module.exports = {
             )
             .type(data.ContentType);
         } catch (error) {
-          throw error;
+          new Boom.Boom("error", { statusCode: error.statusCode });
         }
       },
     });
