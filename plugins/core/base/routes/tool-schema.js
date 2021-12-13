@@ -1,6 +1,6 @@
 const Joi = require("../../../../helper/custom-joi.js");
 const Boom = require("@hapi/boom");
-const jsonSchemaRefParser = require("json-schema-ref-parser");
+const jsonSchemaRefParser = require("@apidevtools/json-schema-ref-parser");
 
 async function getDereferencedSchema(schema) {
   let dereferencedSchema = await jsonSchemaRefParser.dereference(schema);
@@ -10,7 +10,7 @@ async function getDereferencedSchema(schema) {
 }
 
 module.exports = {
-  getSchema: function(options) {
+  getSchema: function (options) {
     return {
       path: "/tools/{tool}/schema.json",
       method: "GET",
@@ -20,9 +20,9 @@ module.exports = {
         tags: ["api", "editor"],
         validate: {
           params: {
-            tool: Joi.string().required()
-          }
-        }
+            tool: Joi.string().required(),
+          },
+        },
       },
       handler: async (request, h) => {
         // this is done in the handler and not with Joi as hapi-swagger has issues with `forbidden`.
@@ -39,10 +39,10 @@ module.exports = {
         );
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
-      }
+      },
     };
   },
-  getDisplayOptionsSchema: function(options) {
+  getDisplayOptionsSchema: function (options) {
     return {
       path: "/tools/{tool}/display-options-schema.json",
       method: "GET",
@@ -52,12 +52,12 @@ module.exports = {
         tags: ["api", "editor"],
         validate: {
           params: {
-            tool: Joi.string().required()
+            tool: Joi.string().required(),
           },
           query: {
-            appendItemToPayload: Joi.string().optional()
-          }
-        }
+            appendItemToPayload: Joi.string().optional(),
+          },
+        },
       },
       handler: async (request, h) => {
         request.params.path = "display-options-schema.json";
@@ -71,7 +71,7 @@ module.exports = {
         }
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
-      }
+      },
     };
-  }
+  },
 };
