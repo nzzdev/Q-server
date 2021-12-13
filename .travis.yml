@@ -2,7 +2,7 @@ dist: xenial
 sudo: true
 language: node_js
 node_js:
-  - "14"
+  - "16"
 cache:
   directories:
     - node_modules
