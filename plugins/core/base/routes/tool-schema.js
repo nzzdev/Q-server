@@ -1,6 +1,6 @@
 const Joi = require("../../../../helper/custom-joi.js");
 const Boom = require("@hapi/boom");
-const jsonSchemaRefParser = require("@apidevtools/json-schema-ref-parser");
+const jsonSchemaRefParser = require("json-schema-ref-parser");
 
 async function getDereferencedSchema(schema) {
   let dereferencedSchema = await jsonSchemaRefParser.dereference(schema);
