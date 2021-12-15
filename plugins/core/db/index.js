@@ -127,9 +127,6 @@ module.exports = {
         reduce: false
       };
       const res = await server.app.db.view("items", "byTool", options);
-      if (!res.ok) {
-        throw new Error(`failed to getAllByTool ${tool}`);
-      }
       const items = res.rows.map(item => {
         return item.doc;
       });
