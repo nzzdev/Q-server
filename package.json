@@ -41,7 +41,7 @@
     "json-schema-ref-parser": "^7.1.4",
     "keycdn": "^0.2.2",
     "nano": "^8.2.3",
-    "node-fetch": "^2.6.1",
+    "node-fetch": "^2.6.7",
     "puppeteer": "^9.1.1",
     "slugify": "^1.5.3"
   },
