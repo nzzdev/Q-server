@@ -25,7 +25,7 @@
   },
   "homepage": "https://github.com/nzzdev/Q-server#readme",
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.34.0",
+    "@aws-sdk/client-s3": "^3.78.0",
     "@hapi/boom": "^9.1.2",
     "@hapi/bounce": "^2.0.0",
     "@hapi/hoek": "^9.2.0",
