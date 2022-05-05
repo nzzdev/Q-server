@@ -89,7 +89,7 @@ module.exports = {
       screenshotRequestQuery.dpr = dpi / chromePPI;
 
       // the screenshot width is the width in inch * target dpi
-      const mm = await request.server.methods.plugins.q.print.colsToMm(displayOptions.columns);
+      const mm = await request.server.methods.plugins.q.print.colsToMm(displayOptions.columnsProfile, displayOptions.columns);
       screenshotRequestQuery.width = Math.round(
         (mmToInch(mm) * dpi) / screenshotRequestQuery.dpr
       );
