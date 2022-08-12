@@ -79,7 +79,7 @@ module.exports = {
       method: "POST",
       options: {
         description:
-          "Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment",
+          "Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment. Takes a custom schema as payload and integrates it into the tool schema.",
         tags: ["api", "editor"],
         payload: {
           allow: ["application/json"],
