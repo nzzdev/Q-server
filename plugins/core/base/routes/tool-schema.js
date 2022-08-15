@@ -9,6 +9,37 @@ async function getDereferencedSchema(schema) {
   return dereferencedSchema;
 }
 
+function integrateCustomSchema(schema, customSchema, customSchemaDefinitions) {
+  if (!schema || !customSchema) return schema;
+  if (Object.keys(customSchema).length === 0) return schema;
+
+  let newFullSchemaProperties = {};
+  let newFullSchemaDefinitions = {};
+
+  Object.keys(schema.properties).forEach((propertyKey) => {
+    // Replace data table with custom element(s)
+    if (propertyKey === "data") {
+      for (const customPropertyKey of Object.keys(customSchema)) {
+        newFullSchemaProperties[customPropertyKey] = customSchema[customPropertyKey];
+      }
+    } else {
+      newFullSchemaProperties[propertyKey] = schema.properties[propertyKey];
+    }
+  });
+
+  if (customSchemaDefinitions) {
+    if (schema.definitions) newFullSchemaDefinitions = schema.definitions;
+    for (const customPropertyKey of Object.keys(customSchemaDefinitions)) {
+      newFullSchemaDefinitions[customPropertyKey] = customSchemaDefinitions[customPropertyKey];
+    }
+  }
+
+  schema.properties = newFullSchemaProperties;
+  schema.definitions = newFullSchemaDefinitions;
+
+  return schema;
+}
+
 module.exports = {
   getSchema: function(options) {
     return {
@@ -21,7 +52,7 @@ module.exports = {
         validate: {
           params: {
             tool: Joi.string().required()
-          }
+          },
         }
       },
       handler: async (request, h) => {
@@ -40,7 +71,54 @@ module.exports = {
         const schema = JSON.parse(response.source.toString());
         return getDereferencedSchema(schema);
       }
-    };
+    }
+  },
+  postSchema: function(options) {
+    return {
+      path: "/tools/{tool}/schema.json",
+      method: "POST",
+      options: {
+        description:
+          "Returns the dereferenced schema by proxying the renderer service for the given tool as defined in the environment. Takes a custom schema as payload and integrates it into the tool schema.",
+        tags: ["api", "editor"],
+        payload: {
+          allow: ["application/json"],
+        },
+        validate: {
+          params: {
+            tool: Joi.string().required(),
+          },
+          payload: {
+            customSchema: Joi.object().required(),
+            customSchemaDefinitions: Joi.object(),
+          },
+        }
+      },
+      handler: async (request, h) => {
+        let customSchema = request.payload.customSchema;
+        let customSchemaDefinitions = request.payload.customSchemaDefinitions;
+
+        // Prepare call of server method 'getToolResponse'
+        request.params.path = "schema.json";
+        request.payload = undefined; // payload will be send to the tool, that's why we need to remove it here
+
+        // Get tool schema
+        const response = await Reflect.apply(
+          request.server.methods.getToolResponse,
+          this,
+          [options, request, h]
+        );
+        
+        // Integrate 'customSchema' into tool schema
+        const schema = integrateCustomSchema(
+          JSON.parse(response.source.toString()),
+          customSchema,
+          customSchemaDefinitions
+        );
+
+        return getDereferencedSchema(schema);
+      }
+    }
   },
   getDisplayOptionsSchema: function(options) {
     return {

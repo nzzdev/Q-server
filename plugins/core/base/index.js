@@ -33,6 +33,7 @@ module.exports = {
       require("./routes/tool-default.js").getGetRoute(options),
       require("./routes/tool-default.js").getPostRoute(options),
       require("./routes/tool-schema.js").getSchema(options),
+      require("./routes/tool-schema.js").postSchema(options),
       require("./routes/tool-schema.js").getDisplayOptionsSchema(options),
       require("./routes/display-options-schema.js").getGetRoute(options),
       require("./routes/health.js"),
