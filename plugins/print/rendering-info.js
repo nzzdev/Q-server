@@ -173,7 +173,7 @@ module.exports = {
           `convert ${fileNameBase}orig.tiff -alpha off -compress lzw ${fileNameBase}-no-alpha.tiff`
         );
 
-        console.log('stdoutA', stdoutA);
+        // console.log('stdoutA', stdoutA);
         console.log('stderrA', stderrA);
 
         // we need to use tiff2pdf instead of imagemagick since this produces pdf v1.3 compatible PDFs where imagemagick does not
@@ -181,7 +181,7 @@ module.exports = {
           `tiff2pdf -z -o ${fileNameBase}.pdf ${fileNameBase}-no-alpha.tiff`
         );
 
-        console.log('stdoutP', stdoutP);
+        // console.log('stdoutP', stdoutP);
         console.log('stderrP', stderrP);
 
         const pdfBuffer = await fs.readFile(`${fileNameBase}.pdf`);
