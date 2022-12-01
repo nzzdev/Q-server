@@ -186,7 +186,7 @@ module.exports = {
 
         const pdfBuffer = await fs.readFile(`${fileNameBase}.pdf`);
 
-        console.log('pdfBuffer', pdfBuffer);
+        // console.log('pdfBuffer', pdfBuffer);
 
         resolve(h.response(pdfBuffer).type("application/pdf"));
 
