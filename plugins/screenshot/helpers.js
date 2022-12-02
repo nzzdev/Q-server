@@ -62,6 +62,9 @@ async function getFinishedPage(
     page = await browser.newPage();
   }
 
+  // Increase timeout from 30 to 120 seconds
+  page.setDefaultTimeout(120000);
+
   // the height of 16384 is the max height of a GL context in chromium or something
   await page.setViewport({
     width: config.width,
@@ -69,7 +72,7 @@ async function getFinishedPage(
     deviceScaleFactor: config.dpr,
   });
 
-  await page.goto(emptyPageUrl, { timeout: 120000 });
+  await page.goto(emptyPageUrl);
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
