@@ -6,6 +6,7 @@ let browserPromise = startChromiumProcess();
 
 function startChromiumProcess() {
   return puppeteer.launch({
+    devtools: true,
     //executablePath: "/usr/bin/google-chrome",
     args: [
       "--no-sandbox",
@@ -68,7 +69,7 @@ async function getFinishedPage(
     deviceScaleFactor: config.dpr,
   });
 
-  await page.goto(emptyPageUrl);
+  await page.goto(emptyPageUrl, { timeout: 120 });
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
