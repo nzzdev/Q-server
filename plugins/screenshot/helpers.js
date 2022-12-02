@@ -69,7 +69,7 @@ async function getFinishedPage(
     deviceScaleFactor: config.dpr,
   });
 
-  await page.goto(emptyPageUrl, { timeout: 120 });
+  await page.goto(emptyPageUrl, { timeout: 120000 });
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
