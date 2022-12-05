@@ -8,7 +8,7 @@ const crypto = require("crypto");
 
 const {
   getCmykTiffBufferFromPng,
-  promoteTiffBufferToBlack
+  promoteTiffBufferToBlack,
 } = require("./conversions.js");
 
 // this seems to be the standard chrome points per pixel unit
@@ -24,40 +24,36 @@ module.exports = {
   options: {
     validate: {
       options: {
-        allowUnknown: true
+        allowUnknown: true,
       },
       params: {
-        format: Joi.string().valid("png", "pdf", "tiff", "tif")
+        format: Joi.string().valid("png", "pdf", "tiff", "tif"),
       },
       payload: {
         item: Joi.object().required(),
         toolRuntimeConfig: Joi.object()
           .required()
           .keys({
-            displayOptions: Joi.object()
-              .required()
-              .keys({
-                columns: Joi.number().required()
-              })
-          })
+            displayOptions: Joi.object().required().keys({
+              columns: Joi.number().required(),
+            }),
+          }),
       },
       query: {
-        _id: Joi.string().required()
-      }
+        _id: Joi.string().required(),
+      },
     },
     cache: {
-      expiresIn: 1000 * 60 // 60 seconds
+      expiresIn: 1000 * 60, // 60 seconds
     },
-    tags: ["api"]
+    tags: ["api"],
   },
-  handler: async function(request, h) {
-    console.log('DISPLAYOPTIONS', request.payload.toolRuntimeConfig.displayOptions);
+  handler: async function (request, h) {
+    //console.log('DISPLAYOPTIONS', request.payload.toolRuntimeConfig.displayOptions);
 
     try {
       const displayOptions = request.payload.toolRuntimeConfig.displayOptions;
       const screenshotRequestQuery = {};
-
-
 
       if (displayOptions && displayOptions.printTitle) {
         request.payload.item.title = displayOptions.printTitle;
@@ -75,53 +71,57 @@ module.exports = {
         JSON.stringify(request.payload.toolRuntimeConfig)
       );
 
-
-
       // pass all the displayOptions to the tool
       // set hideTitle to true if the titleStyle is 'hide'
       screenshotRequestToolRuntimeConfig.displayOptions = Object.assign(
         displayOptions,
         {
-          hideTitle: displayOptions.titleStyle === "hide"
+          hideTitle: displayOptions.titleStyle === "hide",
         }
       );
 
-      console.log('SCREENSHOT_REQUEST_TOOLRUNTIMECONFIG', screenshotRequestToolRuntimeConfig);
+      //console.log('SCREENSHOT_REQUEST_TOOLRUNTIMECONFIG', screenshotRequestToolRuntimeConfig);
 
       const screenshotRequestPayload = {
         toolRuntimeConfig: screenshotRequestToolRuntimeConfig,
-        item: request.payload.item
+        item: request.payload.item,
       };
 
-      console.log('SCREENSHOT_REQUEST_PAYLOAD', screenshotRequestPayload);
+      //console.log('SCREENSHOT_REQUEST_PAYLOAD', screenshotRequestPayload);
 
       const dpi = request.payload.toolRuntimeConfig.dpi || 300;
       screenshotRequestQuery.dpr = dpi / chromePPI;
 
-      console.log('dpi', dpi);
-      console.log('chromePPI', chromePPI);
+      //console.log('dpi', dpi);
+      //console.log('chromePPI', chromePPI);
 
       // the screenshot width is the width in inch * target dpi
-      const mm = await request.server.methods.plugins.q.print.colsToMm(displayOptions.columnsProfile, displayOptions.columns);
+      const mm = await request.server.methods.plugins.q.print.colsToMm(
+        displayOptions.columnsProfile,
+        displayOptions.columns
+      );
 
-      console.log('mm', mm);
+      //console.log('mm', mm);
 
       screenshotRequestQuery.width = Math.round(
         (mmToInch(mm) * dpi) / screenshotRequestQuery.dpr
       );
-      screenshotRequestQuery.background = screenshotRequestQuery.background || "white";
-      screenshotRequestQuery.wait = request.payload.toolRuntimeConfig.wait || 2000;
-      screenshotRequestQuery.target = await request.server.settings.app.print.target;
+      screenshotRequestQuery.background =
+        screenshotRequestQuery.background || "white";
+      screenshotRequestQuery.wait =
+        request.payload.toolRuntimeConfig.wait || 2000;
+      screenshotRequestQuery.target = await request.server.settings.app.print
+        .target;
 
-      console.log('SCREENSHOT_REQUEST_QUERY', screenshotRequestQuery);
+      //console.log('SCREENSHOT_REQUEST_QUERY', screenshotRequestQuery);
 
       const screenshotImageResponse = await request.server.inject({
         method: "POST",
         url: `/screenshot.png?${querystring.stringify(screenshotRequestQuery)}`,
-        payload: screenshotRequestPayload
+        payload: screenshotRequestPayload,
       });
 
-      console.log('SCREENSHOT_IMAGE_RESPONSE', screenshotImageResponse);
+      //console.log('SCREENSHOT_IMAGE_RESPONSE', screenshotImageResponse);
 
       // fail early if there is an error to generate the screenshot
       if (screenshotImageResponse.statusCode !== 200) {
@@ -136,7 +136,11 @@ module.exports = {
       return await new Promise(async (resolve, reject) => {
         const pngBuffer = screenshotImageResponse.rawPayload;
         const profiles = await request.server.settings.app.print.profiles;
-        const tiffBuffer = await getCmykTiffBufferFromPng(pngBuffer, dpi, profiles);
+        const tiffBuffer = await getCmykTiffBufferFromPng(
+          pngBuffer,
+          dpi,
+          profiles
+        );
         const finalTiffBuffer = await promoteTiffBufferToBlack(tiffBuffer);
 
         // if a TIFF is requested we return it here
@@ -157,14 +161,14 @@ module.exports = {
           .update(request.info.id)
           .digest("hex");
 
-        console.log('requestId', requestId);
+        //console.log('requestId', requestId);
 
         // the following could all be optimised maybe by implementing it using streams and buffers
         // instead of writing and reading files
         // but we do it easy for now...
         const fileNameBase = `${__dirname}/${requestId}`;
 
-        console.log('fileNameBase', fileNameBase);
+        //console.log('fileNameBase', fileNameBase);
 
         // write the tiff buffer to disk
         await fs.writeFile(`${fileNameBase}orig.tiff`, tiffBuffer);
@@ -199,5 +203,5 @@ module.exports = {
       request.server.log(["error"], e);
       throw e;
     }
-  }
+  },
 };
