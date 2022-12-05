@@ -1,5 +1,7 @@
 dist: xenial
 sudo: true
+before_install:
+  - export DISPLAY=:10.0
 language: node_js
 node_js:
   - "14"
@@ -9,6 +11,4 @@ cache:
 install:
   - npm install
 script:
-  - xvfb-run npm test
-services:
-  - xvfb
+  - npm test
