@@ -1,7 +1,7 @@
 dist: xenial
 sudo: true
 before_install:
-  - export DISPLAY=:10.0
+  - export DISPLAY=:99.0
 language: node_js
 node_js:
   - "14"
