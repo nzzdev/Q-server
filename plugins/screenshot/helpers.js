@@ -26,7 +26,7 @@ async function startPcrChromiumProcess() {
       headless: false,
       args: [
         "--no-sandbox",
-        "--disable-setuid-sandbox",
+        //"--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--font-render-hinting=none",
       ],
