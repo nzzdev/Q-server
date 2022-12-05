@@ -678,6 +678,7 @@ lab.experiment("core schema endpoints", () => {
 lab.experiment("screenshot plugin", () => {
   it(
     "returns a screenshot with correct cache-control headers with wait as number",
+    // Note: Increased timeout due to travis xvfb (emulation of a browser gui) taking longer for certain tests
     { timeout: 10000, plan: 3 },
     async () => {
       const response = await server.inject(
@@ -693,6 +694,7 @@ lab.experiment("screenshot plugin", () => {
 
   it(
     "returns a screenshot with correct cache-control headers with wait as selector",
+    // Note: Increased timeout due to travis xvfb (emulation of a browser gui) taking longer for certain tests
     { timeout: 20000, plan: 3 },
     async () => {
       const response = await server.inject(
@@ -708,6 +710,7 @@ lab.experiment("screenshot plugin", () => {
 
   it(
     "returns a screenshot with correct cache-control headers without wait",
+    // Note: Increased timeout due to travis xvfb (emulation of a browser gui) taking longer for certain tests
     { timeout: 20000, plan: 3 },
     async () => {
       const response = await server.inject(
