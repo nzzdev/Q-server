@@ -30,9 +30,9 @@ async function startPcrChromiumProcess() {
         "--disable-dev-shm-usage",
         "--font-render-hinting=none",
       ],
-      env: {
+      /* env: {
         DISPLAY: ":10.0",
-      },
+      }, */
       executablePath: stats.executablePath,
     })
     .catch(function (error) {
