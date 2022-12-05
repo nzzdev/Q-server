@@ -1,11 +1,49 @@
 const puppeteer = require("puppeteer");
 const fetch = require("node-fetch");
+const PCR = require("puppeteer-chromium-resolver");
 
 // start a chromium process here
-let browserPromise = startChromiumProcess();
+let browserPromise = startPcrChromiumProcess();
+
+async function startPcrChromiumProcess() {
+  const option = {
+    revision: "",
+    detectionPath: "",
+    folderName: ".chromium-browser-snapshots",
+    defaultHosts: [
+      "https://storage.googleapis.com",
+      "https://npm.taobao.org/mirrors",
+    ],
+    hosts: [],
+    cacheRevisions: 2,
+    retry: 3,
+    silent: false,
+  };
+  const stats = await PCR(option);
+
+  return stats.puppeteer
+    .launch({
+      headless: false,
+      args: [
+        "--no-sandbox",
+        //"--disable-setuid-sandbox",
+        "--disable-dev-shm-usage",
+        "--font-render-hinting=none",
+      ],
+      /* env: {
+        DISPLAY: ":10.0",
+      }, */
+      executablePath: stats.executablePath,
+    })
+    .catch(function (error) {
+      console.log(error);
+    });
+}
 
 function startChromiumProcess() {
   return puppeteer.launch({
+    //devtools: true,
+    //executablePath: "/usr/bin/google-chrome",
     args: [
       "--no-sandbox",
       "--disable-dev-shm-usage",
@@ -55,10 +93,13 @@ async function getFinishedPage(
   try {
     page = await browser.newPage();
   } catch (err) {
-    browserPromise = startChromiumProcess();
+    browserPromise = startPcrChromiumProcess();
     browser = await browserPromise;
     page = await browser.newPage();
   }
+
+  // Increase timeout from 30 to 120 seconds
+  page.setDefaultTimeout(120000);
 
   // the height of 16384 is the max height of a GL context in chromium or something
   await page.setViewport({
