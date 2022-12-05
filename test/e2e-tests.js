@@ -693,7 +693,7 @@ lab.experiment("screenshot plugin", () => {
 
   it(
     "returns a screenshot with correct cache-control headers with wait as selector",
-    { timeout: 10000, plan: 3 },
+    { timeout: 20000, plan: 3 },
     async () => {
       const response = await server.inject(
         "/screenshot/mock-item-active.png?target=pub1&width=500&wait=h1"
@@ -708,7 +708,7 @@ lab.experiment("screenshot plugin", () => {
 
   it(
     "returns a screenshot with correct cache-control headers without wait",
-    { timeout: 10000, plan: 3 },
+    { timeout: 20000, plan: 3 },
     async () => {
       const response = await server.inject(
         "/screenshot/mock-item-active.png?target=pub1&width=500"
