@@ -1,5 +1,7 @@
 dist: xenial
 sudo: true
+services:
+  - xvfb
 language: node_js
 node_js:
   - "14"
