@@ -48,6 +48,7 @@ function startChromiumProcess() {
       "--no-sandbox",
       "--disable-dev-shm-usage",
       "--font-render-hinting=none",
+      ,
     ],
   });
 }
@@ -108,7 +109,8 @@ async function getFinishedPage(
     deviceScaleFactor: config.dpr,
   });
 
-  await page.goto(emptyPageUrl);
+  // Potential fix for timeouts: https://github.com/puppeteer/puppeteer/issues/1552#issuecomment-350954419
+  await page.goto(emptyPageUrl, { waitUntil: "domcontentloaded" });
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
