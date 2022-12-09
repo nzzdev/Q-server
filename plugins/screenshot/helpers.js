@@ -23,8 +23,10 @@ async function startPcrChromiumProcess() {
 
   return stats.puppeteer
     .launch({
-      headless: false,
+      timeout: 120000, // Reduce chances for timeouts
+      headless: true, // Not needed with xvfb
       args: [
+        "--single-process", // Reduce chances for timeouts
         "--no-sandbox",
         //"--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
@@ -36,21 +38,8 @@ async function startPcrChromiumProcess() {
       executablePath: stats.executablePath,
     })
     .catch(function (error) {
-      console.log(error);
+      Boom.internal(error.message);
     });
-}
-
-function startChromiumProcess() {
-  return puppeteer.launch({
-    //devtools: true,
-    //executablePath: "/usr/bin/google-chrome",
-    args: [
-      "--no-sandbox",
-      "--disable-dev-shm-usage",
-      "--font-render-hinting=none",
-      ,
-    ],
-  });
 }
 
 // fetches assets and returns a concatenated string containing everything fetched
@@ -109,8 +98,7 @@ async function getFinishedPage(
     deviceScaleFactor: config.dpr,
   });
 
-  // Potential fix for timeouts: https://github.com/puppeteer/puppeteer/issues/1552#issuecomment-350954419
-  await page.goto(emptyPageUrl, { waitUntil: "domcontentloaded" });
+  await page.goto(emptyPageUrl);
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
@@ -136,8 +124,9 @@ async function getFinishedPage(
       </body>
     </html>`;
 
+  // Potential fix for timeouts: https://github.com/puppeteer/puppeteer/issues/1552#issuecomment-350954419
   await page.setContent(content, {
-    waitUntil: "load",
+    waitUntil: ["domcontentloaded"],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
@@ -151,6 +140,32 @@ async function getFinishedPage(
       requestIdleCallback(resolve);
     });
   }`);
+
+  // Wait for content to be (at least partially) rendered
+  await page.evaluate(async () => {
+    const containerEle = document.querySelector(
+      "#q-screenshot-service-container"
+    );
+    const graphicEle = document.querySelector("#q-screenshot-service-container")
+      .children[0];
+
+    if (graphicEle) {
+      const rects = graphicEle.getBoundingClientRect();
+
+      // Resolve evaluation if there is rendered content
+      if (rects.height > 0 && rects.width > 0) {
+        return;
+      }
+    }
+
+    // Content hasn’t loaded yet, added event listeners (bound to resolve/reject) to know when it does or when it failed
+    const waitUntilImageLoadedPromise = new Promise((resolve, reject) => {
+      containerEle.addEventListener("load", resolve);
+      containerEle.addEventListener("error", reject);
+    });
+
+    await Promise.all([document.fonts.ready, waitUntilImageLoadedPromise]);
+  });
 
   // we support a wait parameter, this is a number in milliseconds to wait for
   if (config.waitBeforeScreenshot) {
