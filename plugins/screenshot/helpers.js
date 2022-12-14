@@ -83,22 +83,41 @@ async function getFinishedPage(
   try {
     page = await browser.newPage();
   } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
+
     browserPromise = startPcrChromiumProcess();
     browser = await browserPromise;
     page = await browser.newPage();
   }
 
-  // Increase timeout from 30 to 120 seconds
-  page.setDefaultTimeout(120000);
+  try {
+    // the height of 16384 is the max height of a GL context in chromium or something
+    await page.setViewport({
+      width: config.width,
+      height: 16384,
+      deviceScaleFactor: config.dpr,
+    });
 
-  // the height of 16384 is the max height of a GL context in chromium or something
-  await page.setViewport({
-    width: config.width,
-    height: 16384,
-    deviceScaleFactor: config.dpr,
-  });
+    await page.goto(emptyPageUrl);
+  } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
 
-  await page.goto(emptyPageUrl);
+    throw err;
+  }
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
@@ -141,32 +160,6 @@ async function getFinishedPage(
     });
   }`);
 
-  // Wait for content to be (at least partially) rendered
-  await page.evaluate(async () => {
-    const containerEle = document.querySelector(
-      "#q-screenshot-service-container"
-    );
-    const graphicEle = document.querySelector("#q-screenshot-service-container")
-      .children[0];
-
-    if (graphicEle) {
-      const rects = graphicEle.getBoundingClientRect();
-
-      // Resolve evaluation if there is rendered content
-      if (rects.height > 0 && rects.width > 0) {
-        return;
-      }
-    }
-
-    // Content hasn’t loaded yet, added event listeners (bound to resolve/reject) to know when it does or when it failed
-    const waitUntilImageLoadedPromise = new Promise((resolve, reject) => {
-      containerEle.addEventListener("load", resolve);
-      containerEle.addEventListener("error", reject);
-    });
-
-    await Promise.all([document.fonts.ready, waitUntilImageLoadedPromise]);
-  });
-
   // we support a wait parameter, this is a number in milliseconds to wait for
   if (config.waitBeforeScreenshot) {
     await page.waitForTimeout(config.waitBeforeScreenshot);
@@ -187,21 +180,36 @@ async function getScreenshotImage(
     isTransparent = true;
   }
 
-  const page = await getFinishedPage(
-    emptyPageUrl,
-    markup,
-    scripts,
-    stylesheets,
-    config
-  );
+  let imageBuffer;
 
-  const graphicElement = await page.$("#q-screenshot-service-container");
+  try {
+    const page = await getFinishedPage(
+      emptyPageUrl,
+      markup,
+      scripts,
+      stylesheets,
+      config
+    );
 
-  const imageBuffer = await graphicElement.screenshot({
-    omitBackground: isTransparent,
-  });
+    const graphicElement = await page.$("#q-screenshot-service-container");
 
-  await page.close();
+    imageBuffer = await graphicElement.screenshot({
+      omitBackground: isTransparent,
+    });
+
+    await page.close();
+  } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
+
+    throw err;
+  }
 
   return imageBuffer;
 }
