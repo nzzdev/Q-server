@@ -27,7 +27,9 @@ function getGetRenderingInfoRoute(config) {
         },
         query: {
           toolRuntimeConfig: Joi.object({
-            size: Joi.object(sizeValidationObject).optional()
+            fileRequestBaseUrl: Joi.any().forbidden("Key 'fileRequestBaseUrl' is not allowed."),
+            toolBaseUrl: Joi.any().forbidden("Key 'toolBaseUrl' is not allowed."),
+            size: Joi.object(sizeValidationObject).optional(),
           }),
           ignoreInactive: Joi.boolean().optional(),
           noCache: Joi.boolean().optional()
@@ -120,7 +122,9 @@ function getPostRenderingInfoRoute(config) {
         payload: {
           item: Joi.object().required(),
           toolRuntimeConfig: Joi.object({
-            size: Joi.object(sizeValidationObject).optional()
+            fileRequestBaseUrl: Joi.any().forbidden("Key 'fileRequestBaseUrl' is not allowed."),
+            toolBaseUrl: Joi.any().forbidden("Key 'toolBaseUrl' is not allowed."),
+            size: Joi.object(sizeValidationObject).optional(),
           })
         },
         options: {
