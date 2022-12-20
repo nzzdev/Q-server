@@ -80,16 +80,6 @@ async function getScreenshotResponse(server, h, params, item) {
 
   const renderingInfo = JSON.parse(response.payload);
 
-  if (typeof renderingInfo === "object") {
-    throw new Boom.Boom(
-      `Failed to get valid renderingInfo content in headless chrome for screenshot for ${item.tool} and ${params.target} with the error: ${response.statusMessage}`,
-      {
-        statusCode: response.statusCode,
-        renderingInfo: renderingInfo,
-      }
-    );
-  }
-
   let scripts = await server.methods.plugins.q.screenshot.getScripts(
     renderingInfo
   );
