@@ -149,9 +149,12 @@ async function getFinishedPage(
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
-  await page.mainFrame().addScriptTag({
-    content: scriptContent,
-  });
+
+  if(scriptContent) {
+    await page.mainFrame().addScriptTag({
+      content: scriptContent,
+    });
+  }
 
   // wait for the next idle callback (to have most probably finished all work)
   await page.evaluate(`() => {
