@@ -49,8 +49,6 @@ module.exports = {
     tags: ["api"],
   },
   handler: async function (request, h) {
-    //console.log('DISPLAYOPTIONS', request.payload.toolRuntimeConfig.displayOptions);
-
     try {
       const displayOptions = request.payload.toolRuntimeConfig.displayOptions;
       const screenshotRequestQuery = {};
@@ -80,28 +78,19 @@ module.exports = {
         }
       );
 
-      //console.log('SCREENSHOT_REQUEST_TOOLRUNTIMECONFIG', screenshotRequestToolRuntimeConfig);
-
       const screenshotRequestPayload = {
         toolRuntimeConfig: screenshotRequestToolRuntimeConfig,
         item: request.payload.item,
       };
 
-      //console.log('SCREENSHOT_REQUEST_PAYLOAD', screenshotRequestPayload);
-
       const dpi = request.payload.toolRuntimeConfig.dpi || 300;
       screenshotRequestQuery.dpr = dpi / chromePPI;
-
-      //console.log('dpi', dpi);
-      //console.log('chromePPI', chromePPI);
 
       // the screenshot width is the width in inch * target dpi
       const mm = await request.server.methods.plugins.q.print.colsToMm(
         displayOptions.columnsProfile,
         displayOptions.columns
       );
-
-      //console.log('mm', mm);
 
       screenshotRequestQuery.width = Math.round(
         (mmToInch(mm) * dpi) / screenshotRequestQuery.dpr
@@ -113,15 +102,11 @@ module.exports = {
       screenshotRequestQuery.target = await request.server.settings.app.print
         .target;
 
-      //console.log('SCREENSHOT_REQUEST_QUERY', screenshotRequestQuery);
-
       const screenshotImageResponse = await request.server.inject({
         method: "POST",
         url: `/screenshot.png?${querystring.stringify(screenshotRequestQuery)}`,
         payload: screenshotRequestPayload,
       });
-
-      //console.log('SCREENSHOT_IMAGE_RESPONSE', screenshotImageResponse);
 
       // fail early if there is an error to generate the screenshot
       if (screenshotImageResponse.statusCode !== 200) {
@@ -161,14 +146,10 @@ module.exports = {
           .update(request.info.id)
           .digest("hex");
 
-        //console.log('requestId', requestId);
-
         // the following could all be optimised maybe by implementing it using streams and buffers
         // instead of writing and reading files
         // but we do it easy for now...
         const fileNameBase = `${__dirname}/${requestId}`;
-
-        //console.log('fileNameBase', fileNameBase);
 
         // write the tiff buffer to disk
         await fs.writeFile(`${fileNameBase}orig.tiff`, tiffBuffer);
@@ -177,20 +158,12 @@ module.exports = {
           `convert ${fileNameBase}orig.tiff -alpha off -compress lzw ${fileNameBase}-no-alpha.tiff`
         );
 
-        // console.log('stdoutA', stdoutA);
-        // console.log('stderrA', stderrA);
-
         // we need to use tiff2pdf instead of imagemagick since this produces pdf v1.3 compatible PDFs where imagemagick does not
         const { stdoutP, stderrP } = await exec(
           `tiff2pdf -z -o ${fileNameBase}.pdf ${fileNameBase}-no-alpha.tiff`
         );
 
-        // console.log('stdoutP', stdoutP);
-        // console.log('stderrP', stderrP);
-
         const pdfBuffer = await fs.readFile(`${fileNameBase}.pdf`);
-
-        // console.log('pdfBuffer', pdfBuffer);
 
         resolve(h.response(pdfBuffer).type("application/pdf"));
 

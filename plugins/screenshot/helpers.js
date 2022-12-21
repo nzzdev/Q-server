@@ -28,13 +28,9 @@ async function startPcrChromiumProcess() {
       args: [
         "--single-process", // Reduce chances for timeouts
         "--no-sandbox",
-        //"--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--font-render-hinting=none",
       ],
-      /* env: {
-        DISPLAY: ":10.0",
-      }, */
       executablePath: stats.executablePath,
     })
     .catch(function (error) {
@@ -143,14 +139,13 @@ async function getFinishedPage(
       </body>
     </html>`;
 
-  // Potential fix for timeouts: https://github.com/puppeteer/puppeteer/issues/1552#issuecomment-350954419
   await page.setContent(content, {
     waitUntil: ["domcontentloaded"],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
 
-  if(scriptContent) {
+  if (scriptContent) {
     await page.mainFrame().addScriptTag({
       content: scriptContent,
     });
