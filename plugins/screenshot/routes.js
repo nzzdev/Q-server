@@ -44,15 +44,30 @@ async function getScreenshotResponse(server, h, params, item) {
     };
   }
 
-  const response = await server.inject({
-    method: "POST",
-    url: `/rendering-info/${params.target}`,
-    payload: {
-      toolRuntimeConfig: toolRuntimeConfig,
-      item: item,
-      ignoreInactive: true,
-    },
-  });
+  let response;
+
+  try {
+    response = await server.inject({
+      method: "POST",
+      url: `/rendering-info/${params.target}`,
+      payload: {
+        toolRuntimeConfig: toolRuntimeConfig,
+        item: item,
+        ignoreInactive: true,
+      },
+    });
+  } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
+
+    throw err;
+  }
 
   if (response.statusCode !== 200) {
     throw new Boom.Boom(
@@ -94,25 +109,56 @@ async function getScreenshotResponse(server, h, params, item) {
   }
 
   if (params.format === "png") {
-    const screenshotBuffer = await getScreenshotImage(
-      `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
-      renderingInfo.markup,
-      scripts,
-      stylesheets,
-      config
-    );
+    let screenshotBuffer;
+
+    try {
+      screenshotBuffer = await getScreenshotImage(
+        `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
+        renderingInfo.markup,
+        scripts,
+        stylesheets,
+        config
+      );
+    } catch (err) {
+      if (err.stack) {
+        request.server.log(["error"], err.stack);
+      }
+      if (err.isBoom) {
+        throw err;
+      } else {
+        request.server.log(["error"], err.message);
+      }
+
+      throw err;
+    }
 
     const imageResponse = h.response(screenshotBuffer);
     imageResponse.type("image/png");
     return imageResponse;
   } else if (params.format === "json") {
-    const screenshotInfo = await getScreenshotInfo(
-      `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
-      renderingInfo.markup,
-      scripts,
-      stylesheets,
-      config
-    );
+    let screenshotInfo;
+
+    try {
+      screenshotInfo = await getScreenshotInfo(
+        `${server.info.protocol}://localhost:${server.info.port}/screenshot/empty-page.html`,
+        renderingInfo.markup,
+        scripts,
+        stylesheets,
+        config
+      );
+    } catch (err) {
+      if (err.stack) {
+        request.server.log(["error"], err.stack);
+      }
+      if (err.isBoom) {
+        throw err;
+      } else {
+        request.server.log(["error"], err.message);
+      }
+
+      throw err;
+    }
+
     const infoResponse = h.response(screenshotInfo);
     return infoResponse;
   }
@@ -149,12 +195,29 @@ module.exports = {
           const screenshotConfig = Object.assign({}, request.query, {
             format: request.params.format,
           });
-          const response = await getScreenshotResponse(
-            request.server,
-            h,
-            screenshotConfig,
-            item
-          );
+
+          let response;
+
+          try {
+            response = await getScreenshotResponse(
+              request.server,
+              h,
+              screenshotConfig,
+              item
+            );
+          } catch (err) {
+            if (err.stack) {
+              request.server.log(["error"], err.stack);
+            }
+            if (err.isBoom) {
+              throw err;
+            } else {
+              request.server.log(["error"], err.message);
+            }
+
+            throw err;
+          }
+
           response.header("cache-control", cacheControlHeader);
           return response;
         },

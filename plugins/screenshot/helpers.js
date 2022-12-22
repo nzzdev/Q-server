@@ -23,34 +23,19 @@ async function startPcrChromiumProcess() {
 
   return stats.puppeteer
     .launch({
-      headless: false,
+      timeout: 120000, // Reduce chances for timeouts
+      headless: true, // Not needed with xvfb
       args: [
+        "--single-process", // Reduce chances for timeouts
         "--no-sandbox",
-        //"--disable-setuid-sandbox",
         "--disable-dev-shm-usage",
         "--font-render-hinting=none",
       ],
-      /* env: {
-        DISPLAY: ":10.0",
-      }, */
       executablePath: stats.executablePath,
     })
     .catch(function (error) {
-      console.log(error);
+      Boom.internal(error.message);
     });
-}
-
-function startChromiumProcess() {
-  return puppeteer.launch({
-    //devtools: true,
-    //executablePath: "/usr/bin/google-chrome",
-    args: [
-      "--no-sandbox",
-      "--disable-dev-shm-usage",
-      "--font-render-hinting=none",
-      ,
-    ],
-  });
 }
 
 // fetches assets and returns a concatenated string containing everything fetched
@@ -94,23 +79,41 @@ async function getFinishedPage(
   try {
     page = await browser.newPage();
   } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
+
     browserPromise = startPcrChromiumProcess();
     browser = await browserPromise;
     page = await browser.newPage();
   }
 
-  // Increase timeout from 30 to 120 seconds
-  page.setDefaultTimeout(120000);
+  try {
+    // the height of 16384 is the max height of a GL context in chromium or something
+    await page.setViewport({
+      width: config.width,
+      height: 16384,
+      deviceScaleFactor: config.dpr,
+    });
 
-  // the height of 16384 is the max height of a GL context in chromium or something
-  await page.setViewport({
-    width: config.width,
-    height: 16384,
-    deviceScaleFactor: config.dpr,
-  });
+    await page.goto(emptyPageUrl);
+  } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
 
-  // Potential fix for timeouts: https://github.com/puppeteer/puppeteer/issues/1552#issuecomment-350954419
-  await page.goto(emptyPageUrl, { waitUntil: "domcontentloaded" });
+    throw err;
+  }
 
   // use strings instead of functions here as it will break in the tests otherwise.
   const userAgent = await page.evaluate("navigator.userAgent");
@@ -137,13 +140,16 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: "load",
+    waitUntil: ["domcontentloaded"],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
-  await page.mainFrame().addScriptTag({
-    content: scriptContent,
-  });
+
+  if (scriptContent) {
+    await page.mainFrame().addScriptTag({
+      content: scriptContent,
+    });
+  }
 
   // wait for the next idle callback (to have most probably finished all work)
   await page.evaluate(`() => {
@@ -172,21 +178,36 @@ async function getScreenshotImage(
     isTransparent = true;
   }
 
-  const page = await getFinishedPage(
-    emptyPageUrl,
-    markup,
-    scripts,
-    stylesheets,
-    config
-  );
+  let imageBuffer;
 
-  const graphicElement = await page.$("#q-screenshot-service-container");
+  try {
+    const page = await getFinishedPage(
+      emptyPageUrl,
+      markup,
+      scripts,
+      stylesheets,
+      config
+    );
 
-  const imageBuffer = await graphicElement.screenshot({
-    omitBackground: isTransparent,
-  });
+    const graphicElement = await page.$("#q-screenshot-service-container");
 
-  await page.close();
+    imageBuffer = await graphicElement.screenshot({
+      omitBackground: isTransparent,
+    });
+
+    await page.close();
+  } catch (err) {
+    if (err.stack) {
+      request.server.log(["error"], err.stack);
+    }
+    if (err.isBoom) {
+      throw err;
+    } else {
+      request.server.log(["error"], err.message);
+    }
+
+    throw err;
+  }
 
   return imageBuffer;
 }
