@@ -108,6 +108,9 @@ async function getScreenshotResponse(server, h, params, item) {
     }
   }
 
+  config.qId = item._id;
+  config.qTool = item.tool;
+
   if (params.format === "png") {
     let screenshotBuffer;
 

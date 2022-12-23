@@ -140,7 +140,10 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: ["domcontentloaded"],
+    waitUntil: [
+      "domcontentloaded",
+      "networkidle0",
+    ],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
@@ -149,6 +152,21 @@ async function getFinishedPage(
     await page.mainFrame().addScriptTag({
       content: scriptContent,
     });
+  }
+
+  // Temporary fix - in the long run we need a solution for all Q tools
+  if (config.qTool === "locator_map") {
+    const qId = `_q_locator_map${config.qId}`;
+  
+    await page.waitForFunction(
+      (qId) => window[qId].isLoaded === true,
+      {
+        timeout: 10000
+      },
+      qId
+    );
+
+    return page;
   }
 
   // wait for the next idle callback (to have most probably finished all work)
