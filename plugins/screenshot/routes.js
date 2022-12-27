@@ -120,7 +120,8 @@ async function getScreenshotResponse(server, h, params, item) {
         renderingInfo.markup,
         scripts,
         stylesheets,
-        config
+        config,
+        server
       );
     } catch (err) {
       if (err.stack) {
@@ -147,7 +148,8 @@ async function getScreenshotResponse(server, h, params, item) {
         renderingInfo.markup,
         scripts,
         stylesheets,
-        config
+        config,
+        server
       );
     } catch (err) {
       if (err.stack) {

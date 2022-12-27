@@ -69,7 +69,8 @@ async function getFinishedPage(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   let browser = await browserPromise;
 
@@ -80,12 +81,12 @@ async function getFinishedPage(
     page = await browser.newPage();
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     browserPromise = startPcrChromiumProcess();
@@ -104,12 +105,12 @@ async function getFinishedPage(
     await page.goto(emptyPageUrl);
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     throw err;
@@ -140,10 +141,7 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: [
-      "domcontentloaded",
-      "networkidle0",
-    ],
+    waitUntil: ["domcontentloaded", "networkidle0"],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
@@ -157,11 +155,11 @@ async function getFinishedPage(
   // Temporary fix - in the long run we need a solution for all Q tools
   if (config.qTool === "locator_map") {
     const qId = `_q_locator_map${config.qId}`;
-  
+
     await page.waitForFunction(
       (qId) => window[qId].isLoaded === true,
       {
-        timeout: 10000
+        timeout: 10000,
       },
       qId
     );
@@ -189,7 +187,8 @@ async function getScreenshotImage(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   let isTransparent = false;
   if (!config.background || config.background === "none") {
@@ -204,7 +203,8 @@ async function getScreenshotImage(
       markup,
       scripts,
       stylesheets,
-      config
+      config,
+      server
     );
 
     const graphicElement = await page.$("#q-screenshot-service-container");
@@ -216,12 +216,12 @@ async function getScreenshotImage(
     await page.close();
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     throw err;
@@ -235,14 +235,16 @@ async function getScreenshotInfo(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   const page = await getFinishedPage(
     emptyPageUrl,
     markup,
     scripts,
     stylesheets,
-    config
+    config,
+    server
   );
 
   const graphicElement = await page.$("#q-screenshot-service-container");
