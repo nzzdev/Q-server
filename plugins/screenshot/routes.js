@@ -58,12 +58,12 @@ async function getScreenshotResponse(server, h, params, item) {
     });
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     throw err;
@@ -124,12 +124,12 @@ async function getScreenshotResponse(server, h, params, item) {
       );
     } catch (err) {
       if (err.stack) {
-        request.server.log(["error"], err.stack);
+        server.log(["error"], err.stack);
       }
       if (err.isBoom) {
         throw err;
       } else {
-        request.server.log(["error"], err.message);
+        server.log(["error"], err.message);
       }
 
       throw err;
@@ -151,12 +151,12 @@ async function getScreenshotResponse(server, h, params, item) {
       );
     } catch (err) {
       if (err.stack) {
-        request.server.log(["error"], err.stack);
+        server.log(["error"], err.stack);
       }
       if (err.isBoom) {
         throw err;
       } else {
-        request.server.log(["error"], err.message);
+        server.log(["error"], err.message);
       }
 
       throw err;
