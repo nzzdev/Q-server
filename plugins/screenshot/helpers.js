@@ -159,7 +159,7 @@ async function getFinishedPage(
     await page.waitForFunction(
       (qId) => window[qId].isLoaded === true,
       {
-        timeout: 10000,
+        timeout: 30000,
       },
       qId
     );
