@@ -189,6 +189,13 @@ module.exports = {
           tags: ["api"],
         },
         handler: async (request, h) => {
+          // Cancelling the whole request chain is painful without Node 15+, but should be done during refactoring.
+          // See the following answer: https://stackoverflow.com/a/37642079
+          request.raw.req.on("aborted", () => {
+            request.raw.req.abort();
+            return h.response().code(499);
+          });
+
           const item = await request.server.methods.db.item.getById({
             id: request.params.id,
             ignoreInactive: request.query.ignoreInactive,
@@ -247,6 +254,13 @@ module.exports = {
           tags: ["api"],
         },
         handler: async (request, h) => {
+          // Cancelling the whole request chain is painful without Node 15+, but should be done during refactoring.
+          // See the following answer: https://stackoverflow.com/a/37642079
+          request.raw.req.on("aborted", () => {
+            request.raw.req.abort();
+            return h.response().code(499);
+          });
+
           const screenshotConfig = Object.assign({}, request.query, {
             format: request.params.format,
           });
