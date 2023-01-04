@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fetch = require("node-fetch");
 const PCR = require("puppeteer-chromium-resolver");
+let isFirstTime = true;
 
 // start a chromium process here
 let browserPromise = startPcrChromiumProcess();
@@ -32,6 +33,7 @@ async function startPcrChromiumProcess() {
         "--font-render-hinting=none",
       ],
       executablePath: stats.executablePath,
+      devtools: true,
     })
     .catch(function (error) {
       Boom.internal(error.message);
@@ -102,6 +104,27 @@ async function getFinishedPage(
       deviceScaleFactor: config.dpr,
     });
 
+    // Log the console messages of chromium
+    page.on("console", (msg) => {
+      console.log(msg);
+    });
+
+    // Log the GPU information of chromium
+    if (isFirstTime) {
+      await page
+        .goto("chrome://gpu", {
+          waitUntil: "networkidle0",
+          timeout: 20 * 60 * 1000,
+        })
+        .catch((e) => console.log(e));
+
+      const content = await page.content();
+      console.log(content);
+      server.log(["info"], content);
+
+      isFirstTime = false;
+    }
+
     await page.goto(emptyPageUrl);
   } catch (err) {
     if (err.stack) {
@@ -154,17 +177,42 @@ async function getFinishedPage(
 
   // Temporary fix - in the long run we need a solution for all Q tools
   if (config.qTool === "locator_map") {
+    let retry = 0;
+
     const qId = `_q_locator_map${config.qId}`;
 
-    await page.waitForFunction(
-      (qId) => window[qId].isLoaded === true,
-      {
-        timeout: 30000,
-      },
-      qId
-    );
+    while (retry < 2) {
+      try {
+        if (retry === 1) {
+          await page.reload({
+            waitUntil: ["domcontentloaded", "networkidle0"],
+          });
+        }
 
-    return page;
+        await page.waitForFunction(
+          (qId) => window[qId]?.isLoaded === true,
+          {
+            timeout: 20000,
+          },
+          qId
+        );
+
+        return page;
+      } catch (err) {
+        if (err.name === "TimeoutError") {
+          retry++;
+          if (retry >= 2) {
+            throw err;
+          }
+        } else if (err.stack) {
+          server.log(["error"], err.stack);
+        } else if (err.isBoom) {
+          throw err;
+        } else {
+          server.log(["error"], err.message);
+        }
+      }
+    }
   }
 
   // wait for the next idle callback (to have most probably finished all work)
