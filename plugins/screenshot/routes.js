@@ -192,7 +192,6 @@ module.exports = {
           // Cancelling the whole request chain is painful without Node 15+, but should be done during refactoring.
           // See the following answer: https://stackoverflow.com/a/37642079
           request.raw.req.on("aborted", () => {
-            request.raw.req.abort();
             return h.response().code(499);
           });
 
@@ -257,7 +256,6 @@ module.exports = {
           // Cancelling the whole request chain is painful without Node 15+, but should be done during refactoring.
           // See the following answer: https://stackoverflow.com/a/37642079
           request.raw.req.on("aborted", () => {
-            request.raw.req.abort();
             return h.response().code(499);
           });
 
