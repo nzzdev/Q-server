@@ -1,6 +1,7 @@
 const puppeteer = require("puppeteer");
 const fetch = require("node-fetch");
 const PCR = require("puppeteer-chromium-resolver");
+let isFirstTime = true;
 
 // start a chromium process here
 let browserPromise = startPcrChromiumProcess();
@@ -32,6 +33,7 @@ async function startPcrChromiumProcess() {
         "--font-render-hinting=none",
       ],
       executablePath: stats.executablePath,
+      devtools: true,
     })
     .catch(function (error) {
       Boom.internal(error.message);
@@ -69,7 +71,8 @@ async function getFinishedPage(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   let browser = await browserPromise;
 
@@ -80,12 +83,12 @@ async function getFinishedPage(
     page = await browser.newPage();
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     browserPromise = startPcrChromiumProcess();
@@ -101,15 +104,36 @@ async function getFinishedPage(
       deviceScaleFactor: config.dpr,
     });
 
+    // Log the console messages of chromium
+    page.on("console", (msg) => {
+      console.log(msg);
+    });
+
+    // Log the GPU information of chromium
+    if (isFirstTime) {
+      await page
+        .goto("chrome://gpu", {
+          waitUntil: "networkidle0",
+          timeout: 20 * 60 * 1000,
+        })
+        .catch((e) => console.log(e));
+
+      const content = await page.content();
+      console.log(content);
+      server.log(["info"], content);
+
+      isFirstTime = false;
+    }
+
     await page.goto(emptyPageUrl);
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     throw err;
@@ -140,7 +164,7 @@ async function getFinishedPage(
     </html>`;
 
   await page.setContent(content, {
-    waitUntil: ["domcontentloaded"],
+    waitUntil: ["domcontentloaded", "networkidle0"],
   });
 
   const scriptContent = await getConcatenatedAssets(scripts, userAgent);
@@ -149,6 +173,46 @@ async function getFinishedPage(
     await page.mainFrame().addScriptTag({
       content: scriptContent,
     });
+  }
+
+  // Temporary fix - in the long run we need a solution for all Q tools
+  if (config.qTool === "locator_map") {
+    let retry = 0;
+
+    const qId = `_q_locator_map${config.qId}`;
+
+    while (retry < 2) {
+      try {
+        if (retry === 1) {
+          await page.reload({
+            waitUntil: ["domcontentloaded", "networkidle0"],
+          });
+        }
+
+        await page.waitForFunction(
+          (qId) => window[qId]?.isLoaded === true,
+          {
+            timeout: 20000,
+          },
+          qId
+        );
+
+        return page;
+      } catch (err) {
+        if (err.name === "TimeoutError") {
+          retry++;
+          if (retry >= 2) {
+            throw err;
+          }
+        } else if (err.stack) {
+          server.log(["error"], err.stack);
+        } else if (err.isBoom) {
+          throw err;
+        } else {
+          server.log(["error"], err.message);
+        }
+      }
+    }
   }
 
   // wait for the next idle callback (to have most probably finished all work)
@@ -171,7 +235,8 @@ async function getScreenshotImage(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   let isTransparent = false;
   if (!config.background || config.background === "none") {
@@ -186,7 +251,8 @@ async function getScreenshotImage(
       markup,
       scripts,
       stylesheets,
-      config
+      config,
+      server
     );
 
     const graphicElement = await page.$("#q-screenshot-service-container");
@@ -198,12 +264,12 @@ async function getScreenshotImage(
     await page.close();
   } catch (err) {
     if (err.stack) {
-      request.server.log(["error"], err.stack);
+      server.log(["error"], err.stack);
     }
     if (err.isBoom) {
       throw err;
     } else {
-      request.server.log(["error"], err.message);
+      server.log(["error"], err.message);
     }
 
     throw err;
@@ -217,14 +283,16 @@ async function getScreenshotInfo(
   markup,
   scripts,
   stylesheets,
-  config
+  config,
+  server
 ) {
   const page = await getFinishedPage(
     emptyPageUrl,
     markup,
     scripts,
     stylesheets,
-    config
+    config,
+    server
   );
 
   const graphicElement = await page.$("#q-screenshot-service-container");

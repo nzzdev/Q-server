@@ -43,6 +43,12 @@ function getGetRenderingInfoRoute(config) {
       tags: ["api", "reader-facing"],
     },
     handler: async function (request, h) {
+      // This does not cancel the whole request chain, which is painful without Node 15+, but should be done during refactoring.
+      // See the following answer: https://stackoverflow.com/a/37642079
+      request.raw.req.on("aborted", () => {
+        return h.response().code(499);
+      });
+
       let requestToolRuntimeConfig = {};
 
       if (request.query.toolRuntimeConfig) {
@@ -137,6 +143,12 @@ function getPostRenderingInfoRoute(config) {
       tags: ["api", "editor"],
     },
     handler: async function (request, h) {
+      // This does not cancel the whole request chain, which is painful without Node 15+, but should be done during refactoring.
+      // See the following answer: https://stackoverflow.com/a/37642079
+      request.raw.req.on("aborted", () => {
+        return h.response().code(499);
+      });
+
       let requestToolRuntimeConfig = {};
 
       if (request.query.toolRuntimeConfig) {
