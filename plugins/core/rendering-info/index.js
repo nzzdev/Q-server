@@ -27,8 +27,6 @@ function getGetRenderingInfoRoute(config) {
         },
         query: {
           toolRuntimeConfig: Joi.object({
-            fileRequestBaseUrl: Joi.any().forbidden("Key 'fileRequestBaseUrl' is not allowed."),
-            toolBaseUrl: Joi.any().forbidden("Key 'toolBaseUrl' is not allowed."),
             size: Joi.object(sizeValidationObject).optional(),
           }),
           ignoreInactive: Joi.boolean().optional(),
@@ -66,6 +64,11 @@ function getGetRenderingInfoRoute(config) {
 
         requestToolRuntimeConfig = request.query.toolRuntimeConfig;
       }
+
+      // These keys are NOT allowed, because they allow external users to enter any URL which would later be executed without any safety checks
+      // They will be automatically created later during the 'getCompiledToolRuntimeConfig' function
+      delete requestToolRuntimeConfig.fileRequestBaseUrl;
+      delete requestToolRuntimeConfig.toolBaseUrl;
 
       request.app.requestId = crypto
         .createHash("sha1")
@@ -129,8 +132,6 @@ function getPostRenderingInfoRoute(config) {
         payload: {
           item: Joi.object().required(),
           toolRuntimeConfig: Joi.object({
-            fileRequestBaseUrl: Joi.any().forbidden("Key 'fileRequestBaseUrl' is not allowed."),
-            toolBaseUrl: Joi.any().forbidden("Key 'toolBaseUrl' is not allowed."),
             size: Joi.object(sizeValidationObject).optional(),
           }),
         },
@@ -156,6 +157,11 @@ function getPostRenderingInfoRoute(config) {
       } else if (request.payload.toolRuntimeConfig) {
         requestToolRuntimeConfig = request.payload.toolRuntimeConfig;
       }
+
+      // These keys are NOT allowed, because they allow external users to enter any URL which would later be executed without any safety checks
+      // They will be automatically created later during the 'getCompiledToolRuntimeConfig' function
+      delete requestToolRuntimeConfig.fileRequestBaseUrl;
+      delete requestToolRuntimeConfig.toolBaseUrl;
 
       if (requestToolRuntimeConfig && requestToolRuntimeConfig.size) {
         try {
