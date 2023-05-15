@@ -25,7 +25,7 @@ function validateAgainstSchema(request, doc) {
       reject(
         Boom.badRequest(
           validate.errors
-            .map(error => {
+            .map((error) => {
               return JSON.stringify(error);
             })
             .join("\n")
@@ -42,29 +42,29 @@ module.exports = {
     options: {
       auth: {
         strategies: ["q-auth"],
-        mode: "optional"
+        mode: "optional",
       },
       cors: {
-        credentials: true
+        credentials: true,
       },
       validate: {
         params: {
-          id: Joi.string().required()
-        }
+          id: Joi.string().required(),
+        },
       },
       description: "gets the item with the given id from the database",
-      tags: ["api", "editor"]
+      tags: ["api", "editor"],
     },
-    handler: async function(request, h) {
+    handler: async function (request, h) {
       return request.server.methods.db.item.getById({
         id: request.params.id,
         ignoreInactive: true,
         session: {
           credentials: request.auth.credentials,
-          artifacts: request.auth.artifacts
-        }
+          artifacts: request.auth.artifacts,
+        },
       });
-    }
+    },
   },
   post: {
     path: "/item",
@@ -75,21 +75,23 @@ module.exports = {
           _id: Joi.string().optional(),
           _rev: Joi.forbidden(),
           title: Joi.string().required(),
-          tool: Joi.string().required()
+          tool: Joi.string().required(),
         },
         options: {
-          allowUnknown: true
-        }
+          allowUnknown: true,
+        },
       },
-      auth: "q-auth",
+      auth: {
+        strategies: ["q-auth-azure", "q-auth-ld"],
+      },
       cors: {
-        credentials: true
+        credentials: true,
       },
       description:
         "stores a new item to the database and returns the id among other things",
-      tags: ["api", "editor"]
+      tags: ["api", "editor"],
     },
-    handler: async function(request, h) {
+    handler: async function (request, h) {
       let doc = request.payload;
       let now = new Date();
 
@@ -118,8 +120,8 @@ module.exports = {
         doc,
         session: {
           credentials: request.auth.credentials,
-          artifacts: request.auth.artifacts
-        }
+          artifacts: request.auth.artifacts,
+        },
       });
 
       docDiff._id = res.id;
@@ -127,11 +129,11 @@ module.exports = {
 
       const savedDoc = Object.assign(doc, docDiff);
       request.server.events.emit("item.new", {
-        newItem: savedDoc
+        newItem: savedDoc,
       });
 
       return docDiff;
-    }
+    },
   },
   put: {
     path: "/item",
@@ -142,21 +144,23 @@ module.exports = {
           _id: Joi.string().required(),
           _rev: Joi.string().required(),
           title: Joi.string().required(),
-          tool: Joi.string().required()
+          tool: Joi.string().required(),
         },
         options: {
-          allowUnknown: true
-        }
+          allowUnknown: true,
+        },
       },
-      auth: "q-auth",
+      auth: {
+        strategies: ["q-auth-azure", "q-auth-ld"],
+      },
       cors: {
-        credentials: true
+        credentials: true,
       },
       description:
         "updates an existing item to the database and returns the new revision number among other things",
-      tags: ["api", "editor"]
+      tags: ["api", "editor"],
     },
-    handler: async function(request, h) {
+    handler: async function (request, h) {
       let doc = request.payload;
       let now = new Date();
       try {
@@ -178,7 +182,7 @@ module.exports = {
 
       const oldDoc = await request.server.methods.db.item.getById({
         id: request.payload._id,
-        ignoreInactive: true
+        ignoreInactive: true,
       });
 
       // if the active state change to true, we set activateDate
@@ -206,8 +210,8 @@ module.exports = {
         doc,
         session: {
           credentials: request.auth.credentials,
-          artifacts: request.auth.artifacts
-        }
+          artifacts: request.auth.artifacts,
+        },
       });
 
       docDiff._rev = res.rev;
@@ -215,7 +219,7 @@ module.exports = {
 
       const eventData = {
         newItem: savedDoc,
-        oldItem: oldDoc
+        oldItem: oldDoc,
       };
 
       if (isNewActive) {
@@ -231,6 +235,6 @@ module.exports = {
       request.server.events.emit("item.update", eventData);
 
       return docDiff;
-    }
-  }
+    },
+  },
 };

@@ -10,13 +10,15 @@ module.exports = {
   path: "/admin/migration/{tool}/{id?}",
   method: "GET",
   config: {
-    auth: "q-auth",
+    auth: {
+      strategies: ["q-auth-azure", "q-auth-ld"],
+    },
     cors: {
-      credentials: true
+      credentials: true,
     },
     description:
       "Executes migration of items in database for specified tool or for a single item with the specified id respectively",
-    tags: ["api"]
+    tags: ["api"],
   },
   handler: async (request, h) => {
     const tool = request.params.tool;
@@ -33,8 +35,8 @@ module.exports = {
           ignoreInactive: true,
           session: {
             credentials: request.auth.credentials,
-            artifacts: request.auth.artifacts
-          }
+            artifacts: request.auth.artifacts,
+          },
         });
         const migrationStatus = await migrateItem(
           item,
@@ -42,7 +44,7 @@ module.exports = {
           request.server.app.db
         );
         return {
-          status: migrationStatus.status
+          status: migrationStatus.status,
         };
       } catch (err) {
         Bounce.rethrow(err, "system");
@@ -53,11 +55,11 @@ module.exports = {
         tool,
         session: {
           credentials: request.auth.credentials,
-          artifacts: request.auth.artifacts
-        }
+          artifacts: request.auth.artifacts,
+        },
       });
 
-      let migrationStatuses = items.map(async item => {
+      let migrationStatuses = items.map(async (item) => {
         return await migrateItem(item, toolBaseUrl, request.server.app.db);
       });
 
@@ -77,13 +79,13 @@ module.exports = {
 
       return stats;
     }
-  }
+  },
 };
 
 function migrateItem(item, toolBaseUrl, db) {
   return new Promise(async (resolve, reject) => {
     const body = {
-      item: item
+      item: item,
     };
 
     try {
@@ -91,8 +93,8 @@ function migrateItem(item, toolBaseUrl, db) {
         method: "POST",
         body: JSON.stringify(body),
         headers: {
-          "Content-Type": "application/json"
-        }
+          "Content-Type": "application/json",
+        },
       });
 
       if (response.status === 200) {
@@ -100,14 +102,14 @@ function migrateItem(item, toolBaseUrl, db) {
         await saveItem(json.item, db);
         return resolve({
           id: item._id,
-          status: statusUpdated
+          status: statusUpdated,
         });
       }
 
       if (response.status === 304) {
         return resolve({
           id: item._id,
-          status: statusNotUpdated
+          status: statusNotUpdated,
         });
       }
 
@@ -115,7 +117,7 @@ function migrateItem(item, toolBaseUrl, db) {
     } catch (e) {
       resolve({
         id: item._id,
-        status: statusFailed
+        status: statusFailed,
       });
     }
   });

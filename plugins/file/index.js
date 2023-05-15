@@ -1,5 +1,9 @@
 const Boom = require("@hapi/boom");
-const { S3Client, PutObjectCommand, GetObjectCommand } = require("@aws-sdk/client-s3");
+const {
+  S3Client,
+  PutObjectCommand,
+  GetObjectCommand,
+} = require("@aws-sdk/client-s3");
 const Mimos = require("@hapi/mimos");
 const mimos = new Mimos.Mimos();
 const hasha = require("hasha");
@@ -56,7 +60,9 @@ module.exports = {
       method: "POST",
       path: "/file",
       options: {
-        auth: "q-auth",
+        auth: {
+          strategies: ["q-auth-azure", "q-auth-ld"],
+        },
         cors: {
           credentials: true,
           additionalHeaders: [
@@ -157,10 +163,12 @@ module.exports = {
       },
       handler: async function (request, h) {
         try {
-          const data = await s3Client.send(new GetObjectCommand({
-            Bucket: options.s3Bucket,
-            Key: request.params.fileKey,
-          }));
+          const data = await s3Client.send(
+            new GetObjectCommand({
+              Bucket: options.s3Bucket,
+              Key: request.params.fileKey,
+            })
+          );
           return h
             .response(data.Body)
             .header(

@@ -10,30 +10,32 @@ const tasks = {
           path: "/tasks/test",
           method: "POST",
           options: {
-            auth: "q-auth",
+            auth: {
+              strategies: ["q-auth-azure", "q-auth-ld"],
+            },
             cors: {
-              credentials: true
-            }
+              credentials: true,
+            },
           },
-          handler: async function(request, h) {
+          handler: async function (request, h) {
             return {
               type: "json",
               data: {
                 label: "test 1",
-                content: request.payload
-              }
+                content: request.payload,
+              },
             };
-          }
+          },
         },
         schema: {
           type: "object",
           properties: {
             someTaskInput: {
               title: "task input",
-              type: "string"
-            }
-          }
-        }
+              type: "string",
+            },
+          },
+        },
       },
       {
         id: "adminTask",
@@ -42,34 +44,36 @@ const tasks = {
           path: "/tasks/admintest",
           method: "POST",
           options: {
-            auth: "q-auth",
+            auth: {
+              strategies: ["q-auth-azure", "q-auth-ld"],
+            },
             cors: {
-              credentials: true
-            }
+              credentials: true,
+            },
           },
-          handler: async function(request, h) {
+          handler: async function (request, h) {
             return {
               type: "json",
               data: {
                 label: "test 1",
-                content: request.payload
-              }
+                content: request.payload,
+              },
             };
-          }
+          },
         },
         schema: {
           type: "object",
           properties: {
             someTaskInput: {
               title: "task input",
-              type: "string"
-            }
-          }
+              type: "string",
+            },
+          },
         },
-        onlyRoles: ["admin"]
-      }
-    ]
-  }
+        onlyRoles: ["admin"],
+      },
+    ],
+  },
 };
 
 const env = process.env.APP_ENV || "local";
