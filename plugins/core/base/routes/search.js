@@ -5,7 +5,9 @@ module.exports = {
   method: "GET",
   options: {
     auth: {
-      strategy: "q-auth",
+      auth: {
+        strategies: ["q-auth-azure", "q-auth-ld"],
+      },
       mode: "try",
     },
     cors: {

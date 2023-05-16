@@ -30,7 +30,9 @@ module.exports = {
             method: "PUT",
             payload: item,
             auth: {
-              strategy: "q-auth",
+              auth: {
+                strategies: ["q-auth-azure", "q-auth-ld"],
+              },
               credentials: request.auth.credentials,
             },
           });
@@ -50,7 +52,9 @@ module.exports = {
             method: "POST",
             payload: item,
             auth: {
-              strategy: "q-auth",
+              auth: {
+                strategies: ["q-auth-azure", "q-auth-ld"],
+              },
               credentials: request.auth.credentials,
             },
           });
