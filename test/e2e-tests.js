@@ -85,9 +85,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "POST",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -105,9 +103,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "PUT",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -123,9 +119,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "PUT",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -148,9 +142,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "POST",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -176,9 +168,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -209,9 +199,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "POST",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -242,9 +230,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -276,9 +262,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -310,9 +294,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -344,9 +326,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          auth: {
-            strategies: ["q-auth-azure", "q-auth-ld"],
-          },
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -821,9 +801,7 @@ lab.experiment("fixture data plugin", () => {
       method: "POST",
       url: "/fixtures/data",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-ld",
         credentials: { username: "user", password: "pass" },
       },
     });
@@ -890,9 +868,7 @@ lab.experiment("tasks plugin", () => {
       method: "GET",
       url: "/tasks",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
     });
@@ -904,9 +880,7 @@ lab.experiment("tasks plugin", () => {
       method: "GET",
       url: "/tasks",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass", roles: ["admin"] },
       },
     });
@@ -923,9 +897,7 @@ lab.experiment("tasks plugin", () => {
       method: "POST",
       url: "/tasks/test",
       auth: {
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       payload: payload,
