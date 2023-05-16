@@ -6,24 +6,26 @@ function getServer() {
     port: process.env.PORT || 3333,
     app: {
       tools: require("./config/tools.js"),
-      targets: require("./config/targets.js")
+      targets: require("./config/targets.js"),
     },
     routes: {
-      cors: true
-    }
+      cors: true,
+    },
   });
 
   server.validator(Joi);
 
   // mock the auth strategy
-  server.auth.scheme("mock", function(server, options) {
+  server.auth.scheme("mock", function (server, options) {
     return {
-      authenticate: function(request, h) {
+      authenticate: function (request, h) {
         return h.authenticated({ credentials: "user" });
-      }
+      },
     };
   });
-  server.auth.strategy("q-auth", "mock");
+  server.auth.strategy("q-auth-azure", "mock");
+  server.auth.strategy("q-auth-ld", "mock");
+  server.auth.default("q-auth-azure");
   return server;
 }
 
