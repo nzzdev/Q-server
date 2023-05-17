@@ -5,9 +5,7 @@ module.exports = {
     path: "/fixtures/data",
     method: "POST",
     options: {
-      auth: {
-        strategies: ["q-auth-azure", "q-auth-ld"],
-      },
+      auth: "q-auth-azure",
       cors: {
         credentials: true,
       },
@@ -30,9 +28,7 @@ module.exports = {
             method: "PUT",
             payload: item,
             auth: {
-              auth: {
-                strategies: ["q-auth-azure", "q-auth-ld"],
-              },
+              strategy: "q-auth-azure",
               credentials: request.auth.credentials,
             },
           });
@@ -52,9 +48,7 @@ module.exports = {
             method: "POST",
             payload: item,
             auth: {
-              auth: {
-                strategies: ["q-auth-azure", "q-auth-ld"],
-              },
+              strategy: "q-auth-azure",
               credentials: request.auth.credentials,
             },
           });

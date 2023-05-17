@@ -801,7 +801,7 @@ lab.experiment("fixture data plugin", () => {
       method: "POST",
       url: "/fixtures/data",
       auth: {
-        strategy: "q-auth-ld",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
     });
