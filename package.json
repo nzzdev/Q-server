@@ -1,6 +1,6 @@
 {
   "name": "@nzz/q-server",
-  "version": "10.7.2",
+  "version": "10.7.3",
   "description": "",
   "main": "index.js",
   "scripts": {
