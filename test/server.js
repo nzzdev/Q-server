@@ -23,8 +23,7 @@ function getServer() {
       },
     };
   });
-  server.auth.strategy("q-auth-azure", "mock");
-  server.auth.strategy("q-auth-ld", "mock");
+  server.auth.strategy("q-auth-azure-then-ld", "mock");
   return server;
 }
 

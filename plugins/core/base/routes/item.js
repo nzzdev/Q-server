@@ -41,7 +41,7 @@ module.exports = {
     method: "GET",
     options: {
       auth: {
-        strategies: ["q-auth-azure", "q-auth-ld"],
+        strategy: "q-auth-azure-then-ld",
         mode: "optional",
       },
       cors: {
@@ -82,7 +82,7 @@ module.exports = {
         },
       },
       auth: {
-        strategies: ["q-auth-azure", "q-auth-ld"],
+        strategy: "q-auth-azure-then-ld",
       },
       cors: {
         credentials: true,
@@ -150,9 +150,7 @@ module.exports = {
           allowUnknown: true,
         },
       },
-      auth: {
-        strategies: ["q-auth-azure", "q-auth-ld"],
-      },
+      auth: "q-auth-azure-then-ld",
       cors: {
         credentials: true,
       },

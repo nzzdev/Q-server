@@ -17,9 +17,7 @@ module.exports = {
       options: {
         description: "Returns configuration for tasks",
         tags: ["api", "tasks"],
-        auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
-        },
+        auth: "q-auth-azure-then-ld",
         cors: {
           credentials: true,
         },

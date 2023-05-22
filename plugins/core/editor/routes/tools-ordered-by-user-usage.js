@@ -2,9 +2,7 @@ module.exports = {
   path: "/editor/tools-ordered-by-user-usage",
   method: "GET",
   options: {
-    auth: {
-      strategies: ["q-auth-azure", "q-auth-ld"],
-    },
+    auth: "q-auth-azure-then-ld",
     cors: {
       credentials: true,
     },

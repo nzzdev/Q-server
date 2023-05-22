@@ -10,9 +10,7 @@ const tasks = {
           path: "/tasks/test",
           method: "POST",
           options: {
-            auth: {
-              strategies: ["q-auth-azure", "q-auth-ld"],
-            },
+            auth: "q-auth-azure-then-ld",
             cors: {
               credentials: true,
             },
@@ -44,9 +42,7 @@ const tasks = {
           path: "/tasks/admintest",
           method: "POST",
           options: {
-            auth: {
-              strategies: ["q-auth-azure", "q-auth-ld"],
-            },
+            auth: "q-auth-azure-then-ld",
             cors: {
               credentials: true,
             },

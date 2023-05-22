@@ -35,7 +35,7 @@ module.exports = {
       method: "GET",
       options: {
         auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
+          strategy: "q-auth-azure-then-ld",
           mode: "try",
         },
         description: "Returns configuration for Q Editor",

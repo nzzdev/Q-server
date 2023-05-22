@@ -10,7 +10,7 @@ module.exports = {
       method: "GET",
       config: {
         auth: {
-          strategies: ["q-auth-azure", "q-auth-ld"],
+          strategy: "q-auth-azure-then-ld",
           mode: "optional",
         },
         cors: {
