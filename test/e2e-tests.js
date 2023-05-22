@@ -85,7 +85,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "POST",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -103,7 +103,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "PUT",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -119,7 +119,7 @@ lab.experiment("core item", () => {
     const request = {
       method: "PUT",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       url: "/item",
@@ -142,7 +142,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "POST",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -168,7 +168,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -199,7 +199,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "POST",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -230,7 +230,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -262,7 +262,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -294,7 +294,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -326,7 +326,7 @@ lab.experiment("core item", () => {
       const request = {
         method: "PUT",
         auth: {
-          strategy: "q-auth",
+          strategy: "q-auth-azure",
           credentials: { username: "user", password: "pass" },
         },
         url: "/item",
@@ -801,7 +801,7 @@ lab.experiment("fixture data plugin", () => {
       method: "POST",
       url: "/fixtures/data",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
     });
@@ -868,7 +868,7 @@ lab.experiment("tasks plugin", () => {
       method: "GET",
       url: "/tasks",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
     });
@@ -880,7 +880,7 @@ lab.experiment("tasks plugin", () => {
       method: "GET",
       url: "/tasks",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass", roles: ["admin"] },
       },
     });
@@ -897,7 +897,7 @@ lab.experiment("tasks plugin", () => {
       method: "POST",
       url: "/tasks/test",
       auth: {
-        strategy: "q-auth",
+        strategy: "q-auth-azure",
         credentials: { username: "user", password: "pass" },
       },
       payload: payload,
