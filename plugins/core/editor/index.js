@@ -3,19 +3,19 @@ const Hoek = require("@hapi/hoek");
 const configSchemas = require("./configSchemas.js");
 
 const defaults = {
-  editorConfig: {}
+  editorConfig: {},
 };
 
 module.exports = {
   name: "q-editor-api",
-  register: async function(server, options) {
+  register: async function (server, options) {
     const settings = Hoek.applyToDefaults(defaults, options);
 
     //validate the server settings
     const targetConfigValidationResult = configSchemas.target.validate(
       server.settings.app.targets.get(`/`),
       {
-        allowUnknown: true
+        allowUnknown: true,
       }
     );
     if (targetConfigValidationResult.error) {
@@ -27,19 +27,23 @@ module.exports = {
       require("./routes/tools"),
       require("./routes/tools-ordered-by-user-usage"),
       require("./routes/locales").getGetToolsRoute(),
-      require("./routes/locales").getGetEditorConfigRoute(settings)
+      require("./routes/locales").getGetEditorConfigRoute(settings),
     ]);
 
     server.route({
       path: "/editor/config",
       method: "GET",
       options: {
+        auth: {
+          strategies: ["q-auth-azure", "q-auth-ld"],
+          mode: "try",
+        },
         description: "Returns configuration for Q Editor",
-        tags: ["api", "editor"]
+        tags: ["api", "editor"],
       },
       handler: (request, h) => {
         return settings.editorConfig;
-      }
+      },
     });
-  }
+  },
 };
