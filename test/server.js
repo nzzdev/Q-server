@@ -25,7 +25,6 @@ function getServer() {
   });
   server.auth.strategy("q-auth-azure", "mock");
   server.auth.strategy("q-auth-ld", "mock");
-  server.auth.default("q-auth-azure");
   return server;
 }
 
