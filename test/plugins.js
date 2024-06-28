@@ -10,47 +10,47 @@ function resolvePath(resource, env) {
 module.exports = [
   {
     plugin: require("../plugins/core/base"),
-    options: require("./config/base.js")
+    options: require("./config/base.js"),
   },
   {
     plugin: require("../plugins/core/db"),
     options: {
       protocol: "http",
       host: "localhost:5984",
-      database: "q-items"
-    }
+      database: "q-items",
+    },
   },
   {
     plugin: require("../plugins/core/editor"),
     options: {
-      editorConfig: require("./config/editor.js").get("")
-    }
+      editorConfig: require("./config/editor.js").get(""),
+    },
   },
   {
     plugin: require("../plugins/core/rendering-info"),
-    options: require("./config/rendering-info.js")
+    options: require("./config/rendering-info.js"),
   },
   {
-    plugin: require("../plugins/fixtures")
+    plugin: require("../plugins/fixtures"),
   },
   {
-    plugin: require("../plugins/statistics")
+    plugin: require("../plugins/statistics"),
   },
   {
     plugin: require("../plugins/tasks/index.js"),
-    options: require("./config/tasks.js").get("")
+    options: require("./config/tasks.js").get(""),
   },
   {
     plugin: require("../plugins/screenshot"),
     options: {
-      getScripts: function(renderingInfo) {
+      getScripts: function (renderingInfo) {
         const scripts = [];
         if (
           renderingInfo.loaderConfig &&
           renderingInfo.loaderConfig.loadSystemJs === "full"
         ) {
           scripts.push({
-            url: `${process.env.Q_SERVER_BASE_URL}/files/system.js`
+            url: `${process.env.Q_SERVER_BASE_URL}/files/system.js`,
           });
         }
         if (
@@ -58,9 +58,9 @@ module.exports = [
           renderingInfo.loaderConfig.polyfills
         ) {
           scripts.push({
-            url: `https://cdn.polyfill.io/v2/polyfill.min.js?features=${renderingInfo.loaderConfig.polyfills.join(
+            url: `https://polyfill-fastly.io/v2/polyfill.min.js?features=${renderingInfo.loaderConfig.polyfills.join(
               ","
-            )}`
+            )}`,
           });
         }
         if (renderingInfo.scripts && Array.isArray(renderingInfo.scripts)) {
@@ -74,7 +74,7 @@ module.exports = [
         }
         return scripts;
       },
-      getStylesheets: function(renderingInfo) {
+      getStylesheets: function (renderingInfo) {
         const stylesheets = [];
         if (
           renderingInfo.stylesheets &&
@@ -93,17 +93,17 @@ module.exports = [
           maxAge: 1,
           sMaxAge: 1,
           staleWhileRevalidate: 1,
-          staleIfError: 1
-        }
-      }
-    }
+          staleIfError: 1,
+        },
+      },
+    },
   },
   {
     plugin: require("../plugins/cdn/keycdn"),
     options: {
       zoneId: "some-zone-id",
       apiKey: "some-api-key",
-      dryRun: true
-    }
-  }
+      dryRun: true,
+    },
+  },
 ];
