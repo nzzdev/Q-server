@@ -40,6 +40,9 @@ module.exports = {
     path: "/item/{id}",
     method: "GET",
     options: {
+      cache: {
+        expiresIn: 5000,
+      },
       auth: {
         strategy: "q-auth-azure-then-ld",
         mode: "optional",
