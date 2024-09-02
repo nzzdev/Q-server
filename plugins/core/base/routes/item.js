@@ -40,9 +40,6 @@ module.exports = {
     path: "/item/{id}",
     method: "GET",
     options: {
-      cache: {
-        expiresIn: 5000,
-      },
       auth: {
         strategy: "q-auth-azure-then-ld",
         mode: "optional",
@@ -59,7 +56,7 @@ module.exports = {
       tags: ["api", "editor"],
     },
     handler: async function (request, h) {
-      return request.server.methods.db.item.getById({
+      const item = await request.server.methods.db.item.getById({
         id: request.params.id,
         ignoreInactive: true,
         session: {
@@ -67,6 +64,8 @@ module.exports = {
           artifacts: request.auth.artifacts,
         },
       });
+
+      return h.response(item).header("Cache-Control", "max-age=5000");
     },
   },
   post: {
